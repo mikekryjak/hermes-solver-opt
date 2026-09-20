@@ -63,7 +63,6 @@ SCORING_OUTCOME = "completed"
 DUMP_GLOB = "BOUT.dmp.*.nc"
 
 # Tools invoked by name, found on PATH, so no path to this machine is stored.
-MAKE_WINDOW = "make_window.py"
 APPLY_RECIPE = "apply_recipe.py"
 EXTRACT = "extract_test.py"
 CAN_DELETE = "can_delete.py"
@@ -73,6 +72,11 @@ GB = 1024 ** 3
 
 TOOL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_RECIPES = os.path.join(TOOL_ROOT, "hermes-perftest", "recipes")
+
+# The window generator ships in the submodule beside the recipes and is not on
+# PATH, so it is resolved here rather than invoked by bare name. This is still
+# no path to any one machine: it is relative to this file.
+MAKE_WINDOW = os.path.join(TOOL_ROOT, "hermes-perftest", "make_window.py")
 
 # `<window>-<YYYY-MM-DD>-<tag>`. The date is when the case was made, so a trial
 # resumed the next day must be found by its window and tag alone.
