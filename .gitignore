@@ -14,3 +14,12 @@ __pycache__/
 # Build artefacts
 build/
 dist/
+
+# LaTeX build artefacts
+*.aux
+*.nav
+*.snm
+*.toc
+*.out
+*.log
+design-summary-slides.pdf
