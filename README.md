@@ -10,13 +10,14 @@ a performance test.
 
 ```
 git clone --recursive https://github.com/mikekryjak/hermes-solver-opt
-export PATH="$PWD/hermes-solver-opt/cli:$PATH"
+cd hermes-solver-opt
+pip install -e .
 ```
 
-There is no packaging yet, so there is nothing to install. The tools in `cli/`
-are run by name, and each one puts the repository root on `sys.path` itself so
-that `import perftest` works. Packaging is on the list; until it lands, `import
-perftest` from your own script needs the repository root added by hand.
+The install puts five command-line tools on your path -- `extract-test`,
+`query-store`, `verify-store`, `add-views` and `can-delete` -- and makes
+`import perftest` work from any directory. Reading BOUT.dmp files needs
+xhermes as well, which is an optional extra: `pip install -e ".[dumps]"`.
 
 ## Where everything lives
 
@@ -36,9 +37,10 @@ analysis that reads them.
 ## Layout
 
 ```
+pyproject.toml     the packaging: the perftest package and the cli tools
 perftest/          the extraction layer: extract, index, store, recipe, verify,
                    log parsing
-cli/               the command-line tools, run by name
+cli/               the command-line tools, installed by name
 design.md          how the system is built and why
 requirements.md    R1-R25, the rules
 search-space.toml  every solver knob the optimiser may set

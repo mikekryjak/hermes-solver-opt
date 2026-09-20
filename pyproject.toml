@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-solver-opt"
+version = "0.1.0"
+description = "Capture and query Hermes-3 performance tests over the PETSc solver parameter space"
+readme = "README.md"
+# No syntax here needs a newer interpreter, and the floor stays low so the
+# package installs beside whatever scientific stack is already present.
+requires-python = ">=3.9"
+
+# Derived by reading every import in perftest/ and cli/. Everything else those
+# modules import is standard library: argparse, csv, datetime, difflib, getpass,
+# glob, os, pathlib, re, shutil, socket, statistics, sys, tempfile.
+# No upper pins: this installs alongside an existing scientific Python stack,
+# where a tight pin would force a downgrade of somebody else's numpy or pandas.
+dependencies = [
+    "numpy",
+    "pandas",
+]
+
+[project.optional-dependencies]
+# Reading BOUT.dmp files goes through xhermes and nothing else, and only
+# perftest.extract does it. It is an extra rather than a hard dependency
+# because the user runs a local xhermes checkout that pip cannot see, so a hard
+# dependency would pull a second copy from PyPI and shadow it.
+dumps = ["xhermes"]
+test = ["pytest", "xarray", "xhermes"]
+
+[project.urls]
+Repository = "https://github.com/mikekryjak/hermes-solver-opt"
+
+[project.scripts]
+extract-test = "solveropt_cli.extract_test:main"
+query-store = "solveropt_cli.query:main"
+verify-store = "solveropt_cli.verify_store:main"
+add-views = "solveropt_cli.add_views:main"
+can-delete = "solveropt_cli.can_delete:main"
+
+[tool.setuptools]
+# Listed by hand rather than discovered, so that no wildcard can sweep in the
+# hermes-perftest submodule, the .beads tracker or perftest/tests.
+packages = ["perftest", "solveropt_cli"]
+
+[tool.setuptools.package-dir]
+# The tools live in cli/, but "cli" is too common a name to claim at the top
+# level of somebody else's environment, so they import under a distinct one.
+solveropt_cli = "cli"
