@@ -10,11 +10,13 @@ a performance test.
 
 ```
 git clone --recursive https://github.com/mikekryjak/hermes-solver-opt
-pip install -e .
+export PATH="$PWD/hermes-solver-opt/cli:$PATH"
 ```
 
-The install puts `extract_test.py` and `verify_store.py` on the path and makes
-`import perftest` work from anywhere.
+There is no packaging yet, so there is nothing to install. The tools in `cli/`
+are run by name, and each one puts the repository root on `sys.path` itself so
+that `import perftest` works. Packaging is on the list; until it lands, `import
+perftest` from your own script needs the repository root added by hand.
 
 ## Where everything lives
 
@@ -35,9 +37,11 @@ analysis that reads them.
 
 ```
 perftest/          the extraction layer: extract, index, store, recipe, verify,
-                   log parsing, and cli/ holding the command-line tools
+                   log parsing
+cli/               the command-line tools, run by name
 design.md          how the system is built and why
 requirements.md    R1-R25, the rules
+search-space.toml  every solver knob the optimiser may set
 findings.md        learned conclusions, agent-facing
 capture-set.md     what each run records
 .beads/            the issue tracker

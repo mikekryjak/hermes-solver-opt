@@ -1,0 +1,764 @@
+# The solver search space
+#
+# One entry per knob the optimiser may set. This file is the contract between
+# whatever proposes configurations and the machinery that runs them: a proposal
+# naming a knob that is not here, or a value outside its range, is rejected
+# before anything is launched.
+#
+# INCOMPLETE. It covers the SNES path, which is what the first campaigns use.
+# The CVODE and TS paths are named but not described.
+#
+# Sources, so a wrong entry can be traced:
+#
+#   - Names and BOUT++ defaults: the SNES solver constructor in BOUT++, at
+#     external/BOUT-dev/src/solver/impls/snes/snes.cxx. Enum value lists come
+#     from snes.hxx. Nothing here was written from memory or from the PETSc
+#     manual alone.
+#   - PETSc defaults: the SNES and KSP objects PETSc actually built for this
+#     project's current configuration, captured with -snes_view and stored at
+#     runs/test2_20.0-21.0ms-20260920-160050/petsc_views.txt in the store.
+#     That capture describes THIS build and THIS PETSc version, which the
+#     documentation does not.
+#   - MUMPS option names: verified against the PETSc source that parses them,
+#     src/mat/impls/aij/mpi/mumps/mumps.c.
+#
+# FIELD MEANINGS
+#
+#   type     switch | choice | integer | continuous
+#   values   the allowed set, for a choice
+#   range    [low, high], for an integer or continuous knob
+#   scale    "log" when a continuous knob should be sampled logarithmically
+#   default  what the code uses when nobody sets it
+#   current  the value in SNES-MUMPS-3, the configuration campaigns start from
+#   applies  which solver the knob belongs to
+#   depends  the settings the knob is only meaningful under. A sampler that
+#            ignores this spends its budget on settings that are not in force.
+#   cost     what the knob trades against what. This is the part a proposer
+#            reasons with, so it says the mechanism, not just the direction.
+#   status   untested  - nobody has varied it in this project
+#            candidate - there is a specific reason to try it
+#            fixed     - deliberately not varied, with the reason
+#            avoid     - known to be bad or broken, with the reason
+#   note     anything a proposer would otherwise get wrong
+
+[meta]
+written = "2026-09-20"
+covers = "SNES path only"
+build = "hermes-3 neutlim-lagging at ef2ef9dd"
+petsc = "3.23.3"
+baseline_recipe = "SNES-MUMPS-3"
+solver_option_source = "external/BOUT-dev/src/solver/impls/snes/snes.cxx"
+petsc_view = "runs/test2_20.0-21.0ms-20260920-160050/petsc_views.txt"
+
+# A knob written as "solver:x" goes in the [solver] section of BOUT.inp and is
+# read by BOUT++. A knob written as "petsc:x" goes in the [petsc] section and
+# is passed straight to PETSc as -x. Some settings exist on both sides; where
+# they do, the note says which one wins.
+
+
+# ---------------------------------------------------------------------------
+# 1. The nonlinear solve
+# ---------------------------------------------------------------------------
+
+[knobs."solver:snes_type"]
+type = "choice"
+values = ["newtonls", "newtontr", "anderson", "ngmres", "qn", "ncg", "nrichardson"]
+default = "anderson"
+current = "newtonls"
+applies = "snes"
+cost = "newtonls is Newton with a line search: fastest when it converges, fragile when far from the solution. newtontr is a trust region: slower per step, more robust on hard steps. anderson and ngmres are acceleration methods that need no Jacobian, so they are cheap per iteration and usually need many more."
+status = "candidate"
+note = "The recipe comment records that newtontr was tried and was not as good, but the comparison is not in this project's record. Worth repeating on the window ladder before the question is treated as settled."
+
+[knobs."solver:max_nonlinear_iterations"]
+type = "integer"
+range = [3, 50]
+default = 50
+current = 10
+applies = "snes"
+cost = "The cap on Newton iterations per timestep. A low cap makes a hard step fail quickly, and the timestep controller then shrinks and retries, which is often cheaper than grinding. A high cap lets a nearly-converging step finish instead of throwing its work away."
+status = "candidate"
+note = "Interacts strongly with the timestep controller. The controller aims at target_its, so a change here without a matching change there moves the controller's operating point too."
+
+[knobs."solver:atol"]
+type = "continuous"
+range = [1e-8, 1e-1]
+scale = "log"
+default = 1e-16
+current = 1e-3
+applies = "snes"
+cost = "Absolute convergence tolerance on the nonlinear residual. Looser means fewer Newton iterations per step and a less accurate step. Because the target is a steady state, a loose per-step tolerance is not obviously wrong, but it can stall the timestep controller by making every step look easy."
+status = "candidate"
+note = "The current 1e-3 is already far looser than the BOUT++ default of 1e-16. Do not read the default as a recommendation; it is a value chosen for a different purpose."
+
+[knobs."solver:rtol"]
+type = "continuous"
+range = [1e-8, 1e-2]
+scale = "log"
+default = 1e-10
+current = 1e-5
+applies = "snes"
+cost = "Relative convergence tolerance on the nonlinear residual. Same trade as atol."
+status = "candidate"
+note = "rtol is also the floor used by scale_vars when it rescales variables, so changing it changes variable scaling as well as convergence. See the scale_vars entry: that coupling is currently a defect, not a feature."
+
+[knobs."solver:stol"]
+type = "continuous"
+range = [1e-14, 1e-6]
+scale = "log"
+default = 1e-8
+current = 1e-12
+applies = "snes"
+cost = "Convergence tolerance on the size of the Newton update. Stops iterating when steps stop moving, whatever the residual says."
+status = "untested"
+
+[knobs."solver:maxf"]
+type = "integer"
+range = [100, 10000]
+default = 10000
+current = 2000
+applies = "snes"
+cost = "Cap on function evaluations per solve. A backstop, not a tuning knob: it should sit well above what max_nonlinear_iterations can consume."
+status = "fixed"
+note = "Vary only if a configuration is seen hitting it. Hitting it is a sign something else is wrong."
+
+[knobs."solver:line_search_type"]
+type = "choice"
+values = ["default", "basic", "bt", "l2", "cp", "nleqerr"]
+default = "default"
+current = "unset, see note"
+applies = "snes"
+depends = { "solver:snes_type" = "newtonls" }
+cost = "basic takes the full Newton step with no damping: cheapest per iteration, and it diverges on steps a damped search would have saved. bt backtracks until the residual decreases, costing extra function evaluations per iteration and buying robustness. l2 and cp minimise along the step direction. nleqerr is an affine-invariant criterion for badly scaled problems."
+status = "candidate"
+note = "SNES-MUMPS-3 sets this through petsc:snes_linesearch_type = basic rather than through solver:line_search_type, and the captured view confirms PETSc built a basic line search. Prior work on this project attributed a burst of solver failures partly to the undamped basic search, so bt is a specific candidate. Set only one of the two spellings, or they will disagree."
+
+[knobs."solver:max_snes_failures"]
+type = "integer"
+range = [3, 50]
+default = 10
+current = 20
+applies = "snes"
+cost = "How many consecutive failed solves before the run gives up. Higher means a run that is thrashing keeps burning wall clock instead of reporting failure."
+status = "fixed"
+note = "This is an abort criterion, not a performance knob. Varying it changes what counts as a failed run, which corrupts the comparison between configurations."
+
+[knobs."solver:predictor"]
+type = "switch"
+default = true
+current = "unset, so true"
+applies = "snes"
+cost = "Extrapolates from the previous step to guess the next state. A good guess cuts Newton iterations; a bad one costs a wasted iteration and can push a marginal step into failure."
+status = "untested"
+
+[knobs."solver:equation_form"]
+type = "choice"
+values = ["rearranged_backward_euler", "backward_euler", "pseudo_transient", "direct_newton"]
+default = "rearranged_backward_euler"
+current = "unset, so rearranged_backward_euler"
+applies = "snes"
+cost = "Which nonlinear system is posed at each step. The two backward Euler forms are algebraically equivalent but scale differently, so they converge differently. pseudo_transient replaces time accuracy with a continuation parameter driven by the residual, which is a different method judged on different terms. direct_newton drops the time term and solves for the steady state outright."
+status = "candidate"
+note = "This is the single most consequential knob here: it selects a method, not a setting. pseudo_transient and direct_newton should be separate campaigns with their own objective, not points in a sweep against plasma-time windows. The current form also satisfies the one-evaluation-per-timestep requirement that lag_limiter = gradient depends on in the physics settings; changing it may silently break that."
+
+
+# ---------------------------------------------------------------------------
+# 2. The Jacobian
+# ---------------------------------------------------------------------------
+
+[knobs."solver:matrix_free"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "snes"
+cost = "Never forms the Jacobian. Removes the cost of building and factorising it, and removes any preconditioner that needs it, so the linear solve usually needs far more iterations."
+status = "candidate"
+depends = { "solver:pc_type" = "not lu" }
+note = "Matrix-free with a direct preconditioner is a contradiction: there is no matrix to factorise. A proposal setting this true must also move pc_type away from lu."
+
+[knobs."solver:matrix_free_operator"]
+type = "switch"
+default = false
+current = false
+applies = "snes"
+cost = "Keeps an assembled Jacobian for preconditioning but applies the operator matrix-free, so the Jacobian can be older than the operator. Buys accuracy in the operator while still lagging the expensive assembly."
+status = "candidate"
+
+[knobs."solver:lag_jacobian"]
+type = "integer"
+range = [1, 20]
+default = 50
+current = 3
+applies = "snes"
+depends = { "solver:matrix_free" = false }
+cost = "Reuse the Jacobian for this many SNES iterations. Fewer builds of an expensive object, at the price of a staler Newton direction and therefore more nonlinear iterations. This is the clearest example of a knob that moves work between counters: ranking on RHS evaluations alone will mislead here, which is why the objective is wall clock."
+status = "candidate"
+note = "The captured view confirms PETSc is rebuilding every 3 SNES iterations, so the setting is in force. The profile shares recorded per run (t_jac_frac, t_pcsetup_frac, t_ksp_frac, t_func_frac) say directly whether a run is Jacobian-bound, and should steer this knob rather than blind sampling."
+
+[knobs."solver:jacobian_persists"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "snes"
+depends = { "solver:matrix_free" = false }
+cost = "Carries the Jacobian and preconditioner across nonlinear solves, not just across iterations within one. Stronger version of lag_jacobian, with the same trade and more of it."
+status = "untested"
+
+[knobs."solver:use_coloring"]
+type = "switch"
+default = true
+current = "unset, so true"
+applies = "snes"
+depends = { "solver:matrix_free" = false }
+cost = "Builds the finite-difference Jacobian by colouring, which needs one function evaluation per colour instead of one per column. Turning it off is enormously more expensive and is not a real option at this problem size."
+status = "fixed"
+
+[knobs."solver:prune_jacobian"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "snes"
+depends = { "solver:matrix_free" = false }
+cost = "Drops small entries from the Jacobian, giving a sparser matrix that factorises faster and preconditions worse."
+status = "candidate"
+note = "The MUMPS statistics in the captured view give the lever arm: 469812 nonzeros in the matrix become 2425990 in the factors, a fill ratio above five. Sparsifying the matrix attacks that number directly. Nobody has tried it here."
+
+[knobs."solver:prune_abstol"]
+type = "continuous"
+range = [1e-20, 1e-10]
+scale = "log"
+default = 1e-16
+current = "unset"
+applies = "snes"
+depends = { "solver:prune_jacobian" = true }
+cost = "The threshold below which an entry is dropped. Too high and the preconditioner stops resembling the operator."
+status = "untested"
+
+[knobs."solver:prune_fraction"]
+type = "continuous"
+range = [0.05, 0.8]
+default = 0.2
+current = "unset"
+applies = "snes"
+depends = { "solver:prune_jacobian" = true }
+cost = "Only re-prune when this fraction of entries is small, so the pruning pass itself is not paid every time."
+status = "untested"
+
+[knobs."petsc:snes_fd_color_use_mat"]
+type = "switch"
+default = false
+current = "set, but see note"
+applies = "snes"
+cost = "Nothing. PETSc does not read it."
+status = "avoid"
+note = "PETSc never consumes this option. The captured view lists it under options_left, meaning it was passed and ignored. It is in the baseline recipe and does nothing. Do not propose it, and do not read any result as evidence about it. Whether the name is wrong, deprecated, or irrelevant to this code path is an open question in the tracker."
+
+
+# ---------------------------------------------------------------------------
+# 3. Variable scaling
+# ---------------------------------------------------------------------------
+
+[knobs."solver:scale_vars"]
+type = "switch"
+default = false
+current = true
+applies = "snes"
+cost = "Rescales state variables to order unity before the solve. The plasma variables span many orders of magnitude, so without it the residual norm is dominated by whichever variable happens to be largest, and convergence tests become meaningless."
+status = "avoid"
+note = "DEFECT, open in the tracker. A variable of exactly zero is floored at rtol divided by its scaling factor, which amplifies that variable's contribution to the residual norm by roughly one over rtol. With rtol at 1e-5 that is five orders of magnitude from a single zero-valued element. The initial conditions were changed to start neutrals non-zero as a mitigation, but momenta still start at zero and the code is unfixed. Consequence for a search: any run where a variable passes through zero has a residual norm that is partly an artefact. Do not tune against residual-based quantities while this holds, and treat scale_vars as fixed at its current value until it is fixed."
+
+[knobs."solver:scale_rhs"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "snes"
+cost = "Row-scales the Jacobian by scaling the time derivatives. Addresses badly scaled equations rather than badly scaled variables."
+status = "untested"
+note = "Independent of scale_vars and not affected by its defect. A reasonable thing to try precisely because it is the other half of the scaling question."
+
+[knobs."solver:rescale_period"]
+type = "integer"
+range = [5, 200]
+default = 30
+current = "unset, so 30"
+applies = "snes"
+depends = { "solver:scale_vars" = true }
+cost = "How many iterations before the scaling factors are recomputed. Recomputing costs a pass over the state; not recomputing lets the scaling drift away from the solution as it evolves."
+status = "untested"
+
+[knobs."solver:rescale_threshold"]
+type = "continuous"
+range = [2.0, 1000.0]
+scale = "log"
+default = 100.0
+current = "unset, so 100"
+applies = "snes"
+depends = { "solver:scale_vars" = true }
+cost = "How much the state norm must change before rescaling happens at all, which suppresses pointless rescaling when the solution is barely moving."
+status = "untested"
+
+[knobs."solver:asinh_vars"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "snes"
+cost = "Solves for asinh of each variable, compressing many decades into a manageable range and making positivity automatic. A large change to the problem being solved, not a tuning adjustment."
+status = "untested"
+note = "Plausibly powerful for edge plasma, where densities span many decades and must stay positive. Also plausibly changes the answer. Needs its own study with the correctness check taken seriously, not a slot in a sweep."
+
+
+# ---------------------------------------------------------------------------
+# 4. The linear solve
+# ---------------------------------------------------------------------------
+
+[knobs."solver:ksp_type"]
+type = "choice"
+values = ["default", "fgmres", "gmres", "bcgs", "bcgsl", "tfqmr", "cg", "richardson", "preonly"]
+default = "default"
+current = "fgmres"
+applies = "ksp"
+cost = "fgmres allows the preconditioner to vary between iterations, which gmres does not, and stores more vectors for the privilege. bcgs and tfqmr keep no Krylov history so their memory is constant, but they converge irregularly. preonly applies the preconditioner once with no Krylov iteration at all."
+status = "candidate"
+note = "preonly is a real candidate here and not an odd one: with an exact LU factorisation as the preconditioner, the Krylov iteration has almost nothing left to do. The captured view records exactly 1 linear iteration for 2 function evaluations, which says the linear solve is already converging immediately. If that holds generally, the entire Krylov layer is overhead."
+
+[knobs."solver:maxl"]
+type = "integer"
+range = [10, 500]
+default = 20
+current = 260
+applies = "ksp"
+cost = "Cap on linear iterations per Newton step. Matters only when the preconditioner is weak enough that the Krylov method has work to do."
+status = "candidate"
+note = "See petsc:ksp_gmres_restart. The two are set inconsistently at present and should be considered together, never separately."
+
+[knobs."petsc:ksp_gmres_restart"]
+type = "integer"
+range = [10, 300]
+default = 30
+current = "unset, so 30"
+applies = "ksp"
+depends = { "solver:ksp_type" = "fgmres or gmres" }
+cost = "How many Krylov vectors are kept before the method restarts and discards its accumulated subspace. A long restart converges in fewer iterations and costs memory and orthogonalisation work that grows with the square of the restart length. A short one is cheap per iteration and throws away convergence history."
+status = "candidate"
+note = "THE FIRST THING TO TRY. The captured view shows restart = 30 against maxl = 260, so one solve may restart nearly nine times, discarding its subspace each time. Nobody chose 30; it is the PETSc default and the input file never mentions it. This is the clearest case in the whole space of a setting in force that nobody decided. Caveat from the same view: the linear solve currently converges in 1 iteration, so with the direct preconditioner this may never bind. It will bind the moment the preconditioner is weakened, which every cheaper preconditioner does."
+
+[knobs."petsc:ksp_gmres_cgs_refinement_type"]
+type = "choice"
+values = ["refine_never", "refine_ifneeded", "refine_always"]
+default = "refine_never"
+current = "unset, so refine_never"
+applies = "ksp"
+depends = { "solver:ksp_type" = "fgmres or gmres" }
+cost = "Iterative refinement of the Gram-Schmidt orthogonalisation. Guards against loss of orthogonality in long restarts, at the cost of extra work per iteration."
+status = "untested"
+note = "Only worth considering alongside a long restart, where orthogonality actually degrades."
+
+[knobs."solver:kspsetinitialguessnonzero"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "ksp"
+cost = "Starts the linear solve from the previous solution rather than from zero. Free when the guess is good, and costs one wasted matrix application when it is not."
+status = "untested"
+note = "The captured view confirms the initial guess is currently zero."
+
+
+# ---------------------------------------------------------------------------
+# 5. The preconditioner
+# ---------------------------------------------------------------------------
+
+[knobs."solver:pc_type"]
+type = "choice"
+values = ["default", "lu", "ilu", "bjacobi", "asm", "gamg", "hypre", "none"]
+default = "default"
+current = "lu"
+applies = "pc"
+cost = "lu is a full direct factorisation: the strongest possible preconditioner, and the most expensive to build and to store. ilu is an incomplete factorisation, cheaper and weaker. bjacobi and asm factorise blocks independently, so they parallelise well and ignore coupling across block boundaries. gamg and hypre are multigrid, which scale far better with problem size and need tuning to work at all."
+status = "candidate"
+note = "This is the highest-leverage choice in the space, because it determines which other knobs even exist. At 5600 rows the direct solve is affordable; the interesting question is at what size it stops being, and multigrid is the answer for larger grids. Any move away from lu should be judged over several windows, since a weaker preconditioner typically wins on setup cost and loses on iteration count."
+
+[knobs."petsc:pc_factor_mat_solver_type"]
+type = "choice"
+values = ["mumps", "strumpack", "superlu_dist", "petsc"]
+default = "petsc"
+current = "mumps"
+applies = "pc"
+depends = { "solver:pc_type" = "lu" }
+cost = "Which package performs the factorisation. They differ in ordering strategy, parallel scaling and memory. strumpack additionally offers approximate factorisation via low-rank compression, which trades preconditioner quality for speed."
+status = "candidate"
+note = "The project already has STRUMPACK recipes written and not yet run on the window ladder. This is a cheap comparison to make, since nothing else in the configuration has to change."
+
+[knobs."petsc:pc_factor_levels"]
+type = "integer"
+range = [0, 5]
+default = 0
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "ilu" }
+cost = "Fill levels allowed in the incomplete factorisation. More levels means a stronger preconditioner and a more expensive one, interpolating between ilu and a full lu."
+status = "untested"
+
+[knobs."petsc:pc_factor_mat_ordering_type"]
+type = "choice"
+values = ["natural", "nd", "1wd", "rcm", "qmd", "external"]
+default = "external"
+current = "unset, so external"
+applies = "pc"
+depends = { "solver:pc_type" = "lu or ilu" }
+cost = "The fill-reducing permutation applied before factorisation. Fill dominates the cost and memory of a direct solve, so the ordering can change both by large factors."
+status = "untested"
+note = "The captured view records matrix ordering: external, meaning MUMPS chooses it internally, and reports INFOG(7) = 5, which is its own ordering choice. Controlling it from the PETSc side and from the MUMPS side at once will conflict; pick one."
+
+[knobs."solver:pc_hypre_type"]
+type = "choice"
+values = ["euclid", "pilut", "parasails", "boomeramg", "ams", "ads"]
+default = "pilut"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "hypre" }
+cost = "Which hypre method. boomeramg is algebraic multigrid and the one worth trying; the others are approximate inverses and incomplete factorisations."
+status = "untested"
+
+[knobs."solver:use_precon"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "snes"
+cost = "Uses the physics-based preconditioner supplied by the model rather than a generic algebraic one."
+status = "untested"
+note = "Check whether the Hermes-3 model in use actually supplies one before proposing this. If it does not, the setting is inert."
+
+# MUMPS internals. These are passed straight through to MUMPS and are only
+# meaningful when it is doing the factorisation. Option names verified against
+# the PETSc source that parses them.
+
+[knobs."petsc:mat_mumps_icntl_24"]
+type = "choice"
+values = [0, 1]
+default = 0
+current = 1
+applies = "pc"
+depends = { "petsc:pc_factor_mat_solver_type" = "mumps" }
+cost = "Null pivot detection. Without it, a near-singular matrix aborts the factorisation; with it, MUMPS handles the pivot and continues."
+status = "fixed"
+note = "Added to the baseline deliberately, because large timesteps were producing zero pivots. Turning it off reintroduces a failure mode, so it is not a performance knob."
+
+[knobs."petsc:mat_mumps_icntl_7"]
+type = "choice"
+values = [0, 2, 3, 4, 5, 6, 7]
+default = 7
+current = "unset, so 7"
+applies = "pc"
+depends = { "petsc:pc_factor_mat_solver_type" = "mumps" }
+cost = "Sequential ordering: 7 lets MUMPS choose, and the named alternatives are AMD, AMF, SCOTCH, PORD, METIS and QAMD. The ordering sets the fill, which sets both factorisation time and memory."
+status = "candidate"
+note = "The view records INFOG(7) = 5, so MUMPS is currently choosing METIS. Forcing alternatives is a cheap sweep with a direct effect on the 5.2x fill ratio."
+
+[knobs."petsc:mat_mumps_icntl_28"]
+type = "choice"
+values = [0, 1, 2]
+default = 0
+current = "unset, so 0"
+applies = "pc"
+depends = { "petsc:pc_factor_mat_solver_type" = "mumps" }
+cost = "Sequential or parallel ordering. Parallel ordering is faster to compute on many processes and usually gives more fill than a sequential one."
+status = "untested"
+note = "The view records INFOG(32) = 1, sequential analysis, on 10 processes. At 5600 rows the analysis is not the bottleneck, so this likely matters little here and more on larger grids."
+
+[knobs."petsc:mat_mumps_icntl_14"]
+type = "integer"
+range = [20, 200]
+default = 20
+current = "unset, so 20"
+applies = "pc"
+depends = { "petsc:pc_factor_mat_solver_type" = "mumps" }
+cost = "Percentage of extra working space MUMPS allocates. Too little and the factorisation fails or compresses memory repeatedly; too much wastes memory."
+status = "fixed"
+note = "The view records INFOG(14) = 0 memory compressions, so the current allocation is sufficient. Raise it only in response to a failure."
+
+[knobs."petsc:mat_mumps_icntl_35"]
+type = "choice"
+values = [0, 1, 2, 3]
+default = 0
+current = "unset, so 0"
+applies = "pc"
+depends = { "petsc:pc_factor_mat_solver_type" = "mumps" }
+cost = "Block low-rank compression. Approximates blocks of the factors by low-rank products, cutting factorisation time and memory at the cost of an approximate factorisation. As a preconditioner an approximate factorisation is often entirely acceptable, since the Krylov iteration absorbs the error."
+status = "candidate"
+note = "Currently off: the view reports zero BLR internal data in INFOG(36) through INFOG(39). This is the most interesting untried MUMPS option, because it converts the preconditioner from exact to approximate and therefore moves work from the factorisation into the linear iteration. Pair it with mat_mumps_cntl_7 and expect the Krylov settings to start mattering."
+
+[knobs."petsc:mat_mumps_cntl_7"]
+type = "continuous"
+range = [1e-10, 1e-2]
+scale = "log"
+default = 0.0
+current = "unset"
+applies = "pc"
+depends = { "petsc:mat_mumps_icntl_35" = "1, 2 or 3" }
+cost = "The dropping tolerance for block low-rank compression. Larger means a cruder and faster factorisation."
+status = "untested"
+
+
+# ---------------------------------------------------------------------------
+# 6. Timestep control
+# ---------------------------------------------------------------------------
+
+[knobs."solver:timestep"]
+type = "continuous"
+range = [0.001, 10.0]
+scale = "log"
+default = 1.0
+current = 0.1
+applies = "snes"
+cost = "The initial timestep, in normalised units. The controller adapts away from it, so its influence is confined to the start of a run. For a window, which is short and starts cold, that start is a larger fraction of the total than it is for a full run."
+status = "candidate"
+note = "Read window results here carefully. A window pays the restart transient by design and this knob acts directly on it, so a value that looks good on a 0.2 ms window may be worth nothing over 100 ms."
+
+[knobs."solver:timestep_control"]
+type = "choice"
+values = ["pid_nonlinear_its", "threshold_nonlinear_its", "residual_ratio", "fixed"]
+default = "pid_nonlinear_its"
+current = "pid_nonlinear_its"
+applies = "snes"
+cost = "How the timestep adapts. The PID controller steers nonlinear iteration count towards a target. The threshold controller multiplies the step up or down when iterations fall outside a band, which is cruder and has no integral wind-up. residual_ratio drives the step from the residual rather than from iteration count. fixed does not adapt."
+status = "candidate"
+note = "Selects which of the knobs below are live, so a sampler must respect it. residual_ratio is untried on this project and is the natural partner for a residual-target objective. fixed is useful as a diagnostic control, to separate the controller's contribution from the solver's."
+
+[knobs."solver:target_its"]
+type = "integer"
+range = [3, 15]
+default = 7
+current = 7
+applies = "snes"
+depends = { "solver:timestep_control" = "pid_nonlinear_its" }
+cost = "The nonlinear iteration count the controller aims at. Low means small confident steps; high means large steps that are nearer to failing."
+status = "candidate"
+note = "Must stay below max_nonlinear_iterations or the timestep can only grow, because the controller never sees an overshoot. That failure was diagnosed on this project when the target was set at 100 against a cap of 10; the fix, target_its = 7 against a cap of 10, is the current baseline. A proposal must preserve that inequality."
+
+[knobs."solver:kP"]
+type = "continuous"
+range = [0.0, 1.5]
+default = 0.7
+current = 0.233
+applies = "snes"
+depends = { "solver:timestep_control" = "pid_nonlinear_its" }
+cost = "Proportional gain. High gain reacts fast and oscillates; low gain is smooth and slow to exploit an easy stretch."
+status = "candidate"
+note = "The three gains are one knob in three parts and should be proposed together. The current values are roughly a third of the defaults, which is a deliberately damped controller."
+
+[knobs."solver:kI"]
+type = "continuous"
+range = [0.0, 1.0]
+default = 0.3
+current = 0.133
+applies = "snes"
+depends = { "solver:timestep_control" = "pid_nonlinear_its" }
+cost = "Integral gain. Removes steady offset from the target, and winds up if the solver is persistently harder than the target assumes."
+status = "candidate"
+
+[knobs."solver:kD"]
+type = "continuous"
+range = [0.0, 0.5]
+default = 0.2
+current = 0.0
+applies = "snes"
+depends = { "solver:timestep_control" = "pid_nonlinear_its" }
+cost = "Derivative gain. Damps the response, and amplifies noise in the iteration count, which is an integer and therefore a noisy signal."
+status = "candidate"
+note = "Currently zero, i.e. a PI controller. Given that the measured signal is a small integer, zero may well be right."
+
+[knobs."solver:pid_consider_failures"]
+type = "switch"
+default = false
+current = "unset, so false"
+applies = "snes"
+depends = { "solver:timestep_control" = "pid_nonlinear_its" }
+cost = "Makes the controller hold back on growth after recent failures, instead of treating each step independently. Costs throughput in exchange for not repeatedly walking into the same wall."
+status = "candidate"
+note = "Named as an untried experiment in the tracker's controller issue. Appears in no run in the record."
+
+[knobs."solver:last_failure_weight"]
+type = "continuous"
+range = [0.01, 0.5]
+default = 0.1
+current = "unset, so 0.1"
+applies = "snes"
+depends = { "solver:pid_consider_failures" = true }
+cost = "How heavily the most recent step weighs in the running failure rate. Higher means a shorter memory."
+status = "untested"
+
+[knobs."solver:lower_its"]
+type = "integer"
+range = [1, 30]
+default = "half of max_nonlinear_iterations"
+current = "unset, so 5"
+applies = "snes"
+depends = { "solver:timestep_control" = "threshold_nonlinear_its" }
+cost = "Below this iteration count the step is increased."
+status = "untested"
+
+[knobs."solver:upper_its"]
+type = "integer"
+range = [2, 45]
+default = "0.8 of max_nonlinear_iterations"
+current = "unset, so 8"
+applies = "snes"
+depends = { "solver:timestep_control" = "threshold_nonlinear_its" }
+cost = "Above this iteration count the step is reduced. Must exceed lower_its."
+status = "untested"
+
+[knobs."solver:timestep_factor_on_failure"]
+type = "continuous"
+range = [0.1, 0.9]
+default = 0.5
+current = "unset, so 0.5"
+applies = "snes"
+cost = "How hard the step is cut when a solve fails. Cutting hard recovers reliably and gives up throughput; cutting gently risks failing again and paying twice."
+status = "candidate"
+note = "Live under every timestep controller, not only the threshold one, because failure handling is separate from the growth policy."
+
+[knobs."solver:timestep_factor_on_upper_its"]
+type = "continuous"
+range = [0.5, 0.99]
+default = 0.9
+current = "unset, so 0.9"
+applies = "snes"
+depends = { "solver:timestep_control" = "threshold_nonlinear_its" }
+cost = "Multiplier when iterations exceed upper_its."
+status = "untested"
+
+[knobs."solver:timestep_factor_on_lower_its"]
+type = "continuous"
+range = [1.01, 3.0]
+default = 1.4
+current = "unset, so 1.4"
+applies = "snes"
+depends = { "solver:timestep_control" = "threshold_nonlinear_its" }
+cost = "Multiplier when iterations fall below lower_its. The single most important number for throughput under this controller: it sets how fast an easy stretch is exploited."
+status = "untested"
+
+[knobs."solver:max_timestep"]
+type = "continuous"
+range = [1.0, 1e37]
+scale = "log"
+default = 1e37
+current = "unset, so 1e37"
+applies = "snes"
+cost = "A ceiling on the step. Effectively unbounded by default. A finite ceiling stops the controller walking into steps so large they fail and waste the work, at the price of capping throughput on the easy final approach to steady state."
+status = "candidate"
+note = "Named as an untried experiment in the tracker's controller issue, and appears in no run in the record. Plausibly interacts with the MUMPS null-pivot setting, which was added precisely because very large timesteps were producing zero pivots: a finite ceiling may make that workaround unnecessary."
+
+[knobs."solver:dt_min_reset"]
+type = "continuous"
+range = [1e-10, 1e-3]
+scale = "log"
+default = 1e-6
+current = "unset, so 1e-6"
+applies = "snes"
+cost = "If the step falls below this the solver resets to the initial step rather than continuing to shrink. An escape from a death spiral, and a way to throw away a legitimately small step."
+status = "untested"
+
+# Pseudo-transient continuation. Live only under equation_form =
+# pseudo_transient, which is a different method with a different objective.
+# See the note on equation_form before proposing any of these.
+
+[knobs."solver:pseudo_strategy"]
+type = "choice"
+values = ["inverse_residual", "history_based", "hybrid"]
+default = "inverse_residual"
+current = "unset"
+applies = "snes"
+depends = { "solver:equation_form" = "pseudo_transient" }
+cost = "How the pseudo-timestep is chosen: from the residual directly, from the history of residual decrease, or both."
+status = "untested"
+
+[knobs."solver:pseudo_alpha"]
+type = "continuous"
+range = [1e-6, 1e2]
+scale = "log"
+default = "100 * atol * timestep"
+current = "unset"
+applies = "snes"
+depends = { "solver:equation_form" = "pseudo_transient" }
+cost = "Sets the step as alpha divided by the residual, so it is the constant of proportionality for the whole continuation."
+status = "untested"
+note = "Its default is derived from atol and timestep, so changing either moves this silently. State it explicitly whenever it is being studied."
+
+[knobs."solver:pseudo_alpha_minimum"]
+type = "continuous"
+range = [1e-8, 1e1]
+scale = "log"
+default = "0.1 * pseudo_alpha"
+current = "unset"
+applies = "snes"
+depends = { "solver:equation_form" = "pseudo_transient" }
+cost = "Floor on alpha, preventing the continuation from stalling at a tiny step."
+status = "untested"
+
+[knobs."solver:pseudo_growth_factor"]
+type = "continuous"
+range = [1.01, 3.0]
+default = 1.1
+current = "unset"
+applies = "snes"
+depends = { "solver:pseudo_strategy" = "history_based or hybrid" }
+cost = "Growth on a successful step."
+status = "untested"
+
+[knobs."solver:pseudo_reduction_factor"]
+type = "continuous"
+range = [0.1, 0.9]
+default = 0.5
+current = "unset"
+applies = "snes"
+depends = { "solver:pseudo_strategy" = "history_based or hybrid" }
+cost = "Reduction on a failed step."
+status = "untested"
+
+[knobs."solver:pseudo_max_ratio"]
+type = "continuous"
+range = [1.1, 10.0]
+default = 2.0
+current = "unset"
+applies = "snes"
+depends = { "solver:equation_form" = "pseudo_transient" }
+cost = "Caps the ratio between neighbouring pseudo-timesteps, keeping the continuation smooth."
+status = "untested"
+
+
+# ---------------------------------------------------------------------------
+# Not knobs
+# ---------------------------------------------------------------------------
+#
+# These appear in the recipes and must never be proposed, varied or read as
+# results. They are listed so a proposer does not mistake them for free
+# parameters.
+#
+#   solver:type              Selects the solver family. A campaign-level
+#                            choice, fixed for the duration of a campaign.
+#   solver:diagnose          Prints per-step diagnostics. The extraction layer
+#                            depends on this output, so turning it off destroys
+#                            the record.
+#   solver:diagnose_failures Same, for failures.
+#   solver:save_jacobian     Writes Jacobian diagnostics to disk. A debugging
+#   solver:jacobian_export_kind  tool that costs time and space.
+#   solver:output_trigger    Controls when outputs are written, which fixes the
+#   solver:output_residual_ratio  cost per run. Changing it breaks comparability
+#                            between runs and with the 50-output rule.
+#   petsc:log_view           Prints the PETSc profile. The time-share columns in
+#                            the index come from it.
+#   petsc:snes_view          Diagnostic, added per case by hand. PETSc prints
+#   petsc:ksp_view           one view per solve, so a long run writes gigabytes.
+#
+#
+# WHAT IS MISSING
+#
+#   - The CVODE and TS solver paths. Both have recipes in hermes-perftest and
+#     neither is described here.
+#   - Parallel decomposition and core count. These change the answer as much as
+#     any knob here, but they are properties of the run rather than of the
+#     solver, and the record already carries them as columns.
+#   - Any statement of which combinations are known to be bad. That knowledge
+#     exists in people's heads and is not yet written down anywhere.
+#   - Measured interactions. Every "interacts with" note here is reasoning from
+#     mechanism, not from a measurement on this project's record.
