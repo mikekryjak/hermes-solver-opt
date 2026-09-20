@@ -36,9 +36,14 @@ findings exist; the cap is on how many are loaded at once.
   ahead of the environment's own bin, so `python` is not the Spack one.
 - rule: a runplan line that runs python must put
   `/home/mike/spack/var/spack/environments/hermes3/.spack-env/view/bin` first
-  on PATH, so the runner and every tool it starts use the same interpreter.
-  A crash on a signal writes nothing through a pipe, so an empty log is a
-  symptom of this, not of a tool that did nothing.
+  on PATH, so the runner starts under an interpreter that works. A crash on a
+  signal writes nothing through a pipe, so an empty log is a symptom of this,
+  not of a tool that did nothing.
+- partly graduated 2026-09-20: the runner no longer passes the problem on. It
+  starts make_window.py, extract_test.py and can_delete.py under its own
+  interpreter rather than through their `#!/usr/bin/env python3` line, and a
+  test holds that. The rule above still stands for the runner itself and for
+  anything else a runplan line runs by hand.
 
 ### A stub that writes nothing hides an integration bug
 - date: 2026-09-20
