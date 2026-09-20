@@ -335,7 +335,7 @@ def print_tsv(rows, columns, stream=sys.stdout):
         writer.writerow([(row.get(c) or "").strip() for c in columns])
 
 
-def main():
+def run():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--store", help="results store (holds index.tsv)")
     parser.add_argument("--columns", help="comma separated columns to show")
@@ -414,9 +414,15 @@ def main():
     return 0
 
 
-if __name__ == "__main__":
+def main():
+    # The handler lives here rather than under the __main__ guard because a
+    # console entry point calls main() directly, and a guard never runs for it.
     try:
-        raise SystemExit(main())
+        return run()
     except QueryProblem as problem:
         print(f"query.py: {problem}", file=sys.stderr)
-        raise SystemExit(2)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

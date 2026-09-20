@@ -281,7 +281,7 @@ def report(lines):
         print(line)
 
 
-def main():
+def run():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("case", help="the case directory to ask about")
     parser.add_argument("--store", help="results store (holds index.tsv)")
@@ -336,12 +336,19 @@ def main():
     return 0
 
 
-if __name__ == "__main__":
+def main():
+    # The handler lives here rather than under the __main__ guard because a
+    # console entry point calls main() directly, and a guard never runs for it.
+    # This tool's whole job is to refuse clearly, so a traceback is a failure.
     try:
-        raise SystemExit(main())
+        return run()
     except Refused as refusal:
         # The findings are printed as they are gathered, and a refusal must read
         # underneath them rather than above, so stdout goes out first.
         sys.stdout.flush()
         print(f"can_delete.py: REFUSED: {refusal}", file=sys.stderr)
-        raise SystemExit(refusal.status)
+        return refusal.status
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
