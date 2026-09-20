@@ -2,7 +2,3 @@
 	path = hermes-perftest
 	url = https://github.com/mikekryjak/hermes-perftest
 	branch = window-scheme
-[submodule "sdtools"]
-	path = sdtools
-	url = https://github.com/mikekryjak/sdtools
-	branch = main

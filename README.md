@@ -10,9 +10,13 @@ a performance test.
 
 ```
 git clone --recursive https://github.com/mikekryjak/hermes-solver-opt
+pip install -e .
 ```
 
-## The three repositories
+The install puts `extract_test.py` and `verify_store.py` on the path and makes
+`import perftest` work from anywhere.
+
+## Where everything lives
 
 The project is split by lifetime, so that the parts which change fastest never
 force a change in the parts which do not.
@@ -22,24 +26,20 @@ force a change in the parts which do not.
 - `hermes-perftest` (public, pinned here as a submodule) — the test templates,
   the grid files, the solver recipes and the window generator. Other people use
   these tests, so this project never modifies them.
-- `sdtools` (public, pinned here as a submodule) — general Hermes-3 tooling
-  shared with other work: log parsing, the launcher, the report machinery.
-  Nothing in it knows about this project.
 
-The record of what was run lives outside all three, in a private store: one
+The record of what was run lives outside both, in a private store: one
 `index.tsv` with a row per run, a bundle of extracted evidence per run, and the
 analysis that reads them.
 
 ## Layout
 
 ```
-perftest/          the extraction layer: extract, index, store, recipe, verify
-cli/               command-line entry points
+perftest/          the extraction layer: extract, index, store, recipe, verify,
+                   log parsing, and cli/ holding the command-line tools
 design.md          how the system is built and why
 requirements.md    R1-R25, the rules
 findings.md        learned conclusions, agent-facing
 capture-set.md     what each run records
 .beads/            the issue tracker
 hermes-perftest/   submodule
-sdtools/           submodule
 ```
