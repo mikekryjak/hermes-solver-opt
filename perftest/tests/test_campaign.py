@@ -590,3 +590,67 @@ def test_keeping_no_recent_runs_keeps_none(runner, monkeypatch):
     monkeypatch.setattr(rn.Runner, "run_tool",
                         lambda self, command, cwd=None, check=True: None)
     assert runner.prune() == 1
+
+
+def test_the_tools_that_ship_here_do_not_need_PATH():
+    """A screen created before cli/ was added to PATH carries a PATH without
+    it, and then every extraction in a campaign fails while the runs go on
+    costing machine time. The tools that ship in this repository are therefore
+    resolved against it, and this test fails if one is renamed or moved."""
+
+    for tool in (rn.EXTRACT, rn.CAN_DELETE, rn.MAKE_WINDOW):
+        assert os.path.isabs(tool)
+        assert os.path.isfile(tool), tool
+    # apply_recipe.py belongs to sdtools, not here, so it stays a PATH lookup.
+    assert rn.APPLY_RECIPE == "apply_recipe.py"
+
+
+def test_a_tool_that_cannot_start_stops_the_loop(runner, monkeypatch):
+    """A tool that cannot be started at all is a fault in the setup, not in
+    this trial, so it will fail the same way for every trial that follows."""
+
+    def not_there(command, cwd=None):
+        raise FileNotFoundError(2, "No such file or directory", command[0])
+
+    monkeypatch.setattr(rn.subprocess, "run", not_there)
+    with pytest.raises(rn.Stop):
+        runner.run_tool([rn.EXTRACT, "a-case"], check=False)
+
+
+def test_a_stop_leaves_the_rest_of_the_budget_unspent(runner, monkeypatch):
+    """The alternative, once seen for real, is a campaign that spends every
+    trial's machine time and records none of it."""
+
+    attempted = []
+
+    def stop_on_the_first(self, trial):
+        attempted.append(trial.window)
+        raise rn.Stop("cannot run extract_test.py")
+
+    monkeypatch.setattr(rn.Runner, "do_trial", stop_on_the_first)
+    runner.run([a_trial("test2_5.0-5.5ms"), a_trial("test2_30.0-30.5ms")])
+    assert attempted == ["test2_5.0-5.5ms"]
+
+
+def test_the_summary_counts_every_trial(runner, monkeypatch):
+    """"0 trial(s) run" was once printed after four Hermes runs whose
+    extraction had failed, and a reader of that log would conclude the slot
+    time was still free."""
+
+    said = []
+    runner._log = said.append
+    outcomes = {"test2_5.0-5.5ms": "case-a", "test2_30.0-30.5ms": None}
+
+    def one_of_each(self, trial):
+        if trial.window == "test2_1.0-1.5ms":
+            raise RuntimeError("extraction fell over")
+        return outcomes[trial.window]
+
+    monkeypatch.setattr(rn.Runner, "do_trial", one_of_each)
+    runner.run([a_trial(w) for w in
+                ("test2_5.0-5.5ms", "test2_30.0-30.5ms", "test2_1.0-1.5ms")])
+    summary = [line for line in said if "trial(s)" in line][-1]
+    assert "3 trial(s)" in summary
+    assert "1 recorded" in summary
+    assert "1 already settled" in summary
+    assert "1 errored" in summary

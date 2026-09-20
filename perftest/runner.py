@@ -10,7 +10,8 @@ Two properties matter more than the steps.
 It orchestrates and never reimplements. Every step is an existing tool run as
 a subprocess -- make_window.py, apply_recipe.py, the launcher, extract_test.py,
 can_delete.py -- so each stays runnable by hand with the same command, and the
-runner cannot drift away from what a person would do.
+runner cannot drift away from what a person would do. The tools that ship here
+are found relative to this file; only sdtools' apply_recipe.py comes from PATH.
 
 The index is the only state. What is left to do is decided by reading it, so
 the loop is idempotent: interrupt it, run it again, and it picks up the trials
@@ -62,21 +63,22 @@ SCORING_OUTCOME = "completed"
 
 DUMP_GLOB = "BOUT.dmp.*.nc"
 
-# Tools invoked by name, found on PATH, so no path to this machine is stored.
-APPLY_RECIPE = "apply_recipe.py"
-EXTRACT = "extract_test.py"
-CAN_DELETE = "can_delete.py"
-
 # Disk sizes are what `df -h` shows, so a gigabyte is 1024^3 bytes.
 GB = 1024 ** 3
 
 TOOL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_RECIPES = os.path.join(TOOL_ROOT, "hermes-perftest", "recipes")
 
-# The window generator ships in the submodule beside the recipes and is not on
-# PATH, so it is resolved here rather than invoked by bare name. This is still
-# no path to any one machine: it is relative to this file.
+# A tool that ships in this repository is resolved against TOOL_ROOT, not left
+# to PATH. A screen created before the .bashrc line that adds cli/ has a PATH
+# without it, and then every extraction in a campaign fails. This stores no
+# path to any one machine: it is relative to this file.
 MAKE_WINDOW = os.path.join(TOOL_ROOT, "hermes-perftest", "make_window.py")
+EXTRACT = os.path.join(TOOL_ROOT, "cli", "extract_test.py")
+CAN_DELETE = os.path.join(TOOL_ROOT, "cli", "can_delete.py")
+
+# apply_recipe.py belongs to sdtools, not here, so it stays a PATH lookup.
+APPLY_RECIPE = "apply_recipe.py"
 
 # `<window>-<YYYY-MM-DD>-<tag>`. The date is when the case was made, so a trial
 # resumed the next day must be found by its window and tag alone.
@@ -336,7 +338,14 @@ class Runner:
         self.say("$ " + " ".join(shlex.quote(word) for word in command))
         if self.dry_run:
             return None
-        result = subprocess.run(command, cwd=cwd)
+        try:
+            result = subprocess.run(command, cwd=cwd)
+        except OSError as problem:
+            # The tool could not be started at all, which is a fault in the
+            # setup and not in this trial: it will fail the same way for every
+            # trial that follows. Stop, rather than spend the whole budget on
+            # runs that can never be extracted.
+            raise Stop(f"cannot run {command[0]}: {problem}") from None
         if check and result.returncode != 0:
             raise RunnerProblem(
                 f"{command[0]} failed ({result.returncode}): "
@@ -808,12 +817,16 @@ class Runner:
             f" {self.slot}, {self.slot_hours_spent():.1f} of"
             f" {self.campaign.slot_hours:.1f} slot-hours spent"
         )
-        done = 0
+        done = skipped = errored = 0
+        stopped = None
         for trial in trials:
             try:
-                if self.do_trial(trial) is not None:
+                if self.do_trial(trial) is None:
+                    skipped += 1
+                else:
                     done += 1
             except Stop as stop:
+                stopped = str(stop)
                 self.say(f"stopping: {stop}")
                 break
             except ApprovalMissing:
@@ -822,8 +835,18 @@ class Runner:
                 # editing the file.
                 raise
             except Exception as problem:  # one bad trial must not end the campaign
+                errored += 1
                 self.say(f"{trial.window}: ERROR {problem}")
-        self.say(f"campaign {self.campaign.name}: {done} trial(s) run")
+        # Every trial is accounted for, because "0 trial(s) run" had once been
+        # printed after four Hermes runs whose extraction failed, and a reader
+        # of that log would conclude the slot time was still free.
+        summary = (
+            f"campaign {self.campaign.name}: {len(trials)} trial(s),"
+            f" {done} recorded, {skipped} already settled, {errored} errored"
+        )
+        if stopped is not None:
+            summary += f", stopped early ({stopped})"
+        self.say(summary)
         return done
 
     def status(self):
