@@ -100,7 +100,7 @@ current = 1e-5
 applies = "snes"
 cost = "Relative convergence tolerance on the nonlinear residual. Same trade as atol."
 status = "candidate"
-note = "rtol is also the floor used by scale_vars when it rescales variables, so changing it changes variable scaling as well as convergence. See the scale_vars entry: that coupling is currently a defect, not a feature."
+note = "rtol does two jobs. Besides setting convergence, it is the floor scale_vars applies when it rescales variables, so changing rtol also changes how the smallest elements of the state are scaled. A proposal that moves rtol is therefore moving two things at once, and any residual-based number measured across such a change is not comparing like with like. See the scale_vars entry for what the floor does and how often it is reached."
 
 [knobs."solver:stol"]
 type = "continuous"
@@ -264,8 +264,8 @@ default = false
 current = true
 applies = "snes"
 cost = "Rescales state variables to order unity before the solve. The plasma variables span many orders of magnitude, so without it the residual norm is dominated by whichever variable happens to be largest, and convergence tests become meaningless."
-status = "avoid"
-note = "DEFECT, open in the tracker. A variable of exactly zero is floored at rtol divided by its scaling factor, which amplifies that variable's contribution to the residual norm by roughly one over rtol. With rtol at 1e-5 that is five orders of magnitude from a single zero-valued element. The initial conditions were changed to start neutrals non-zero as a mitigation, but momenta still start at zero and the code is unfixed. Consequence for a search: any run where a variable passes through zero has a residual norm that is partly an artefact. Do not tune against residual-based quantities while this holds, and treat scale_vars as fixed at its current value until it is fixed."
+status = "fixed"
+note = "Stays on. It is not a tuning knob and turning it off is not a configuration worth proposing. The captured run's scaling factors span 5.25e-5 to 11311, so the state covers more than eight orders of magnitude and an unscaled residual norm would measure only whichever variable is largest. ONE CAVEAT, and it bears on residual-based metrics alone. The rescaling floors each element's norm at rtol divided by its current scaling factor, so an element whose normalised magnitude falls below rtol gets a scaling factor of exactly rtol instead of its true size, and its residual is then divided by that floor rather than by its own magnitude. The floor is reached in nearly every run: the solver prints its smallest scaling factor when diagnose is on, and fourteen of the sixteen runs carrying that diagnostic report exactly 1e-5, which is rtol. One run with rtol at 1e-6 reports exactly 1e-6, which is the same fingerprint. Densities and temperatures stay clear of the floor because they are floored positive in the physics; momenta are the exposure, since they are signed, pass through zero at every stagnation point, and nothing floors them. What is NOT yet known is how much of the residual norm those floored elements actually carry - the diagnostic says the floor activates, not that it dominates. Measure that from the stored residual data before tuning against any residual-based objective. The code defect is open in the tracker."
 
 [knobs."solver:scale_rhs"]
 type = "switch"
