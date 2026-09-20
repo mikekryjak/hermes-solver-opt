@@ -422,11 +422,55 @@ def test_a_kill_is_recorded_as_a_timeout(runner, monkeypatch):
     monkeypatch.setattr(rn.Runner, "prepare", lambda self, t: name)
     monkeypatch.setattr(rn.Runner, "launch",
                         lambda self, case, cutoff: ("cutoff", 99.0))
-    monkeypatch.setattr(rn.Runner, "extract", lambda self, case: True)
+    # The real extractor reads a killed run's log, finds no finish stamp and
+    # no error, and writes crashed. Stubbing that out hid the bug this test
+    # exists for: the runner's correction was silently dropped.
+    def extract_as_crashed(self, case):
+        self.update_row(case, outcome="crashed", overwrite=("outcome",))
+        return True
+
+    monkeypatch.setattr(rn.Runner, "extract", extract_as_crashed)
     monkeypatch.setattr(rn.Runner, "prune", lambda self: 0)
 
     runner.do_trial(trial)
     assert runner.rows_for_case(name)[-1]["outcome"] == "timeout"
+
+
+def test_a_run_that_died_on_its_own_keeps_the_extractor_reading(runner,
+                                                                monkeypatch):
+    """The runner corrects only what it caused. A launcher that exited by
+    itself says nothing the log has not already said better, so a divergence
+    the extractor read stands."""
+
+    trial = a_trial()
+    name = make_case(runner, trial, finished=False)
+    add_row(runner, case_dir=name, state=idx.STATE_PLANNED, test=trial.window)
+    monkeypatch.setattr(rn.Runner, "free_gb", lambda self: 500.0)
+    monkeypatch.setattr(rn.Runner, "prepare", lambda self, t: name)
+    monkeypatch.setattr(rn.Runner, "launch",
+                        lambda self, case, cutoff: ("failed", 99.0))
+
+    def extract_as_diverged(self, case):
+        self.update_row(case, outcome="diverged", overwrite=("outcome",))
+        return True
+
+    monkeypatch.setattr(rn.Runner, "extract", extract_as_diverged)
+    monkeypatch.setattr(rn.Runner, "prune", lambda self: 0)
+
+    runner.do_trial(trial)
+    assert runner.rows_for_case(name)[-1]["outcome"] == "diverged"
+
+
+def test_overwrite_names_only_the_columns_it_lists(runner):
+    """The blank-cells-only rule still holds for every column not named."""
+
+    add_row(runner, case_dir="a", state=idx.STATE_RECORDED,
+            outcome="completed", wall_s="123")
+    runner.update_row("a", outcome="timeout", wall_s="999",
+                      overwrite=("outcome",))
+    row = runner.rows_for_case("a")[-1]
+    assert row["outcome"] == "timeout"
+    assert row["wall_s"] == "123"
 
 
 def test_update_row_keeps_what_is_already_there(runner):

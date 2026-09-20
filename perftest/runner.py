@@ -551,7 +551,7 @@ class Runner:
             text += f", repeat {trial.repeat}"
         return text + f". Set up and run by the campaign runner. {trial.note}".rstrip()
 
-    def update_row(self, case_name, **changes):
+    def update_row(self, case_name, overwrite=(), **changes):
         """Write into the most recent row for this case, blank cells only.
 
         Blank cells only, for the same reason the extractor works that way: a
@@ -559,6 +559,12 @@ class Runner:
         from the run, and the runner is not better informed than either.
         `state` is the exception, because moving a row through its lifecycle is
         the runner's job.
+
+        `overwrite` names the columns this one call may replace anyway. It
+        exists for the single fact the runner holds and the record cannot: a
+        run it stopped itself leaves a log identical to a run that died, so
+        the extractor reads a deliberate stop as a crash. Name a column here
+        only where the runner is the authority on it.
         """
 
         rows, columns = idx.read_index(self.index_path)
@@ -573,7 +579,8 @@ class Runner:
         for name, value in changes.items():
             if value in (None, ""):
                 continue
-            if name == "state" or not (row.get(name) or "").strip():
+            if (name == "state" or name in overwrite
+                    or not (row.get(name) or "").strip()):
                 row[name] = str(value).replace("\t", " ")
         if not self.dry_run:
             idx.write_index(self.index_path, rows, columns)
@@ -764,7 +771,16 @@ class Runner:
             return case_name
 
         if kill_reason in KILL_OUTCOME:
-            self.update_row(case_name, outcome=KILL_OUTCOME[kill_reason])
+            # The extractor has already written an outcome, and for a run the
+            # runner killed that outcome is crashed: the log stops mid-step
+            # and cannot say who stopped it. Correct it, because only the
+            # runner knows the stop was deliberate. A run that died on its
+            # own is left alone below, where the extractor's reading stands.
+            self.update_row(
+                case_name,
+                outcome=KILL_OUTCOME[kill_reason],
+                overwrite=("outcome",),
+            )
         elif kill_reason == "failed":
             # The launcher exited non-zero and the log did not say why, so this
             # is a death outside the solver. It is a row with no usable timing,
