@@ -284,7 +284,7 @@ def report(lines):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("case", help="the case directory to ask about")
-    parser.add_argument("--store", help="results store (holds index.tsv and runs/)")
+    parser.add_argument("--store", help="results store (holds index.tsv)")
     parser.add_argument("--seeds", help="seed library directory")
     parser.add_argument("--seed-times", help="the seed times this parent owes,"
                         " comma separated, e.g. 0.0,20.0")

@@ -4,8 +4,10 @@ Written by Claude on 2026-09-19 from capture-set.md, diagnostics-inventory.md, t
 
 ## Where it lives
 
-Each run gets one row in `/home/mike/work/perftest-results/index.tsv` and one
-bundle folder, `runs/<test_id>/`, beside it. The row holds scalars: one number
+Each run gets one row in `/home/mike/work/solver-opt-store/index.tsv` and one
+bundle folder, `/home/mike/work/solver-opt-data/bundles/<test_id>/`. The row is
+in git and the bundle is not, because per-case files would grow the store
+repository without limit. The row holds scalars: one number
 per quantity for the whole run. The bundle holds tables over time, plus the raw
 logs as evidence. Both are written by `extract_test.py` from three sources: the
 console log (`BOUT.log.console`), BOUT++'s own log (`BOUT.log.0`) and the dump

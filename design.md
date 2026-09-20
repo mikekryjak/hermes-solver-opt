@@ -44,7 +44,7 @@ question.
 - Promotion: moving a configuration from one rung to the next.
 - Index: one TSV per campaign, one row per run.
 - Bundle: the extracted evidence for one run.
-- Store: the git repository holding campaigns, indexes and bundles.
+- Store: the git repository holding campaigns and indexes. Not the bundles.
 
 ## 3. Where everything lives
 
@@ -58,9 +58,17 @@ Two repositories and one data directory, split on 2026-09-20.
   the window generator, pinned here as a submodule. Other people use these
   tests, so this project never modifies them.
 - The store (private, one per user), at `/home/mike/work/solver-opt-store`:
-  indexes, bundles, and the analysis that reads them.
-- The data directory, at `/home/mike/work/solver-opt-data`: dumps, seeds and
-  case directories. Never in git.
+  indexes, the schema, and the analysis that reads them. It holds the
+  whole-project record only. Nothing per-case is committed, so the repository
+  stays small.
+- The data directory, at `/home/mike/work/solver-opt-data`: dumps, seeds, case
+  directories and the bundles. Never in git.
+
+The bundles moved out of the store on 2026-09-20. They are per-case evidence,
+525 files and 155 MB of it, and committing that would have grown the repository
+without limit. They now live beside the cases and seeds they came from. A
+gitignored folder inside the store was rejected: `git clean -xdf` deletes one,
+and this project had already lost a 16.6 hour run to an automated deletion.
 
 `sdtools` (public) holds general Hermes-3 tooling — the launcher, the report
 machinery — and is shared with the user's other campaigns. Nothing in it knows
@@ -73,7 +81,6 @@ Layout of the store:
   campaigns/<campaign>/
     campaign.toml          goal, build, baseline, space, ladder, budget, approval
     index.tsv              one row per run, append-only
-    runs/<run_id>/         bundle per run
     studies/<study>.toml   one record per question asked
 ```
 
@@ -81,6 +88,7 @@ Layout of the data directory:
 
 ```
 <data>/
+  bundles/<test_id>/                     extracted evidence, one folder per run
   seeds/<hermes_sha>/<test>/<time>ms/    restart files cut from a parent run
   dumps/<run_id>/                        kept while the retention rule allows
   cases/                                 run area, emptied after extraction
@@ -422,7 +430,7 @@ file.
 | Tier | Holds | Where | Written by |
 | --- | --- | --- | --- |
 | 1 | One row per run | `index.tsv` | machine |
-| 2 | Evidence per run | `runs/<id>/` | machine |
+| 2 | Evidence per run | `<data>/bundles/<test_id>/` | machine |
 | 3 | One record per question | `studies/<name>.toml` | agent, user reviews |
 | 4 | The campaign's answer | generated from the index | machine |
 | 5 | Rules that outlive the campaign | tool repository | mixed |

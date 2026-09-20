@@ -26,6 +26,7 @@ import socket
 
 from . import index as idx
 from . import recipe
+from . import store as st
 
 # Full round-trip precision. A metric re-derived from a truncated table would
 # silently disagree with the same metric read from the dump, and after the dumps
@@ -828,13 +829,19 @@ def extract_case(
     conduction_method=None,
     epoch=None,
     dry_run=False,
+    bundles_dir=None,
 ):
     """
     Extract one finished case into `store_dir`, and say whether it worked.
 
-    Writes `store_dir/runs/<test_id>/` and fills the open index row for this
-    case directory. A finished run with no open row is recorded as `unplanned`
-    rather than refused: losing a result to enforce process is a bad trade.
+    Writes `<data>/bundles/<test_id>/` and fills the open index row for this
+    case directory in `store_dir`. The row is in git and the bundle is not, so
+    the store repository holds the whole-project record only. `bundles_dir`
+    overrides where the bundle goes, which is how a check extracts into scratch
+    without touching the real one.
+
+    A finished run with no open row is recorded as `unplanned` rather than
+    refused: losing a result to enforce process is a bad trade.
 
     Returns a Report. `report.ok` is the answer to "may I delete the dumps".
     """
@@ -1011,7 +1018,9 @@ def extract_case(
 
     # --- write -----------------------------------------------------------
     if report.test_id:
-        report.bundle = os.path.join(store_dir, "runs", report.test_id)
+        report.bundle = os.path.join(
+            bundles_dir or st.bundle_root(), report.test_id
+        )
         _write_bundle(
             case_dir,
             report.bundle,
@@ -1111,7 +1120,8 @@ def _seed_input(seed, rows, store_dir):
         return None
     for row in rows:
         if row.get("run_id", "") == seed and row.get("test_id"):
-            path = os.path.join(store_dir, "runs", row["test_id"], "BOUT.inp")
+            bundle = st.bundle_path(row["test_id"], store_dir=store_dir)
+            path = os.path.join(bundle, "BOUT.inp")
             return path if os.path.exists(path) else None
     return None
 

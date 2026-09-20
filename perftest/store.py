@@ -6,10 +6,26 @@ Keeping them apart means analysis never touches a case directory, and so keeps
 working on runs whose dumps are long gone.
 
 Everything here reads the index and the bundles. Nothing reads a dump.
+
+The index is in git and the bundles are not. A bundle is per-case evidence and
+there are hundreds of megabytes of it, so it lives in the data directory beside
+the cases and seeds it came from, and the store repository stays small.
 """
 
 import csv
 import os
+
+# Bundles under the data directory, one directory per run.
+BUNDLE_DIR = "bundles"
+
+# Where bundles were written until 2026-09-20, relative to the store.
+OLD_BUNDLE_DIR = "runs"
+
+# Used when nothing else names the data directory. query.py refuses to guess a
+# store, because the wrong store answers every question with somebody else's
+# runs. A bundle path is read against the index, which names the run, so the
+# wrong directory shows up at once as a bundle that is not there.
+DEFAULT_DATA = "/home/mike/work/solver-opt-data"
 
 # Tables an extraction writes into each bundle, and what each one is a history
 # of. Three different clocks, and mixing them silently is the easy mistake:
@@ -25,12 +41,50 @@ TABLES = ("series", "steps", "snes_steps", "events", "resid_regions", "ddt",
           "physics")
 
 
-class Store:
-    """A results store: one index, many bundles."""
+def find_data(argument=None):
+    """The data directory, from the argument or the environment.
 
-    def __init__(self, root, index_name="index.tsv"):
+    Same order as query.py resolves the store, because the user already exports
+    `data` and a path typed by hand is how the wrong one gets used.
+    """
+
+    return (
+        argument
+        or os.environ.get("data")
+        or os.environ.get("SOLVER_OPT_DATA")
+        or DEFAULT_DATA
+    )
+
+
+def bundle_root(data_dir=None):
+    """Where bundles are written: `<data>/bundles`."""
+
+    return os.path.join(find_data(data_dir), BUNDLE_DIR)
+
+
+def bundle_path(test_id, data_dir=None, store_dir=None):
+    """Where this run's bundle is, for reading.
+
+    The new location wins, and a bundle still sitting in the store is found
+    anyway. The fallback exists for the move of 2026-09-20 and can go once no
+    bundle remains under `<store>/runs`.
+    """
+
+    new = os.path.join(bundle_root(data_dir), test_id)
+    if store_dir and not os.path.isdir(new):
+        old = os.path.join(store_dir, OLD_BUNDLE_DIR, test_id)
+        if os.path.isdir(old):
+            return old
+    return new
+
+
+class Store:
+    """A results store: one index in git, many bundles outside it."""
+
+    def __init__(self, root, index_name="index.tsv", data_dir=None):
         self.root = root
         self.index_path = os.path.join(root, index_name)
+        self.data_dir = data_dir
 
     def rows(self, **filters):
         """
@@ -62,7 +116,7 @@ class Store:
         return matches[-1] if matches else None
 
     def bundle(self, test_id):
-        return os.path.join(self.root, "runs", test_id)
+        return bundle_path(test_id, self.data_dir, self.root)
 
     def table(self, test_id, name):
         """

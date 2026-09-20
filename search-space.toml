@@ -16,7 +16,8 @@
 #     manual alone.
 #   - PETSc defaults: the SNES and KSP objects PETSc actually built for this
 #     project's current configuration, captured with -snes_view and stored at
-#     runs/test2_20.0-21.0ms-20260920-160050/petsc_views.txt in the store.
+#     bundles/test2_20.0-21.0ms-20260920-160050/petsc_views.txt in the data
+#     directory.
 #     That capture describes THIS build and THIS PETSc version, which the
 #     documentation does not.
 #   - MUMPS option names: verified against the PETSc source that parses them,
@@ -48,7 +49,7 @@ build = "hermes-3 neutlim-lagging at ef2ef9dd"
 petsc = "3.23.3"
 baseline_recipe = "SNES-MUMPS-3"
 solver_option_source = "external/BOUT-dev/src/solver/impls/snes/snes.cxx"
-petsc_view = "runs/test2_20.0-21.0ms-20260920-160050/petsc_views.txt"
+petsc_view = "bundles/test2_20.0-21.0ms-20260920-160050/petsc_views.txt"
 
 # A knob written as "solver:x" goes in the [solver] section of BOUT.inp and is
 # read by BOUT++. A knob written as "petsc:x" goes in the [petsc] section and

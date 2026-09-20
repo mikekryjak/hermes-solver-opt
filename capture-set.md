@@ -227,10 +227,9 @@ along the way. Numbers live in the sections above; this is the decision list.
   recorded. Revisitable for runs whose dumps still exist, not for ones already
   cleared.
 - Table format inside the bundle: TSV, matching the index (`schema.md`). Read by
-  eye and by every tool, and it diffs and compresses in git, which a binary
-  table does not — the bundles live in a git repo and the point of storing them
-  is that a later reader can see what changed. The per-step and per-event tables
-  are a few kilobytes, so nothing faster is warranted. Revisit only if the
+  eye and by every tool, and a later reader can diff two of them to see what
+  changed, which a binary table does not allow. The per-step and per-event
+  tables are a few kilobytes, so nothing faster is warranted. Revisit only if the
   per-iteration monitors are ever stored, which the extended set forbids for
   timed runs anyway.
 - Float precision in those tables: write full round-trip precision (17

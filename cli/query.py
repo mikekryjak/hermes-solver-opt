@@ -337,7 +337,7 @@ def print_tsv(rows, columns, stream=sys.stdout):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--store", help="results store (holds index.tsv and runs/)")
+    parser.add_argument("--store", help="results store (holds index.tsv)")
     parser.add_argument("--columns", help="comma separated columns to show")
     parser.add_argument("--where", action="append", default=[], metavar="COL=VALUE",
                         help="filter, repeatable; also != > < >= <=")

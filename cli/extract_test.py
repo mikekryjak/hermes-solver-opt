@@ -7,6 +7,10 @@ dumps. Nothing is transcribed by hand.
 
     extract_test.py <case-dir> [<case-dir> ...] --store /path/to/results-repo
 
+The index row goes into the store, which is in git. The bundle goes into
+`<data>/bundles/<test_id>/`, which is not, so the store stays small and the
+evidence sits beside the case it came from.
+
 Exits non-zero if any case failed to extract, so a queue of them can be trusted.
 """
 
@@ -25,7 +29,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("cases", nargs="+", help="case directories to extract")
     parser.add_argument(
-        "--store", required=True, help="results store (holds index.tsv and runs/)"
+        "--store", required=True, help="results store (holds index.tsv)"
+    )
+    parser.add_argument(
+        "--bundles",
+        help="where to write the bundle. Defaults to `<data>/bundles`, from the"
+        " `data` environment variable the user's shell sets",
     )
     parser.add_argument(
         "--grid",
@@ -59,6 +68,7 @@ def main():
             conduction_method=args.conduction,
             epoch=args.epoch,
             dry_run=args.dry_run,
+            bundles_dir=args.bundles,
         )
         print(report)
         if args.dry_run:

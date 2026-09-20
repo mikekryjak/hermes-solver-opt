@@ -31,8 +31,13 @@ force a change in the parts which do not.
   these tests, so this project never modifies them.
 
 The record of what was run lives outside both, in a private store: one
-`index.tsv` with a row per run, a bundle of extracted evidence per run, and the
-analysis that reads them.
+`index.tsv` with a row per run, the schema that explains its columns, and the
+analysis that reads them. Nothing per-case is committed there, so the store
+stays small.
+
+The evidence bundle for each run sits in the data directory instead, at
+`<data>/bundles/<test_id>/`, beside the cases and seeds it came from. That
+directory has never been in git.
 
 ## Layout
 

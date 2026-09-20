@@ -101,10 +101,15 @@ def rederive(case_dir, store_dir, row, rtol=1e-9, keep=False):
     """
 
     from .extract import extract_case
+    from .store import bundle_path
 
     scratch = tempfile.mkdtemp(prefix="perftest-verify-")
     try:
-        report = extract_case(case_dir, scratch)
+        # The fresh bundle goes into scratch, or this check would overwrite the
+        # stored bundle with its own output and then agree with it.
+        report = extract_case(
+            case_dir, scratch, bundles_dir=os.path.join(scratch, "bundles")
+        )
         diffs = []
 
         for key, value in report.record.items():
@@ -121,7 +126,7 @@ def rederive(case_dir, store_dir, row, rtol=1e-9, keep=False):
         # different kind -- the migrated rows that used to make this ambiguous
         # were removed from the index on 2026-07-31.
         test_id = row.get("test_id") or report.test_id
-        stored_bundle = os.path.join(store_dir, "runs", test_id or "")
+        stored_bundle = bundle_path(test_id, store_dir=store_dir) if test_id else ""
         if report.bundle and os.path.isdir(stored_bundle):
             diffs += _compare_tables(stored_bundle, report.bundle, rtol)
         elif test_id:
