@@ -48,17 +48,23 @@ question.
 
 ## 3. Where everything lives
 
-Three repositories and one data directory.
+Two repositories and one data directory, split on 2026-09-20.
 
-- The tool: a `solver-opt/` directory on a branch of `hermes-perftest`
-  (public). It holds this design, the requirements, the runner, the window
-  generator, the search space file and the agent instructions. Collaborators
-  need only this repository.
-- `sdtools` (public): every per-case tool — apply a recipe, reset, launch,
-  extract, verify. Pinned as a submodule of the tool repository. Nothing here
-  knows about campaigns.
-- The store (private, one per user): campaigns, indexes, bundles.
-- The data directory: dumps, seeds and case directories. Never in git.
+- The tool: `hermes-solver-opt` (public), at `/home/mike/work/hermes-solver-opt`.
+  It holds this design, the requirements, the extraction layer, the runner, the
+  search space file, the tracker and the agent instructions. Collaborators need
+  only this repository, cloned with `--recursive`.
+- `hermes-perftest` (public): the test templates, grid files, solver recipes and
+  the window generator, pinned here as a submodule. Other people use these
+  tests, so this project never modifies them.
+- The store (private, one per user), at `/home/mike/work/solver-opt-store`:
+  indexes, bundles, and the analysis that reads them.
+- The data directory, at `/home/mike/work/solver-opt-data`: dumps, seeds and
+  case directories. Never in git.
+
+`sdtools` (public) holds general Hermes-3 tooling — the launcher, the report
+machinery — and is shared with the user's other campaigns. Nothing in it knows
+about this project, and no tool written for this project goes there.
 
 Layout of the store:
 
@@ -84,9 +90,8 @@ Nothing in the tool or the store contains an absolute path. One environment
 variable names the store, one names the data directory, and a config file holds
 the rest.
 
-Today the seed library sits in the run area, `<run area>/seeds/`. Open issue:
-its path does not identify the parent run, so two parents on one build would
-share seed folders.
+The seed library is keyed by parent case, `seeds/<hermes_sha>/<parent case>/<time>ms/`,
+so two parents built from one commit do not share seed folders.
 
 ## 4. Tests: parents, windows and rungs
 

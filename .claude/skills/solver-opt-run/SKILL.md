@@ -26,25 +26,45 @@ is a different test, not a continuation.
 
 Never vary this order. Each step is what licenses the next.
 
-1. Open the row in `perftest-results/index.tsv` BEFORE launching: `case_dir`,
+1. Open the row in `solver-opt-store/index.tsv` BEFORE launching: `case_dir`,
    `test`, `recipe`, `varied`, `epoch`, `note` by hand, the rest by extraction.
    At most one `planned` row per case directory.
-2. Prepare: `reset_test.py -y`, then `apply_recipe.py`.
+2. Prepare: copy the template from `$solveropt/hermes-perftest/<testname>`, then
+   `reset_test.py -y` and `apply_recipe.py`. A fresh test seeds from `base/`.
 3. Launch per `run-case`, teeing to `BOUT.log.console` — PETSc's `log_view` report
    exists nowhere else.
-4. Extract: `extract_test.py <case> --store /home/mike/work/perftest-results
-   --recipes $cases/perftests/hermes-perftest/recipes`.
+4. Extract with the hermes3 Spack environment active: `extract_test.py <case>
+   --store $store --recipes $solveropt/hermes-perftest/recipes`.
 5. Delete the dumps only once that extraction reports validated.
 
 Dumps are deleted only after their diagnostics are extracted AND the extraction
 validated. Never before, and never for a run whose record failed validation —
 deletion is irreversible and rerunning a scratch test costs a day.
 
+## Naming a run directory
+
+Name it `<window>-<YYYY-MM-DD>[-<desc>]`, e.g.
+`test2_0.0-100.0ms-2026-09-19-neutlag-va`, with the window on a 0.1 ms grid.
+
+- Date the run directory by the day it was set up, and leave the build commit
+  out of the name: the index, not the name, is the authoritative record.
+- Keep the sha in BUILD directory names, e.g. `build-va-master-a1c3ba38`, so
+  rebuilds at different commits stay distinct.
+- Add `<desc>` whenever the build is not plain master, naming the branch and
+  every compile-time option that differs (limiter, conduction method).
+- Suffix a rerun of an identical configuration `-repeat`, never `-r2` or any
+  other abbreviation, and keep the rest of the name byte-identical.
+- Name one run of a walk between recipes `step<N>-<what changed>`, spelled out,
+  because a bare `s2` reads as slot 2.
+- Name a run for its window, date and build only: slot and core range are
+  measured into the index, never declared in the name.
+
 ## Rules
 
-- Runs live in `/home/mike/work/cases/perftests/solver-opt/` and nowhere else.
-  Never launch into, extract from or compare against `test2dev`, `test4dev` or
-  `test5dev`.
+- Launch every run in `$data/cases/` and nowhere else; runs made before
+  2026-09-20 are still in `$cases/perftests/solver-opt/`.
+- Never launch into, extract from or compare against `test2dev`, `test4dev` or
+  `test5dev`: they are another project's.
 - The index defines what exists. A directory without a row is not a backlog
   item; never enumerate directories to find runs.
 - Tag every run with its epoch (R18). Results compare directly only within an

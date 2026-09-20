@@ -53,9 +53,8 @@ bd close <id>         # Complete work
 
 ## Committing
 
-Commit without asking after each change or beads export; stop before `git push`,
-which the user runs. At the push step of the generated "Session Completion"
-block above, skip the push and finish the rest of that checklist.
+Commit and push without asking after each change or beads export, including at
+the push step of the generated "Session Completion" block above.
 
 ## What this project is
 
@@ -65,20 +64,24 @@ and R11 (keep the user's mental load low) outranks the rest.
 
 ## What counts as this project's data
 
-This project's runs live in `/home/mike/work/cases/perftests/solver-opt/` and
-nowhere else. Launch there, extract from there, count from there. Anything
-outside it is other work: the user has ~580 runs across 20 campaigns, and the
-older `test2dev` / `test4dev` / `test5dev` areas are to be redone and deleted by
-their owner. Never launch into them, extract from them or compare against them.
+This project's runs live in `$data/cases/` and nowhere else. Launch there,
+extract from there, count from there. Anything outside it is other work: the
+user has ~580 runs across 20 campaigns, and the older `test2dev` / `test4dev` /
+`test5dev` areas are to be redone and deleted by their owner. Never launch into
+them, extract from them or compare against them. Runs made before 2026-09-20 are
+still in `$cases/perftests/solver-opt/`.
 
 The index defines what exists. A run belongs to this project if and only if it
-has a row in `perftest-results/index.tsv`. NEVER enumerate case directories to
+has a row in `solver-opt-store/index.tsv`. NEVER enumerate case directories to
 find runs, and never treat a directory without a row as a backlog.
 
 A directory with no `BOUT.log.console` predates the launch convention, which is
 the check that survives a run being moved.
 
 ## Where things go
+
+The shell variables used below are set in `~/.bashrc`: `$solveropt` is this
+repository, `$store` the results store, `$data` the case and seed directory.
 
 - Rules and constraints: `requirements.md`. IDs R1.. are stable and never
   reused, so numbering is not reading order. New proposals go in the candidates
@@ -87,18 +90,16 @@ the check that survives a run being moved.
   Graduate a finding into requirements / the run skill / a test / a ledger
   column, then delete it from the log.
 - Tasks: beads. Never TodoWrite or markdown lists.
-- Run results, and anything specific to the results store — the index, its
-  schema and conventions, the per-test bundles: the `perftest-results` repo at
-  `/home/mike/work/perftest-results` (private, github.com/mikekryjak). Its
-  index holds this project's runs only — every row has a case directory and a
-  bundle. `run_records.csv` here is the frozen record of the 18 pre-project
-  runs, removed from the index on 2026-07-31; it takes no new rows and is not
-  compared against.
-- Tools that capture or extract results: `sdtools`, so they stay usable by any
-  Hermes-3 performance work rather than only this store. Never put them in the
-  results repo, and never edit the read-only `hermes-perftest` template.
+- Run results — the index, its schema, the per-run bundles — and the analysis
+  that reads them: the private `solver-opt-store` repo at `$store`.
+- Add no rows to `$store/run_records-preproject.csv` and compare nothing against
+  it: it is the frozen record of 18 runs dropped from the index on 2026-07-31.
+- Tools that capture or extract results: here, in `perftest/` and `cli/`. Put
+  one in `sdtools` only when another campaign uses it too.
 - Design and rationale for this project — requirements, capture set,
-  diagnostics inventory: here in `solver-opt`.
+  diagnostics inventory: here.
+- Case directories, seeds and dumps: `$data`, outside git because one run is
+  about a gigabyte.
 
 ## Tracker conventions
 
