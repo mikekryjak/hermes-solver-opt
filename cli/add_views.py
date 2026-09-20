@@ -9,9 +9,11 @@ used.
 
     add_views.py <case-dir> [<case-dir> ...] [--remove]
 
-The flags are diagnostic and change no numerics, but they are added per case
-rather than to the shared recipes in hermes-perftest, whose other users do not
-want the extra console output.
+Run by hand when you want to look, never by the run procedure. PETSc prints a
+view once per SOLVE, not once per run -- 91 blocks in a 9 s window -- so a long
+run would write gigabytes of identical text. A view is the same for every run
+of one recipe, so one short window is enough to capture it, and `options_left`
+is what checks every other run.
 """
 
 import argparse
