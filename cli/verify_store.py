@@ -24,10 +24,16 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from perftest.verify import rederive  # noqa: E402
 
-# One area, holding this project's runs and nothing else. The older test2dev /
+# The areas holding this project's runs and nothing else. The older test2dev /
 # test4dev / test5dev directories are deliberately NOT listed: they hold other
 # work, which this project does not extract, compare against or count.
-DEFAULT_ROOTS = ["/home/mike/work/cases/perftests/solver-opt"]
+#
+# Two entries while the run area moves: runs launched before 2026-09-20 are
+# still in the old place, and the second entry goes once they are moved.
+DEFAULT_ROOTS = [
+    "/home/mike/work/solver-opt-data/cases",
+    "/home/mike/work/cases/perftests/solver-opt",
+]
 
 
 def find_case(case_dir, roots):
