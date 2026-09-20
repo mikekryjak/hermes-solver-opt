@@ -35,7 +35,8 @@ Never vary this order. Each step is what licenses the next.
    exists nowhere else.
 4. Extract with the hermes3 Spack environment active: `extract_test.py <case>
    --store $store --recipes $solveropt/hermes-perftest/recipes`.
-5. Delete the dumps only once that extraction reports validated.
+5. Delete the dumps only once `can_delete.py <case>` exits 0, because deleting
+   a parent's dumps destroys every seed not yet cut from them.
 
 Dumps are deleted only after their diagnostics are extracted AND the extraction
 validated. Never before, and never for a run whose record failed validation —
