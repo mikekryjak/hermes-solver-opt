@@ -43,6 +43,39 @@ TIME_SHARES = {
     "t_func_frac": "SNESFunctionEval",
 }
 
+# What a run's ending is called. Six states, and every one of them is decided
+# from the log and the dump alone -- no human call, and nothing the program
+# that launched the run has to remember and pass on.
+OUTCOMES = ("completed", "invalid", "diverged", "timeout", "crashed", "cancelled")
+
+# A run is stopped somewhere between two and three times the best time for its
+# window. Two is the bottom of that band, so a run stopped anywhere inside it
+# is recorded as a timeout rather than as an unexplained death.
+TIMEOUT_FACTOR = 2.0
+
+# Text BOUT++ leaves behind on its way out. Each string is printed from exactly
+# one place in the source, so matching it is as exact as reading a return code.
+ERROR_MARKER = "Error encountered:"  # BOUTMAIN caught an exception and aborted
+SNES_ABORT_MARKER = "Too many SNES failures"  # the consecutive-failure cap
+WALL_LIMIT_MARKER = "left. Quitting"  # BOUT++'s own wall-clock limit fired
+STOP_FILE_MARKER = "exists -- triggering exit"  # somebody made the stop file
+QUIT_MARKER = "User signalled to quit"  # a clean early exit, by any route
+
+# Messages that say the SOLVER ended the run, not the machine. A floating point
+# exception belongs here: it is raised by arithmetic on the solution, so it is
+# the solution blowing up rather than a fault outside it.
+DIVERGENCE_MESSAGES = (
+    "non-finite",
+    "Solver failed after many attempts",
+    "SUNDIALS CVODE timestep failed",
+    "Floating Point Exception",
+)
+
+# Messages a deliberate stop leaves. SIGKILL cannot be caught, so a run killed
+# with -9 leaves no message at all and is recorded as crashed: the log cannot
+# tell that death apart from the machine's.
+INTERRUPT_MESSAGES = ("SigInt caught", "SigKill caught")
+
 
 class Report:
     """What the extraction found, and whether the case is safe to delete."""
@@ -128,33 +161,209 @@ def _fail_reasons(snes):
     return " ".join(f"{reason}:{count}" for reason, count in counts.items())
 
 
-def classify_outcome(finished, snes_failed, n_steps, expected):
+def _error_message(text):
+    """
+    The message BOUT++ printed as it died, or None.
+
+    Ten lines rather than one: a message raised by the signal handler begins on
+    the line AFTER the marker, so a one-line read would see nothing and call a
+    segmentation fault a silent kill.
+    """
+
+    at = text.find(ERROR_MARKER)
+    if at == -1:
+        return None
+    lines = text[at + len(ERROR_MARKER):].splitlines()[:10]
+    return "\n".join(lines).strip() or None
+
+
+def log_markers(case_dir):
+    """
+    How the run ended, as the flags `classify_outcome` takes.
+
+    Read from `BOUT.log.0`, which every run has. The captured console adds
+    nothing here and is missing on older runs.
+    """
+
+    path = os.path.join(case_dir, "BOUT.log.0")
+    if not os.path.exists(path):
+        return {}
+    with open(path, errors="ignore") as f:
+        text = f.read()
+
+    return {
+        "error": _error_message(text),
+        "solver_aborted": SNES_ABORT_MARKER in text,
+        "wall_limit": WALL_LIMIT_MARKER in text,
+        "stop_file": STOP_FILE_MARKER in text,
+        "quit_requested": QUIT_MARKER in text,
+    }
+
+
+def classify_outcome(
+    finished,
+    n_steps,
+    expected,
+    *,
+    error=None,
+    solver_aborted=False,
+    wall_limit=False,
+    stop_file=False,
+    quit_requested=False,
+    elapsed_s=None,
+    cutoff_s=None,
+    correctness_ok=None,
+):
     """
     What happened to a run: (outcome, warning). Either may be None.
 
-    Reaching BoutFinalise with every expected output step written is a
-    completed run, however many SNES failures the log holds. BOUT++ prints the
-    failed-SNES marker on EVERY failure it recovers from by cutting the
-    timestep, which is ordinary behaviour -- the test5 runs of 2026-08-01
-    finished normally with 731 of them. Only a run that never reached its own
-    exit can be classified as a failure from that marker.
+    The single place an outcome is decided, so the runner and the extractor can
+    never disagree about what a run did. Every argument is measured from the
+    log or the dump; pass the marker flags as `**log_markers(case_dir)`.
 
-    Anything else is left empty for a human call rather than guessed at.
+    The six states and the rule for each:
+
+    completed -- BoutFinalise ran, every expected output step was written, and
+    no correctness check failed. However many SNES failures the log holds:
+    BOUT++ prints the failed-SNES marker on EVERY failure it recovers from by
+    cutting the timestep, which is ordinary behaviour -- the test5 runs of
+    2026-08-01 finished normally with 731 of them.
+
+    diverged -- the solver gave up by itself: it hit the consecutive-failure
+    cap, or it died on non-finite values. Decided first, because it is the one
+    ending that is a property of the recipe and it can reach BoutFinalise (the
+    failure cap returns cleanly) or abort (an exception does not).
+
+    crashed -- the run died with a message that is not the solver's and not an
+    interrupt: a segmentation fault, MPI, memory, the machine. Also a run that
+    vanished with no message at all, which is what an out-of-memory kill and a
+    `kill -9` both look like. A crash says nothing about the recipe, so it
+    must never be read as a slow or a failed result.
+
+    timeout -- stopped short of the window's end, still making progress, past
+    the cutoff: either BOUT++'s own wall-clock limit fired, or the measured
+    elapsed time passed `cutoff_s`. "At least this slow" is usable evidence,
+    which is why it is a state of its own and not a crash.
+
+    cancelled -- stopped short deliberately and under the cutoff: the stop
+    file, an interrupt, or the clean-exit signal. A deliberate stop past the
+    cutoff is a timeout, since that is what the cutoff exists to do.
+
+    invalid -- ran to its own exit but produced output that cannot be compared:
+    it wrote fewer output steps than `nout + 1`, so it never reached the end of
+    its window, or a correctness check was made and failed.
+
+    The one case that stays empty is a run whose `nout` could not be read.
+    Whether it reached its window is then unknown, and an unknown is left
+    unknown rather than guessed at.
     """
 
-    if finished and expected and n_steps == expected:
-        return "completed", None
-    if not finished and snes_failed:
-        return "snes_failure", None
-    if not finished:
-        return None, (
-            "BOUT.settings is the startup stub: the run was killed or is still"
-            " going. outcome left for a human call"
-        )
-    return None, (
-        f"finished but wrote {n_steps} of {expected} output steps;"
-        " outcome left for a human call"
+    text = error or ""
+    interrupted = any(m in text for m in INTERRUPT_MESSAGES)
+    reached = expected is not None and n_steps >= expected
+    over_cutoff = (
+        cutoff_s is not None and elapsed_s is not None and elapsed_s >= cutoff_s
     )
+
+    if solver_aborted or any(m in text for m in DIVERGENCE_MESSAGES):
+        return "diverged", None
+
+    if text and not interrupted:
+        return "crashed", None
+
+    if finished and reached:
+        if correctness_ok is False:
+            return "invalid", None
+        return "completed", None
+
+    # Past here the run stopped short of its window's end.
+    if wall_limit or over_cutoff:
+        return "timeout", None
+    if stop_file or quit_requested or interrupted:
+        return "cancelled", None
+    if not finished:
+        return "crashed", (
+            "no finish stamp and no message in the log: the run was killed"
+            " outright, so nothing records why"
+        )
+    if expected is None:
+        return None, (
+            f"wrote {n_steps} output steps and nout could not be read, so"
+            " whether the window was reached is unknown"
+        )
+    return "invalid", None
+
+
+def _declared_project(rows, case_dir):
+    """Which study this case belongs to, from whichever row named it."""
+
+    key = idx.case_key(case_dir)
+    for row in rows:
+        if idx.case_key(row.get("case_dir", "")) == key:
+            return row.get("project") or idx.PROJECT_DEFAULT
+    return idx.PROJECT_DEFAULT
+
+
+def _correctness_ok(rows, case_dir):
+    """
+    Whether this run passed the correctness check: True, False, or None.
+
+    From the row's `verdict`. None means no reference run was chosen, which is
+    every row today -- the rule for choosing one is not settled -- so nothing
+    is called invalid on correctness grounds until it is.
+    """
+
+    key = idx.case_key(case_dir)
+    for row in rows:
+        if idx.case_key(row.get("case_dir", "")) != key:
+            continue
+        verdict = (row.get("verdict") or "").strip()
+        if verdict in ("pass", "fail"):
+            return verdict == "pass"
+    return None
+
+
+def _cutoff_seconds(rows, test, project):
+    """
+    The wall clock past which a run of this window counts as a timeout, or None.
+
+    Read from the index, because the index is the only record of what a window
+    costs: the fastest completed run of the same test in the same project,
+    times TIMEOUT_FACTOR. With no completed run to compare against there is no
+    cutoff, and then nothing is called a timeout.
+    """
+
+    best = None
+    for row in rows:
+        if (row.get("project") or idx.PROJECT_DEFAULT) != project:
+            continue
+        if row.get("test") != test or row.get("outcome") != "completed":
+            continue
+        try:
+            wall = float(row.get("wall_s") or "")
+        except ValueError:
+            continue
+        if wall > 0 and (best is None or wall < best):
+            best = wall
+    return None if best is None else best * TIMEOUT_FACTOR
+
+
+def _elapsed_seconds(wall_s, series):
+    """
+    How long the run ran for, in seconds, or None.
+
+    `wall_s` needs both time stamps in the log, so a run that was killed has
+    none. The dump's `wall_time` is elapsed seconds at each output step, so its
+    last value measures a killed run as far as the last step it wrote -- an
+    undercount of at most one step, and the only clock a killed run leaves.
+    """
+
+    if wall_s:
+        return float(wall_s)
+    if series is None or "wall_time" not in getattr(series, "columns", []):
+        return None
+    values = series["wall_time"].dropna()
+    return float(values.iloc[-1]) if len(values) else None
 
 
 def _inp_value(case_dir, section, key):
@@ -286,6 +495,8 @@ def _read_dump(case_dir, grid_path, report):
         out["sim_time_ms"] = float(t[-1] - t[0]) * 1e3
         out["n_output_steps"] = int(t.size)
 
+    out["_cvode"] = _cvode_counters(ds)
+
     if _interior_mask(ds, report) is None:
         report.problems.append("field reductions skipped: no interior mask")
     out.update(_residual_metrics(ds, out.get("ncalls")))
@@ -296,6 +507,39 @@ def _read_dump(case_dir, grid_path, report):
     out["_physics"] = _physics_series(ds, report)
 
     ds.close()
+    return out
+
+
+# The dump counter behind each index column, for a CVODE run.
+CVODE_COUNTERS = {
+    "nl_its": "cvode_nniters",
+    "lin_its": "cvode_nliters",
+    "solver_fails": "cvode_nonlin_fails",
+}
+
+
+def _cvode_counters(ds):
+    """
+    Iteration and failure totals for a CVODE run, from the dump.
+
+    CVODE writes no per-step solver lines, so the log gives none of these and
+    the columns stayed empty on every CVODE run -- which left no way to compare
+    the cost of a CVODE run against a SNES one at all.
+
+    The LAST value, not the sum. These counters are cumulative over the run,
+    unlike the SNES per-step numbers the log carries, so summing them would
+    count every step again at every later step.
+    """
+
+    import numpy as np
+
+    out = {}
+    for column, name in CVODE_COUNTERS.items():
+        if name not in ds:
+            continue
+        values = np.atleast_1d(ds[name].values)
+        if values.size:
+            out[column] = int(values[-1])
     return out
 
 
@@ -897,17 +1141,12 @@ def extract_case(
         )
 
     # --- what happened ---------------------------------------------------
+    # The evidence is gathered here; the outcome itself is decided after the
+    # dumps are read, since the clock a killed run leaves is in the dump.
     finished = _settings_finished(case_dir)
+    markers = log_markers(case_dir)
     nout = _inp_value(case_dir, "", "nout") or _inp_value(case_dir, "run", "nout")
     expected = int(nout) + 1 if nout and nout.isdigit() else None
-
-    outcome, warning = classify_outcome(
-        finished, header["snes_failed"], len(steps), expected
-    )
-    if outcome:
-        measured["outcome"] = outcome
-    if warning:
-        report.warnings.append(warning)
 
     measured["wall_s"] = header["wall_s"]
     measured["run_started"] = header["run_started"]
@@ -954,17 +1193,16 @@ def extract_case(
             shape = from_dump.pop("grid_shape", None)
             if shape:
                 measured["grid"] = f"{os.path.basename(grid)} ({shape})"
+            cvode = from_dump.pop("_cvode", {})
             from_dump.pop("n_output_steps", None)
             measured.update(from_dump)
+            if snes.empty:
+                # No SNES lines in the log means CVODE ran, and its counters
+                # live in the dump. Written here rather than in the SNES block
+                # above so the log always wins where both exist.
+                measured.update(cvode)
         except Exception as exc:  # noqa: BLE001
             report.problems.append(f"could not read the dumps: {exc}")
-
-    if measured.get("wall_s") and measured.get("sim_time_ms"):
-        # Simulated milliseconds per 24 hours of wall clock. Stated here because
-        # sdtools holds several implementations of "speed" that disagree.
-        measured["ms_per_24h"] = (
-            measured["sim_time_ms"] / measured["wall_s"] * 86400.0
-        )
 
     # --- identity --------------------------------------------------------
     test = _infer_test(case_dir)
@@ -972,6 +1210,35 @@ def extract_case(
         report.test_id = f"{test}-{header['started_at']:%Y%m%d-%H%M%S}"
     else:
         report.problems.append("no run start time in BOUT.log.0 - cannot form test_id")
+
+    index_path = os.path.join(store_dir, index_name)
+    rows, columns = idx.read_index(index_path)
+
+    # --- what it is called ------------------------------------------------
+    outcome, warning = classify_outcome(
+        finished,
+        len(steps),
+        expected,
+        elapsed_s=_elapsed_seconds(measured.get("wall_s"), series),
+        cutoff_s=_cutoff_seconds(rows, test, _declared_project(rows, case_dir)),
+        correctness_ok=_correctness_ok(rows, case_dir),
+        **markers,
+    )
+    if outcome:
+        measured["outcome"] = outcome
+    if warning:
+        report.warnings.append(warning)
+
+    complete = outcome == "completed"
+    if complete and measured.get("wall_s") and measured.get("sim_time_ms"):
+        # Simulated milliseconds per 24 hours of wall clock. Stated here because
+        # sdtools holds several implementations of "speed" that disagree.
+        # Written for a completed run only: a speed measured over part of a
+        # window ranks a recipe on a stretch of the run the other recipes never
+        # did, so it would score a failure as if it were a result.
+        measured["ms_per_24h"] = (
+            measured["sim_time_ms"] / measured["wall_s"] * 86400.0
+        )
 
     measured.update(
         {
@@ -988,9 +1255,6 @@ def extract_case(
     )
     measured = {k: v for k, v in measured.items() if v is not None and v != ""}
     report.record = measured
-
-    index_path = os.path.join(store_dir, index_name)
-    rows, columns = idx.read_index(index_path)
 
     # test_id is <test>-<start time to the second>, which is NOT unique: runs
     # launched into different slots routinely start in the same second. Left

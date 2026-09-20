@@ -19,10 +19,15 @@ import xarray as xr
 import xhermes  # noqa: F401 -- registers the .hermes accessors
 
 from perftest.extract import (
+    OUTCOMES,
     Report,
+    _cutoff_seconds,
+    _cvode_counters,
+    _elapsed_seconds,
     _fail_reasons,
     _real_run_id,
     classify_outcome,
+    log_markers,
     _ddt_series,
     _infer_test,
     _interior,
@@ -237,6 +242,11 @@ def test_test_name_survives_hyphens_in_the_name(case_dir, expected):
 
 # =============================================================================
 # OUTCOME -- what the run's ending is called
+#
+# Six states, one test each. The rule that decides between them must run on the
+# log and the dump alone: a state that needed the program which launched the run
+# to remember something would be unavailable to anyone re-extracting the case
+# later, which is most of the time.
 # =============================================================================
 def test_recovered_snes_failures_do_not_make_a_run_a_failure():
     """BOUT++ prints the failed-SNES marker every time it recovers from a
@@ -244,35 +254,249 @@ def test_recovered_snes_failures_do_not_make_a_run_a_failure():
     snes_failure on that marker alone, including two parents that finished in
     54 s and 41 min with all 101 steps written."""
 
-    assert classify_outcome(True, True, 101, 101) == ("completed", None)
-
-
-def test_a_run_that_never_finished_and_hit_snes_failures_is_a_failure():
-    assert classify_outcome(False, True, 14, 101) == ("snes_failure", None)
+    assert classify_outcome(True, 101, 101) == ("completed", None)
 
 
 def test_a_clean_full_run_is_completed():
-    assert classify_outcome(True, False, 51, 51) == ("completed", None)
+    assert classify_outcome(True, 51, 51) == ("completed", None)
 
 
-def test_a_killed_run_without_the_marker_is_left_to_a_human():
-    outcome, warning = classify_outcome(False, False, 14, 101)
-    assert outcome is None
-    assert "killed or is still" in warning
+def test_a_run_that_finished_short_of_its_window_is_invalid():
+    """It exited on its own and nothing stopped it, so its cost is real -- but
+    it covers less plasma time than the runs it would be compared against."""
+
+    assert classify_outcome(True, 30, 101) == ("invalid", None)
 
 
-def test_a_finished_but_short_run_is_left_to_a_human():
-    outcome, warning = classify_outcome(True, True, 30, 101)
-    assert outcome is None
-    assert "30 of 101" in warning
+def test_a_run_that_failed_the_correctness_check_is_invalid():
+    """Fast and finished, and the answer is wrong. The most dangerous class,
+    because nothing about the run itself announces it."""
+
+    assert classify_outcome(True, 51, 51, correctness_ok=False) == ("invalid", None)
+
+
+def test_the_failure_cap_is_divergence_although_the_run_exits_cleanly():
+    """SNES returns rather than throwing when it hits max_snes_failures, so
+    BoutFinalise runs and BOUT.settings carries a finish stamp. Reading the
+    stamp alone calls the run an ordinary short one."""
+
+    assert classify_outcome(True, 30, 101, solver_aborted=True) == ("diverged", None)
+
+
+def test_non_finite_values_are_divergence():
+    assert classify_outcome(
+        False, 12, 101, error="Field3D: Operation on non-finite data at [4][5][6]"
+    ) == ("diverged", None)
+
+
+def test_divergence_wins_over_the_cutoff():
+    """A run that blew up after a long time died of its recipe, not of the
+    clock. Calling it a timeout would hide the one ending that says most."""
+
+    assert classify_outcome(
+        False, 12, 101, solver_aborted=True, elapsed_s=9000.0, cutoff_s=5000.0
+    ) == ("diverged", None)
+
+
+def test_a_segmentation_fault_is_a_crash_not_a_divergence():
+    """A crash says nothing about the recipe, so it must never be read as a
+    slow or a failed result."""
+
+    assert classify_outcome(
+        False, 12, 101, error="****** SEGMENTATION FAULT CAUGHT ******"
+    ) == ("crashed", None)
+
+
+def test_a_run_killed_with_no_message_at_all_is_a_crash():
+    """SIGKILL cannot be caught, so the log simply stops. That is what an
+    out-of-memory kill looks like too."""
+
+    outcome, warning = classify_outcome(False, 12, 101)
+    assert outcome == "crashed"
+    assert "killed outright" in warning
+
+
+def test_the_wall_clock_limit_is_a_timeout():
+    """BOUT++ quits cleanly when its own wall_limit is nearly spent, so the run
+    finishes and writes a stamp with only part of its window done."""
+
+    assert classify_outcome(
+        True, 30, 101, wall_limit=True, quit_requested=True
+    ) == ("timeout", None)
+
+
+def test_a_run_stopped_past_the_cutoff_is_a_timeout_not_a_crash():
+    """"At least this slow" is evidence. Recording it as a crash would throw
+    away the one thing the run measured."""
+
+    assert classify_outcome(
+        False, 30, 101, elapsed_s=5400.0, cutoff_s=5000.0
+    ) == ("timeout", None)
+
+
+def test_a_deliberate_stop_under_the_cutoff_is_cancelled():
+    assert classify_outcome(
+        True, 30, 101, stop_file=True, quit_requested=True,
+        elapsed_s=100.0, cutoff_s=5000.0,
+    ) == ("cancelled", None)
+
+
+def test_an_interrupt_is_cancelled_not_crashed():
+    """An interrupt arrives as an exception like any other, so the message has
+    to be read rather than just counted."""
+
+    assert classify_outcome(
+        False, 30, 101, error="****** SigInt caught ******"
+    ) == ("cancelled", None)
+
+
+def test_a_completed_run_is_never_relabelled_by_a_later_faster_one():
+    """The cutoff is computed from the index at extraction time, which can be
+    long after a run that was the best of its day. Reaching the end of the
+    window is what completed means; how long it took is a separate column."""
+
+    assert classify_outcome(True, 51, 51, elapsed_s=9e9, cutoff_s=1.0) == (
+        "completed",
+        None,
+    )
 
 
 def test_an_unknown_step_count_is_never_called_completed():
-    """nout unreadable: expected is None, so a full run cannot be confirmed."""
+    """nout unreadable: whether the window was reached cannot be known, and an
+    unknown is left unknown rather than guessed at."""
 
-    outcome, warning = classify_outcome(True, False, 51, None)
+    outcome, warning = classify_outcome(True, 51, None)
     assert outcome is None
-    assert "51 of None" in warning
+    assert "51 output steps" in warning
+
+
+@pytest.mark.parametrize("arguments", [
+    {},
+    {"solver_aborted": True},
+    {"error": "****** SEGMENTATION FAULT CAUGHT ******"},
+    {"wall_limit": True},
+    {"stop_file": True},
+    {"correctness_ok": False},
+])
+def test_the_classifier_only_ever_returns_a_named_state(arguments):
+    """A typo in one branch would put a state in the index that nothing
+    downstream filters on, and a row nobody counts is a row nobody reads."""
+
+    outcome, _ = classify_outcome(True, 51, 51, **arguments)
+    assert outcome is None or outcome in OUTCOMES
+
+
+# =============================================================================
+# The evidence the classifier runs on
+# =============================================================================
+def test_log_markers_read_the_endings_bout_prints(tmp_path):
+    (tmp_path / "BOUT.log.0").write_text(
+        "Sim Time  |  RHS evals  | Wall Time\n"
+        "Too many SNES failures (12). Aborting.\n"
+        "\nStop file BOUT.stop exists -- triggering exit\n"
+        "User signalled to quit. Returning\n"
+        "Error encountered: \n"
+        "****** SEGMENTATION FAULT CAUGHT ******\n"
+    )
+
+    markers = log_markers(str(tmp_path))
+    assert markers["solver_aborted"]
+    assert markers["stop_file"]
+    assert markers["quit_requested"]
+    assert not markers["wall_limit"]
+    # The signal handler's message starts on the line after the marker, so a
+    # one-line read would report an empty message and call this a silent kill.
+    assert "SEGMENTATION FAULT" in markers["error"]
+
+
+def test_a_log_with_nothing_wrong_reports_no_markers(tmp_path):
+    (tmp_path / "BOUT.log.0").write_text("Run finished at  : Thu Jul 31 2026\n")
+    markers = log_markers(str(tmp_path))
+    assert markers["error"] is None
+    assert not any(markers[k] for k in markers if k != "error")
+
+
+def _rows(*specs):
+    return [
+        {"project": project, "test": test, "outcome": outcome, "wall_s": wall,
+         "case_dir": "somewhere"}
+        for project, test, outcome, wall in specs
+    ]
+
+
+def test_the_cutoff_is_twice_the_best_completed_run_of_that_window():
+    rows = _rows(
+        ("solver-opt", "test4_3.0-4.0ms", "completed", "1300"),
+        ("solver-opt", "test4_3.0-4.0ms", "completed", "1000"),
+    )
+    assert _cutoff_seconds(rows, "test4_3.0-4.0ms", "solver-opt") == 2000.0
+
+
+def test_the_cutoff_ignores_other_windows_projects_and_failures():
+    """A window's cost is its own, and a row from another project is never
+    compared with one from this project."""
+
+    rows = _rows(
+        ("solver-opt", "test4_20.0-21.0ms", "completed", "20"),
+        ("perf-bisect", "test4_3.0-4.0ms", "completed", "30"),
+        ("solver-opt", "test4_3.0-4.0ms", "diverged", "40"),
+        ("solver-opt", "test4_3.0-4.0ms", "completed", "1000"),
+    )
+    assert _cutoff_seconds(rows, "test4_3.0-4.0ms", "solver-opt") == 2000.0
+
+
+def test_a_window_with_no_completed_run_has_no_cutoff():
+    """Nothing is called a timeout until something has shown what the window
+    costs."""
+
+    rows = _rows(("solver-opt", "test4_3.0-4.0ms", "diverged", "40"))
+    assert _cutoff_seconds(rows, "test4_3.0-4.0ms", "solver-opt") is None
+
+
+def test_a_killed_run_is_timed_by_the_dump(tmp_path):
+    """wall_s needs both time stamps in the log and a killed run wrote only
+    one, so the clock has to come from the dump's elapsed-seconds series."""
+
+    import pandas as pd
+
+    series = pd.DataFrame({"wall_time": [10.0, 400.0, 900.0]})
+    assert _elapsed_seconds(None, series) == 900.0
+    assert _elapsed_seconds(1234.0, series) == 1234.0
+    assert _elapsed_seconds(None, None) is None
+
+
+# =============================================================================
+# CVODE counters -- the cost columns for a solver that writes no log lines
+# =============================================================================
+def _counter_dataset(**columns):
+    return xr.Dataset(
+        {name: (("t",), np.asarray(values)) for name, values in columns.items()},
+        coords={"t": np.arange(3, dtype=float)},
+    )
+
+
+def test_cvode_counters_are_the_last_value_not_the_sum():
+    """These counters are cumulative over the run, unlike the SNES per-step
+    numbers the log carries. Summing them counts every step again at every
+    later step -- here it would report 41 nonlinear iterations instead of 25."""
+
+    ds = _counter_dataset(
+        cvode_nniters=[6, 10, 25],
+        cvode_nliters=[8, 20, 60],
+        cvode_nonlin_fails=[0, 1, 4],
+    )
+    assert _cvode_counters(ds) == {
+        "nl_its": 25,
+        "lin_its": 60,
+        "solver_fails": 4,
+    }
+
+
+def test_a_dump_without_cvode_counters_yields_nothing():
+    """A SNES run has none of these fields, and an absent counter must stay
+    absent rather than being recorded as zero work."""
+
+    assert _cvode_counters(_counter_dataset(cvode_nsteps=[1, 2, 3])) == {}
 
 
 # =============================================================================
