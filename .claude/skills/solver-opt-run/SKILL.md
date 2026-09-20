@@ -61,8 +61,8 @@ Name it `<window>-<YYYY-MM-DD>[-<desc>]`, e.g.
 
 ## Rules
 
-- Launch every run in `$data/cases/` and nowhere else; runs made before
-  2026-09-20 are still in `$cases/perftests/solver-opt/`.
+- Launch every run in `$data/cases/` and nowhere else, which is also where the
+  grid files sit, because Hermes resolves them from the launch directory.
 - Never launch into, extract from or compare against `test2dev`, `test4dev` or
   `test5dev`: they are another project's.
 - The index defines what exists. A directory without a row is not a backlog

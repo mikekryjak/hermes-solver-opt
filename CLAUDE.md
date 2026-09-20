@@ -68,8 +68,7 @@ This project's runs live in `$data/cases/` and nowhere else. Launch there,
 extract from there, count from there. Anything outside it is other work: the
 user has ~580 runs across 20 campaigns, and the older `test2dev` / `test4dev` /
 `test5dev` areas are to be redone and deleted by their owner. Never launch into
-them, extract from them or compare against them. Runs made before 2026-09-20 are
-still in `$cases/perftests/solver-opt/`.
+them, extract from them or compare against them.
 
 The index defines what exists. A run belongs to this project if and only if it
 has a row in `solver-opt-store/index.tsv`. NEVER enumerate case directories to
