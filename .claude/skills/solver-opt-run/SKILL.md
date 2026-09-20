@@ -29,8 +29,8 @@ Never vary this order. Each step is what licenses the next.
 1. Open the row in `solver-opt-store/index.tsv` BEFORE launching: `case_dir`,
    `test`, `recipe`, `varied`, `epoch`, `note` by hand, the rest by extraction.
    At most one `planned` row per case directory.
-2. Prepare: copy the template from `$solveropt/hermes-perftest/<testname>`, then
-   `reset_test.py -y` and `apply_recipe.py`. A fresh test seeds from `base/`.
+2. Prepare: copy `$solveropt/hermes-perftest/<test>`, then `reset_test.py -y`,
+   `apply_recipe.py` and `add_views.py`; a fresh test seeds from `base/`.
 3. Launch per `run-case`, teeing to `BOUT.log.console` — PETSc's `log_view` report
    exists nowhere else.
 4. Extract with the hermes3 Spack environment active: `extract_test.py <case>

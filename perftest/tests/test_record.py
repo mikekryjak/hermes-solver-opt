@@ -407,3 +407,64 @@ def test_a_row_with_no_case_dir_resolves_to_nothing(tmp_path):
 
     (tmp_path / "a-real-case").mkdir()
     assert find_case("a-real-case", [str(tmp_path)]) == str(tmp_path / "a-real-case")
+
+
+# =============================================================================
+# PHYSICS, AND THE FLAGS THE TOOLING ADDS
+# =============================================================================
+def _inp(path, body):
+    path.write_text(body)
+    return str(path)
+
+
+def test_physics_diff_ignores_the_sections_the_recipe_manages(tmp_path):
+    """A solver setting is the recipe's business. Only physics belongs here."""
+
+    case = tmp_path / "case"
+    case.mkdir()
+    _inp(case / "BOUT.inp", "[solver]\natol = 1e-3\n[hermes]\nlimiter = MC\n")
+    ref = _inp(tmp_path / "ref.inp", "[solver]\natol = 1e-7\n[hermes]\nlimiter = MC\n")
+
+    assert recipe.diff_physics(str(case), ref) == []
+
+
+def test_physics_diff_names_a_changed_physics_setting(tmp_path):
+    case = tmp_path / "case"
+    case.mkdir()
+    _inp(case / "BOUT.inp", "[hermes]\nlimiter = VanAlbada\n[d+]\nbndry_all = neumann\n")
+    ref = _inp(tmp_path / "ref.inp", "[hermes]\nlimiter = MC\n[d+]\nbndry_all = neumann\n")
+
+    assert recipe.diff_physics(str(case), ref) == ["hermes:limiter"]
+
+
+def test_physics_diff_reports_a_setting_present_on_one_side_only(tmp_path):
+    case = tmp_path / "case"
+    case.mkdir()
+    _inp(case / "BOUT.inp", "[hermes]\nlimiter = MC\nrecycling = true\n")
+    ref = _inp(tmp_path / "ref.inp", "[hermes]\nlimiter = MC\n")
+
+    assert recipe.diff_physics(str(case), ref) == ["hermes:recycling"]
+
+
+def test_the_view_flags_are_not_a_deviation_from_the_recipe(tmp_path):
+    """add_views.py puts them in every case deliberately, so a case carrying
+    them has not drifted from its recipe -- otherwise every run would be
+    flagged as having a setting nobody intended."""
+
+    case = tmp_path / "case"
+    case.mkdir()
+    _inp(case / "BOUT.inp", "[petsc]\nlog_view\nsnes_view\nksp_view\n")
+    named = _inp(tmp_path / "r.txt", "[petsc]\nlog_view\n")
+
+    assert recipe.diff_against_recipe(str(case), named) == []
+
+
+def test_removing_a_recipe_flag_is_still_a_deviation(tmp_path):
+    case = tmp_path / "case"
+    case.mkdir()
+    _inp(case / "BOUT.inp", "[petsc]\nsnes_view\n")
+    named = _inp(tmp_path / "r.txt", "[petsc]\nlog_view\n")
+
+    assert recipe.diff_against_recipe(str(case), named) == [
+        "petsc:log_view: (set) -> (absent)"
+    ]

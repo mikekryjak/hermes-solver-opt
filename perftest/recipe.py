@@ -15,6 +15,11 @@ import re
 
 MANAGED_SECTIONS = ("solver", "petsc")
 
+# Added per case by cli/add_views.py to record the solver objects PETSc built,
+# never by a recipe. They are diagnostic, so a case carrying them has not
+# deviated from its recipe and must not be reported as though it had.
+TOOLING_FLAGS = ("petsc:snes_view", "petsc:ksp_view")
+
 
 def parse_settings(path, sections=MANAGED_SECTIONS):
     """
@@ -23,9 +28,12 @@ def parse_settings(path, sections=MANAGED_SECTIONS):
     A bare line with no `=` is a PETSc flag, which is meaningful by its presence
     alone; it is recorded with an empty value so that adding or removing one
     still shows up as a difference.
+
+    `sections=None` reads every section, which is how the physics comparison
+    sees the parts a recipe does not manage.
     """
 
-    wanted = {s.lower() for s in sections}
+    wanted = None if sections is None else {s.lower() for s in sections}
     settings = {}
     section = None
 
@@ -37,7 +45,9 @@ def parse_settings(path, sections=MANAGED_SECTIONS):
             if line.startswith("[") and line.endswith("]"):
                 section = line[1:-1].strip().lower()
                 continue
-            if section not in wanted:
+            if wanted is not None and section not in wanted:
+                continue
+            if section is None:
                 continue
             if "=" in line:
                 key, value = line.split("=", 1)
@@ -66,6 +76,35 @@ def _comparable(value):
     return text.lower()
 
 
+def diff_physics(case_dir, reference_inp):
+    """
+    Every deviation of a case's PHYSICS settings from a reference BOUT.inp, as
+    the key names alone, sorted.
+
+    Physics means everything outside `[solver]` and `[petsc]`: the limiter, the
+    boundary conditions, the sources, the species list. `diff_against_recipe`
+    cannot see any of it, so two runs could be compared as "same physics,
+    different solver" while a boundary condition differed between them.
+
+    Names without values, because the index is read whole and both inputs are
+    kept in their bundles: the name says where to look, and nothing is lost.
+    """
+
+    case = parse_settings(os.path.join(case_dir, "BOUT.inp"), sections=None)
+    reference = parse_settings(reference_inp, sections=None)
+
+    changed = []
+    for key in sorted(set(case) | set(reference)):
+        if key.split(":", 1)[0] in MANAGED_SECTIONS:
+            continue
+        if key not in reference or key not in case:
+            changed.append(key)
+        elif _comparable(case[key]) != _comparable(reference[key]):
+            changed.append(key)
+
+    return changed
+
+
 def diff_against_recipe(case_dir, recipe_path):
     """
     Every deviation of a case's `[solver]`/`[petsc]` sections from its recipe,
@@ -80,6 +119,8 @@ def diff_against_recipe(case_dir, recipe_path):
 
     diffs = []
     for key in sorted(set(case) | set(named)):
+        if key in TOOLING_FLAGS and key not in named:
+            continue
         if key not in named:
             diffs.append(f"{key}: (absent) -> {case[key] or '(set)'}")
         elif key not in case:

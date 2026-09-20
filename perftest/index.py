@@ -50,6 +50,7 @@ INDEX_COLUMNS = [
     "solver_fails",
     "solver_fails_max",
     "fail_reasons",
+    "physics_diffs",
     # where the time went
     "t_jac_frac",
     "t_pcsetup_frac",

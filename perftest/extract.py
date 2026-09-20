@@ -98,6 +98,15 @@ def _settings_finished(case_dir):
         return re.search(r"(?m)^\s*finished\s*=", f.read()) is not None
 
 
+def _real_run_id(value):
+    """A BOUT run id, or None if it is the null one a from-scratch run writes."""
+
+    text = (value or "").strip()
+    if not text or set(text) == {"z"}:
+        return None
+    return text
+
+
 def _fail_reasons(snes):
     """
     How the failed solves failed, as "<reason>:<count>", commonest first.
@@ -234,7 +243,10 @@ def _read_dump(case_dir, grid_path, report):
 
     out = {
         "run_id": meta.get("run_id"),
-        "seed": meta.get("run_restart_from"),
+        # BOUT writes 36 z's as run_restart_from when nothing was restarted
+        # from. An empty cell is a question; a placeholder sorts and groups as
+        # if it were an identity.
+        "seed": _real_run_id(meta.get("run_restart_from")),
         "limiter": meta.get("HERMES_SLOPE_LIMITER"),
         "check_level": meta.get("use_check_level"),
     }
@@ -1051,6 +1063,16 @@ def extract_case(
         measured["diffs"] = "; ".join(diffs)
         _check_varied(row.get("varied", ""), diffs, report)
 
+    parent_inp = _seed_input(measured.get("seed"), rows, store_dir)
+    if parent_inp:
+        measured["physics_diffs"] = " ".join(
+            recipe.diff_physics(case_dir, parent_inp)
+        )
+    elif measured.get("seed"):
+        report.warnings.append(
+            "physics_diffs not computed: no recorded run has the seed's run_id"
+        )
+
     filled, conflicts, unknown = idx.fill_row(row, measured, columns)
     report.filled = filled
     report.conflicts = conflicts
@@ -1073,6 +1095,25 @@ def extract_case(
 
     idx.write_index(index_path, rows, columns)
     return report
+
+
+def _seed_input(seed, rows, store_dir):
+    """
+    The BOUT.inp of the run this one restarted from, or None.
+
+    A window's seed carries the parent's `run_id`, so the parent's own row
+    finds it, and its bundle keeps its input. A from-scratch run has no seed
+    and so no reference: its physics is compared against nothing rather than
+    against a template it may legitimately differ from.
+    """
+
+    if not seed:
+        return None
+    for row in rows:
+        if row.get("run_id", "") == seed and row.get("test_id"):
+            path = os.path.join(store_dir, "runs", row["test_id"], "BOUT.inp")
+            return path if os.path.exists(path) else None
+    return None
 
 
 def _check_varied(varied, diffs, report):

@@ -21,6 +21,7 @@ import xhermes  # noqa: F401 -- registers the .hermes accessors
 from perftest.extract import (
     Report,
     _fail_reasons,
+    _real_run_id,
     classify_outcome,
     _ddt_series,
     _infer_test,
@@ -344,3 +345,26 @@ def test_the_failed_block_names_the_equation_that_ran_away(tmp_path):
     assert fail["event"] == "fail"
     assert fail["worst_var"] == "Pd"
     assert fail["worst_ddt"] == 489.4
+
+
+# =============================================================================
+# SEED -- what a run restarted from
+# =============================================================================
+def test_the_null_restart_id_is_not_a_seed():
+    """BOUT writes 36 z's when nothing was restarted from. Recorded as an id it
+    grouped three unrelated from-scratch parents as though they shared one."""
+
+    assert _real_run_id("z" * 36) is None
+
+
+def test_a_real_restart_id_is_kept():
+    """A window's seed is the parent's run_id, which joins the two rows."""
+
+    assert _real_run_id("ea3bb152-6816-4469-af5d-3ea455b4d157") == (
+        "ea3bb152-6816-4469-af5d-3ea455b4d157"
+    )
+
+
+def test_a_missing_restart_id_is_not_invented():
+    assert _real_run_id(None) is None
+    assert _real_run_id("   ") is None
