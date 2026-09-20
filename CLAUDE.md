@@ -73,6 +73,8 @@ them, extract from them or compare against them.
 The index defines what exists. A run belongs to this project if and only if it
 has a row in `solver-opt-store/index.tsv`. NEVER enumerate case directories to
 find runs, and never treat a directory without a row as a backlog.
+When counting this project's runs, treat a campaign's index under
+`$store/campaigns/` as outside that rule until its rows reach `index.tsv`.
 
 A directory with no `BOUT.log.console` predates the launch convention, which is
 the check that survives a run being moved.
@@ -91,6 +93,8 @@ repository, `$store` the results store, `$data` the case and seed directory.
 - Tasks: beads. Never TodoWrite or markdown lists.
 - Run results — the index, its schema, the per-run bundles — and the analysis
   that reads them: the private `solver-opt-store` repo at `$store`.
+- When committing in `$store`, leave `campaigns/<name>/` out: a campaign's
+  config, index and log stay local, and only the top-level `index.tsv` goes in.
 - Add no rows to `$store/run_records-preproject.csv` and compare nothing against
   it: it is the frozen record of 18 runs dropped from the index on 2026-07-31.
 - Tools that capture or extract results: here, in `perftest/` and `cli/`. Put
