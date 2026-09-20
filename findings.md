@@ -26,4 +26,13 @@ findings exist; the cap is on how many are loaded at once.
 
 ## Traps
 
-(none yet)
+### A stub that writes nothing hides an integration bug
+- date: 2026-09-20
+- status: active
+- scope: any test that monkeypatches one stage of the runner loop.
+- evidence: test_a_kill_is_recorded_as_a_timeout passed for a day while the
+  runner's kill outcome never reached the index. Its stubbed extract returned
+  True and wrote no row, so the cell the runner meant to correct was blank and
+  the blank-cells-only rule never fired.
+- rule: a stub standing in for a stage must write what the real stage writes,
+  or it tests the caller against a world that does not exist.
