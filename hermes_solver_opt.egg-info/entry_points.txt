@@ -1,3 +1,0 @@
-[console_scripts]
-extract_test.py = perftest.cli.extract_test:main
-verify_store.py = perftest.cli.verify_store:main

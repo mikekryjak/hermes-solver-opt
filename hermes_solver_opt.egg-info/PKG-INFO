@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: hermes-solver-opt
-Version: 0.1.0
-Summary: Capture and record Hermes-3 performance tests for solver optimisation
-Requires-Python: >=3.10
-Requires-Dist: numpy
-Requires-Dist: pandas
-Requires-Dist: xarray
