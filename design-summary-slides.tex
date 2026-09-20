@@ -1,6 +1,13 @@
-% Hermes-3 solver optimisation: a short deck for an external audience.
-% Built with: xelatex design-summary-slides.tex
-% The figure comes from the project's own report generator.
+% Hermes-3 solver optimisation: a short deck for an external, non-specialist
+% audience. Built with: xelatex design-summary-slides.tex
+%
+% Written for a reader who knows nothing about fusion, about this code, or
+% about numerical solvers, and who works in data science. Two rules hold
+% throughout: no solver vocabulary, because the audience cannot read it, and
+% no optimisation-research vocabulary, because the presenter must be able to
+% defend every line. No project history, no dates, no citations: the deck
+% stands on its own. Diagrams are drawn here rather than included, so there is
+% no external figure to keep in step.
 
 \documentclass[aspectratio=169,11pt]{beamer}
 
@@ -11,304 +18,204 @@
 \setbeamerfont{frametitle}{size=\large}
 \setbeamercolor{frametitle}{fg=black}
 \setbeamertemplate{itemize items}[circle]
-\setlength{\parskip}{4pt}
+\setlength{\parskip}{5pt}
 
 \usepackage{fontspec}
-\usepackage{graphicx}
-\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc}
 
-\title{Optimising the Hermes-3 solver}
-\subtitle{Searching PETSc settings for tokamak edge simulations}
-\date{20 September 2026}
+\definecolor{slicecol}{RGB}{31,119,180}
+\definecolor{runcol}{RGB}{225,225,232}
+\definecolor{accent}{RGB}{176,62,42}
+
+\title{Searching the settings of a slow simulation}
+\subtitle{A plan for automatic tuning, and where to take it next}
+\date{}
+\author{}
 
 \begin{document}
 
 \begin{frame}
   \titlepage
-\end{frame}
-
-\begin{frame}{The problem}
-  Hermes-3 simulates the plasma edge of a tokamak: how a reactor's exhaust
-  cools before it reaches the wall.
-
-  \begin{itemize}
-    \item Stiff equations, so the solve is implicit. PETSc SNES, every timestep.
-    \item Nearly all the cost sits inside that solver.
-  \end{itemize}
-
-  \vspace{0.4em}
-  Measured on our own cases:
-
-  \begin{itemize}
-    \item 100\,ms of plasma took \textbf{16.6 hours} on ten cores.
-    \item That is about 145\,ms of plasma per day of wall clock.
-    \item Steady state: days to weeks. A study needs tens of cases.
-  \end{itemize}
-
-  \vspace{0.4em}
-  The solver's speed decides which physics questions are askable at all.
-\end{frame}
-
-\begin{frame}{Fifty settings, chosen by hand}
-  \begin{itemize}
-    \item Tolerances, Jacobian reuse, linear solver, preconditioner, timestep control.
-    \item Picked from intuition, by a handful of people, over years.
-    \item Nobody has searched the space.
-  \end{itemize}
-
-  \vspace{0.6em}
-  Our records: four configurations across 48 runs.
-  Throughput spans a \textbf{factor of three} on one test case.
-
-  \vspace{0.6em}
-  A two-fold speed-up turns a week of waiting into three days --- on every
-  study that follows, for every user of the code.
-\end{frame}
-
-\begin{frame}{Where the time actually goes}
+  \vspace{-2em}
   \begin{center}
-    \includegraphics[width=0.70\textwidth]{design-summary-cost-breakdown.png}
+    \small A design, not a result. Nothing has been searched yet.
+  \end{center}
+\end{frame}
+
+% ---------------------------------------------------------------- 2
+\begin{frame}{What the code does, and what it costs}
+  A fusion reactor holds plasma at over a hundred million degrees. The exhaust
+  leaving that plasma has to be cooled on its way out, or it destroys the metal
+  wall it lands on. This code predicts whether a given reactor design manages
+  that.
+
+  \vspace{0.8em}
+  Simulating a tenth of a second of plasma, on ten cores:
+
+  \begin{itemize}
+    \item About an hour for a smaller production case.
+    \item Tens of hours for a large one at full resolution.
+  \end{itemize}
+
+  \vspace{0.6em}
+  A single study needs tens of cases. The speed of the code decides which
+  questions can be asked at all.
+\end{frame}
+
+% ---------------------------------------------------------------- 3
+\begin{frame}{Sixty settings, chosen by hand}
+  The engine that steps the simulation forward in time exposes about sixty
+  settings.
+
+  \begin{itemize}
+    \item Mixed kinds: on/off switches, choices from a list, whole numbers, and
+          continuous values spanning several orders of magnitude.
+    \item Mostly conditional. Many take effect only when another setting has a
+          particular value, so a large part of the space is inert at any one
+          point.
+    \item They interact. The best value of one depends on how another is set.
+  \end{itemize}
+
+  \vspace{0.8em}
+  They are chosen from experience, by a handful of people. The space has never
+  been searched.
+\end{frame}
+
+% ---------------------------------------------------------------- 4
+\begin{frame}{Why this is not ordinary tuning}
+  \begin{itemize}
+    \item One evaluation costs hours, so the number of trials will be small.
+    \item The same settings run twice do not give the same time. The
+          measurement is noisy.
+    \item A setting can be fast because it is cutting corners and computing the
+          wrong answer. \textbf{Speed alone cannot be the score.}
+    \item Some settings make a run fail, or never finish. A failure says
+          something about the settings, so it is a result, not a missing
+          number.
+  \end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------- 5
+\begin{frame}{Testing on a slice, not a whole run}
+  \vspace{-0.3em}
+  \begin{center}
+  \begin{tikzpicture}[x=1cm, y=1cm, font=\scriptsize]
+
+    \def\W{9.0}
+    \def\sa{0.45} \def\sb{3.50} \def\sc{7.00}
+    \def\wshort{0.32} \def\wlong{1.28}
+
+    % ---- the reference run ----
+    \fill[runcol] (0,0) rectangle (\W,0.5);
+    \draw[gray!55] (0,0) rectangle (\W,0.5);
+    \foreach \x in {0,0.45,...,9.0}{\draw[gray!60] (\x,0.5) -- (\x,0.65);}
+    \node[anchor=west] at (0,1.05) {one long reference run, saving its state throughout};
+    \node[anchor=north west, gray!70] at (0,-0.08) {start};
+    \node[anchor=north east, gray!70] at (\W,-0.08) {end};
+
+    % ---- slices marked on the run ----
+    \foreach \s in {\sa,\sb,\sc}{
+      \fill[slicecol] (\s,0) rectangle (\s+\wshort,0.5);
+      \draw[slicecol!45, dashed, line width=0.3pt] (\s,-0.05) -- (\s,-2.95);
+    }
+
+    % ---- rungs ----
+    \node[anchor=east] at (-0.2,-1.15) {screen many};
+    \node[anchor=east] at (-0.2,-1.95) {test survivors};
+    \node[anchor=east] at (-0.2,-2.75) {confirm finalists};
+
+    \draw[gray!30] (0,-1.15) -- (\W,-1.15);
+    \foreach \s in {\sa,\sb,\sc}{
+      \fill[slicecol] (\s,-1.29) rectangle (\s+\wshort,-1.01);}
+
+    \draw[gray!30] (0,-1.95) -- (\W,-1.95);
+    \foreach \s in {\sa,\sb,\sc}{
+      \fill[slicecol] (\s,-2.09) rectangle (\s+\wlong,-1.81);}
+
+    \fill[slicecol] (0,-2.89) rectangle (\W,-2.61);
+
+    % ---- cost column ----
+    \node[anchor=west, gray!70] at (\W+0.25,-1.15) {seconds};
+    \node[anchor=west, gray!70] at (\W+0.25,-1.95) {minutes};
+    \node[anchor=west, gray!70] at (\W+0.25,-2.75) {hours};
+
+  \end{tikzpicture}
   \end{center}
 
+  \vspace{0.2em}
+  A slice restarts from a saved state and runs a short way. Several positions,
+  because the simulation is hard in different ways at different stages. Cheap
+  slices screen many candidates; only the survivors pay for the longer ones.
+\end{frame}
+
+% ---------------------------------------------------------------- 6
+\begin{frame}{The system}
   \vspace{-0.2em}
   \begin{center}
-    Jacobian colouring \textbf{73--81\%} \quad$\cdot$\quad LU 5--22\%
-    \quad$\cdot$\quad Krylov under 3\%
+  \begin{tikzpicture}[
+      font=\small,
+      box/.style={draw=gray!70, fill=runcol, rounded corners=2pt,
+                  minimum width=2.9cm, minimum height=1.5cm, align=center},
+      lbl/.style={font=\scriptsize, midway},
+      arr/.style={-{Stealth[length=2.2mm]}, gray!75, thick}]
+
+    \node[box] (opt) at (0,0) {\textbf{Optimiser}\\[2pt]
+      \scriptsize decides what\\ \scriptsize to try next};
+    \node[box] (run) at (5.3,0) {\textbf{Runner}\\[2pt]
+      \scriptsize prepares, launches,\\ \scriptsize watches, measures};
+    \node[box] (rec) at (10.6,0) {\textbf{Record}\\[2pt]
+      \scriptsize one row per run,\\ \scriptsize plus its evidence};
+
+    \draw[arr] (opt) -- node[lbl, above]{a list of trials} (run);
+    \draw[arr] (run) -- node[lbl, above]{what happened} (rec);
+    \draw[arr] (rec.south) -- ++(0,-1.05) -- ++(-10.6,0) -- (opt.south);
+    \node[font=\scriptsize, anchor=north] at (5.3,-1.85) {past results, as a short table};
+
+  \end{tikzpicture}
   \end{center}
 
-  {\small The exact LU converges in one iteration, so the Krylov layer is
-  nearly all overhead.}
-\end{frame}
-
-\begin{frame}{The search space}
-  Six groups, about fifty knobs:
-
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \begin{itemize}
-        \item Nonlinear solve
-        \item Jacobian
-        \item Variable scaling
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \begin{itemize}
-        \item Linear solve
-        \item Preconditioner
-        \item Timestep control
-      \end{itemize}
-    \end{column}
-  \end{columns}
-
-  \vspace{0.6em}
-  Mixed types: switches, choices, integers, continuous over decades.
-
-  \vspace{0.4em}
-  \textbf{And conditional.} The factorisation package means nothing unless the
-  preconditioner is a direct solve. The PID gains mean nothing unless the
-  controller is the PID one.
-
-  \vspace{0.4em}
-  A sampler that ignores that structure spends its budget on settings that are
-  not in force.
-\end{frame}
-
-\begin{frame}{Defaults are not choices}
-  We captured what PETSc \emph{actually built}, not what the input file says.
-
-  \vspace{0.6em}
-  \begin{center}
-    \large
-    GMRES restart $= 30$ \qquad against \qquad iteration cap $= 260$
-  \end{center}
-
-  \vspace{0.4em}
-  So one solve can restart nearly nine times, discarding its convergence
-  history each time.
-
-  \vspace{0.6em}
-  Nobody chose 30. It is PETSc's default and the input file never mentions it.
-
-  \vspace{0.6em}
-  Building the space description from the running code, rather than from the
-  input file, surfaces these immediately.
-\end{frame}
-
-\begin{frame}{Making an evaluation cheap}
-  We do not evaluate a configuration on a whole simulation. We evaluate it on a
-  slice.
-
+  \vspace{1.4em}
   \begin{itemize}
-    \item One \textbf{parent run} per test case: 0--100\,ms, fixed build, saves state every ms.
-    \item Cut \textbf{seeds} from it: restart files at chosen times.
-    \item A \textbf{window} restarts from a seed and runs to a later time.
+    \item The runner has no judgement in it, so it runs unattended, anywhere.
+    \item The optimiser can be an algorithm, a language model, or a person
+          writing a list. The runner cannot tell the difference, so it can be
+          swapped without touching anything else.
+    \item Speed and correctness are recorded side by side, never combined, so
+          nothing can trade accuracy for time.
   \end{itemize}
-
-  \vspace{0.4em}
-  \begin{center}
-    \begin{tabular}{llr}
-      \toprule
-      Rung & Windows & Noise bound \\
-      \midrule
-      0 & three, 0.2--0.5\,ms & 15\% \\
-      1 & the same three, $4\times$ longer & 10\% \\
-      2 & the full 100\,ms run & 5\% \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
-
-  \vspace{0.4em}
-  Positions probe the flat-start transient, the approach to steady state, and
-  near-steady state.
 \end{frame}
 
-\begin{frame}{Why we do not trust windows by rank}
-  A configuration can be slow early and fast late. No single window predicts the
-  full run.
-
-  \vspace{0.6em}
-  So instead of rank correlation:
-
+% ---------------------------------------------------------------- 7
+\begin{frame}{What exists, and what does not}
+  \textbf{Built and working}
   \begin{itemize}
-    \item Each window measures a \emph{speed} at its position in the run.
-    \item Full-run cost = sum of each stretch at its local speed.
-    \item A real full run checks the estimate periodically.
-    \item Promote generously --- cheap rungs cannot see a slow divergence.
+    \item Measurement. A finished run turns automatically into one row of
+          numbers and a bundle of supporting evidence.
+    \item The record. One row per run, added to and never rewritten.
+    \item Reference runs for three cases, with their saved states.
+    \item The tool that cuts a slice and sets it up as a run.
   \end{itemize}
 
   \vspace{0.8em}
-  \textbf{We have not found this published.} Restart windows of one simulation
-  as fidelity levels appears to be novel. We would like the argument attacked.
-\end{frame}
-
-\begin{frame}{Fast for the wrong reason}
-  A configuration can be fast because it takes sloppy steps and converges to the
-  wrong plasma. Timing never reveals that.
-
-  \vspace{0.6em}
-  Correctness is a \textbf{pass/fail flag beside the cost}, never a term inside
-  the objective.
-
+  \textbf{Not built}
   \begin{itemize}
-    \item Window check, every rung: sanity band on four physical quantities.
-          Failing disqualifies. Passing proves little.
-    \item Endpoint check, full runs only: same steady state as the reference?
-          This is the verdict that counts.
-  \end{itemize}
-
-  \vspace{0.6em}
-  Outcomes are a fixed, script-decidable taxonomy. A crash never scores as slow.
-  A timeout is evidence, not a missing result.
-\end{frame}
-
-\begin{frame}{The record}
-  One row per run, about fifty columns, append-only, in git. Per-run evidence
-  sits beside it, outside git.
-
-  \vspace{0.6em}
-  Three rules:
-
-  \begin{itemize}
-    \item \textbf{The index defines what exists.} No enumerating directories.
-    \item \textbf{Nothing is typed twice.} Intent before the run, measurement
-          after. An undeclared difference gets flagged.
-    \item \textbf{Nobody reads fifty columns.} Queries return about ten,
-          filtered and ranked --- counting across a wide table is exactly where
-          both people and models fail.
+    \item The loop that proposes, runs and scores trials.
+    \item Any optimiser at all.
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Two layers, one narrow interface}
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \textbf{Runner}
-      \begin{itemize}
-        \item Plain command-line program.
-        \item No judgement in it.
-        \item Prepares, launches, watches, extracts, repeats.
-        \item Runs unattended.
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \textbf{Optimiser}
-      \begin{itemize}
-        \item Decides what to try next.
-        \item Model, sampler, or a person with a list.
-        \item The runner cannot tell which.
-      \end{itemize}
-    \end{column}
-  \end{columns}
-
-  \vspace{0.8em}
-  \begin{center}
-    Interface: \emph{suggest trials} $\rightarrow$ \emph{report results}
-  \end{center}
-
-  \vspace{0.4em}
-  Swapping the optimiser changes nothing else.
-\end{frame}
-
-\begin{frame}{What the evidence says about model optimisers}
-  Reviewed September 2026. Genuinely mixed:
-
+% ---------------------------------------------------------------- 8
+\begin{frame}{What to work on together}
   \begin{itemize}
-    \item Value is in \emph{proposing} when data are sparse, not in predicting.
-          As a predictor a model loses to standard surrogates.
-    \item Budget-matched study, June 2026: the advantage was mostly a sensible
-          starting configuration. Seeded random search tied at five evaluations,
-          won by twelve.
-    \item Eleven-simulator benchmark, March 2026: 66--81\% success, but
-          1.5--2.7$\times$ the compute of plain scanning.
-    \item They stagnate rather than converge. A fallback is not optional.
+    \setlength{\itemsep}{0.7em}
+    \item Does a slice predict a full run? How should that be checked before it
+          is trusted?
+    \item What search method suits sixty mixed settings, where many are
+          conditional on others?
+    \item Where, if anywhere, does a language model belong in the loop?
+    \item How should a run that fails, or never finishes, be scored?
   \end{itemize}
-
-  \vspace{0.5em}
-  Our reading: best as a \textbf{cold-start proposer} and a \textbf{reader of
-  failures}, not as the search algorithm.
-
-  \vspace{0.3em}
-  So: run controls, show at most $\sim$30 past trials, validate output against a
-  schema before launching, fall back to the sampler on drift.
-\end{frame}
-
-\begin{frame}{Open questions}
-  \begin{enumerate}
-    \item \textbf{Is the window ladder sound?} Unpublished, and the obvious
-          objection is that a short window does not predict a long run. We answer
-          with speed-summation rather than rank correlation. Attack it.
-    \item \textbf{How to map a mixed, conditional space?} Fifty knobs, four
-          types, dependencies switching whole groups on and off. No principled
-          answer yet.
-    \item \textbf{Right objective for steady state?} Work to reach a residual
-          level, not to reach a fixed simulated time --- especially for
-          pseudo-transient methods. Unreconciled with the window ladder.
-    \item \textbf{Are the cheap rungs too cheap?} Shortest windows cost 9 and
-          20 seconds. Almost certainly below the noise floor.
-  \end{enumerate}
-\end{frame}
-
-\begin{frame}{Status}
-  \textbf{Works today}
-  \begin{itemize}
-    \item Measurement layer: log and dump $\rightarrow$ row and bundle, verified against a live run.
-    \item Record: nine runs on a fixed build, documented schema, re-derivation check.
-    \item Parent runs for three test cases; seed library for two.
-    \item Window generator.
-  \end{itemize}
-
-  \vspace{0.5em}
-  \textbf{Designed, not built}
-  \begin{itemize}
-    \item The runner loop, the campaign config, and any optimiser at all.
-  \end{itemize}
-
-  \vspace{0.5em}
-  \textbf{Caveat we are honest about}
-
-  The variable rescaling floors small elements at the solver's relative
-  tolerance. We measured it: the floor is reached in 14 of 16 runs. Until we
-  know what share of the residual norm those elements carry, residual-based
-  objectives are not safe to tune against.
 \end{frame}
 
 \end{document}
