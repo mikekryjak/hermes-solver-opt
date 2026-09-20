@@ -32,6 +32,7 @@ import shlex
 import shutil
 import signal
 import subprocess
+import sys
 import time
 
 from . import index as idx
@@ -79,6 +80,19 @@ CAN_DELETE = os.path.join(TOOL_ROOT, "cli", "can_delete.py")
 
 # apply_recipe.py belongs to sdtools, not here, so it stays a PATH lookup.
 APPLY_RECIPE = "apply_recipe.py"
+
+# The tools above start with `#!/usr/bin/env python3`, which picks up whatever
+# python the calling shell has first. A screen made before the spack view was
+# on its PATH has one that cannot import pandas, so the tool would be found
+# and then die on its imports. Start them under the interpreter running this
+# file instead: it has already imported this package, so it works.
+PYTHON = sys.executable
+
+
+def python_tool(tool, *arguments):
+    """A command for a python tool that ships here, run under this python."""
+
+    return [PYTHON, tool, *arguments]
 
 # `<window>-<YYYY-MM-DD>-<tag>`. The date is when the case was made, so a trial
 # resumed the next day must be found by its window and tag alone.
@@ -511,14 +525,14 @@ class Runner:
         case_name = self.case_name(trial)
         case_path = os.path.join(self.cases_dir, case_name)
         self.run_tool(
-            [
+            python_tool(
                 MAKE_WINDOW,
                 trial.window,
                 self.parent_dir,
                 case_path,
                 "--seeds",
                 self.seeds_dir,
-            ]
+            )
         )
         self.run_tool([APPLY_RECIPE, case_path, self.write_recipe(trial, case_path)])
         return case_name
@@ -668,7 +682,7 @@ class Runner:
     def extract(self, case_name):
         """Extract the bundle and fill the row. True if it validated."""
 
-        command = [
+        command = python_tool(
             EXTRACT,
             os.path.join(self.cases_dir, case_name),
             "--store",
@@ -679,7 +693,7 @@ class Runner:
             self.campaign.epoch,
             "--conduction",
             self.campaign.build["conduction_method"],
-        ]
+        )
         result = self.run_tool(command, check=False)
         return True if result is None else result.returncode == 0
 
@@ -729,7 +743,8 @@ class Runner:
                 continue
             case_path = os.path.join(self.cases_dir, name)
             gate = self.run_tool(
-                [CAN_DELETE, case_path, "--store", self.campaign_dir], check=False
+                python_tool(CAN_DELETE, case_path, "--store", self.campaign_dir),
+                check=False,
             )
             if gate is not None and gate.returncode != 0:
                 self.say(f"{name}: kept, can_delete.py refused")

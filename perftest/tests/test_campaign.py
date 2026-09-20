@@ -17,6 +17,7 @@ call them in the right order under the right conditions.
 
 import datetime
 import os
+import sys
 
 import pytest
 
@@ -378,9 +379,12 @@ def test_an_interrupted_case_is_started_again(runner, monkeypatch):
     prepared = []
 
     def stub_tool(self, command, cwd=None, check=True):
-        prepared.append(command[0])
-        if command[0] == rn.MAKE_WINDOW:
-            os.makedirs(command[3])       # what make_window.py would have made
+        # A python tool that ships here is run as `<python> <tool> ...`, so the
+        # tool is the first word that is not the interpreter.
+        tool = command[1] if command[0] == rn.PYTHON else command[0]
+        prepared.append(tool)
+        if tool == rn.MAKE_WINDOW:
+            os.makedirs(command[4])       # what make_window.py would have made
 
     monkeypatch.setattr(rn.Runner, "run_tool", stub_tool)
     monkeypatch.setattr(rn.Runner, "launch", lambda self, case, cutoff: (None, 1.0))
@@ -654,3 +658,18 @@ def test_the_summary_counts_every_trial(runner, monkeypatch):
     assert "1 recorded" in summary
     assert "1 already settled" in summary
     assert "1 errored" in summary
+
+
+def test_the_tools_run_under_this_python(runner, monkeypatch):
+    """`#!/usr/bin/env python3` picks up whatever python the calling shell has
+    first. A screen made before the spack view was on its PATH has one that
+    cannot import pandas, so the extractor would be found and then die on its
+    imports."""
+
+    commands = []
+    monkeypatch.setattr(rn.Runner, "run_tool",
+                        lambda self, command, cwd=None, check=True:
+                        commands.append(command))
+    runner.extract("a-case")
+    assert commands[0][:2] == [rn.PYTHON, rn.EXTRACT]
+    assert rn.PYTHON == sys.executable
