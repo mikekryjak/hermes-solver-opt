@@ -26,6 +26,20 @@ findings exist; the cap is on how many are loaded at once.
 
 ## Traps
 
+### In the run screens, `python` is the pyenv shim and it bus-errors on pandas
+- date: 2026-09-20
+- status: active
+- scope: screens h1, h2, h3, and anything launched from a runplan line.
+- evidence: the first test-drive launch exited at once and wrote a zero-byte
+  log. In h2, `python -c 'import pandas'` dies with "Bus error (core dumped)",
+  exit 135. The screens do carry SPACK_ENV, but .bashrc puts the pyenv shims
+  ahead of the environment's own bin, so `python` is not the Spack one.
+- rule: a runplan line that runs python must put
+  `/home/mike/spack/var/spack/environments/hermes3/.spack-env/view/bin` first
+  on PATH, so the runner and every tool it starts use the same interpreter.
+  A crash on a signal writes nothing through a pipe, so an empty log is a
+  symptom of this, not of a tool that did nothing.
+
 ### A stub that writes nothing hides an integration bug
 - date: 2026-09-20
 - status: active
