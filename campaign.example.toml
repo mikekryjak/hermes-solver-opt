@@ -1,0 +1,114 @@
+# An example campaign, and the reference for what campaign.toml may contain.
+#
+# A real one lives at <store>/campaigns/<name>/campaign.toml beside the index
+# it fills. Copy this, change it, and have the user approve it before the
+# runner is pointed at it.
+#
+# No absolute path appears here. The store, the data directory and the Hermes-3
+# checkout come from the environment, so the same file works on another machine
+# (design.md section 12).
+
+[campaign]
+name = "snes-mumps3-knobs"
+goal = "Find a faster SNES recipe than SNES-MUMPS-3 on the test2 ladder."
+# The test family, the parent run the windows are cut from, and the epoch the
+# results belong to. The parent is a case directory name under <data>/cases.
+test = "test2"
+parent = "test2_0.0-100.0ms-20260919-201426"
+epoch = "2026-09-neutlim"
+
+[build]
+# Fixed for the whole campaign. A version bump opens a new epoch and a new
+# campaign, because it needs new parent runs from scratch (R18).
+hermes_commit = "ef2ef9dd"
+hermes_branch = "neutlim-lagging"
+# Relative to the Hermes-3 checkout, which the `hermes` environment variable
+# names.
+build_dir = "build-va-neutlim"
+limiter = "VanAlbada"
+conduction_method = "Harmonic"
+check_level = 2
+
+[baseline]
+# The recipe every trial starts from. Overrides in a study are stated against
+# it, and the extractor reports any other difference as an unintended change.
+recipe = "SNES-MUMPS-3"
+
+[search]
+# Relative to the tool repository. A trial may only move knobs listed here.
+space = "search-space.toml"
+
+# The ladder. One table per rung, cheapest first. A window belongs to exactly
+# one rung, and the noise bound is the fraction a difference must exceed to
+# count as a result (R32).
+[[ladder]]
+rung = 0
+windows = ["test2_0.0-0.2ms", "test2_5.0-5.5ms", "test2_30.0-30.5ms"]
+noise_bound = 0.15
+repeats = 1
+
+[[ladder]]
+rung = 1
+windows = ["test2_0.0-0.8ms", "test2_5.0-7.0ms", "test2_30.0-32.0ms"]
+noise_bound = 0.10
+repeats = 1
+
+[[ladder]]
+rung = 2
+windows = ["test2_0.0-100.0ms"]
+noise_bound = 0.05
+# The one place repeats are bought: the median of three before a full run is
+# believed (design.md section 6).
+repeats = 3
+
+[limits]
+# A run is killed at this multiple of the best time recorded for its window,
+# and the kill is recorded as a timeout rather than as a slow result.
+cutoff_factor = 3.0
+# Kill a run that has written no output step for this long. A window writes 50
+# of them, so a gap far longer than the expected spacing means it has stopped
+# progressing.
+stall_s = 1800
+# The backstop for a window that has no best time yet, and the longest any run
+# may take.
+max_wall_s = 21600
+poll_s = 20
+
+[budget]
+# The campaign stops when this much machine time has been spent on it. One
+# slot-hour is one slot busy for one hour.
+slot_hours = 120.0
+
+[disk]
+budget_gb = 200.0
+# The runner refuses to launch with less than this free on the data directory.
+floor_gb = 50.0
+# Keep the dumps of this many most recent runs; prune older ones when over the
+# disk budget.
+keep_recent = 20
+# Case directories whose dumps are never pruned, whatever their age.
+keep = ["test2_0.0-100.0ms-20260919-201426"]
+
+[correctness]
+# Pass or fail beside the cost, never a term inside it (R30).
+window_tolerance = 0.20
+endpoint_tolerance = 0.05
+# Index columns the check reads. Only the target maxima until it is settled
+# which midplane defines the separatrix on a connected double null.
+quantities = ["ne_target_max", "te_target_max"]
+
+[machine]
+cores_per_run = 10
+slots = [1, 2, 3]
+# The launch command, as words. {slot}, {exe} and {case} are filled in. The
+# command is looked up on PATH, so this carries no path to any machine.
+launch = ["sdrun.py", "-s={slot}", "-p={exe}", "-d={case}", "-y", "-restart"]
+
+[approval]
+# Without this table the runner refuses to start (R33). Approving a campaign
+# authorises every launch inside it and nothing outside it.
+approved_by = "the user"
+approved_on = "2026-09-20"
+# Must be at least [budget] slot_hours.
+slot_hours = 120.0
+scope = "the ladder, search space and budget in this file"
