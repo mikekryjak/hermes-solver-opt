@@ -399,7 +399,8 @@ def test_a_row_with_no_case_dir_resolves_to_nothing(tmp_path):
     that is not a case and reports a match, because an empty record has nothing
     to disagree with. This masked nine rows in the first run of the check."""
 
-    from perftest.cli.verify_store import find_case
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "cli"))
+    from verify_store import find_case
 
     assert find_case("", [str(tmp_path)]) is None
     assert find_case("   ", [str(tmp_path)]) is None

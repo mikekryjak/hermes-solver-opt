@@ -18,6 +18,10 @@ import os
 import pathlib
 import sys
 
+# This repository ships no packaging; cli/ is on $PATH and its tools are run
+# by name, so each puts the repository root on the path itself.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+
 from perftest.verify import rederive  # noqa: E402
 
 # One area, holding this project's runs and nothing else. The older test2dev /
