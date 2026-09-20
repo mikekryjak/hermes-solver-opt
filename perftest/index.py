@@ -49,6 +49,7 @@ INDEX_COLUMNS = [
     "ms_per_24h",
     "solver_fails",
     "solver_fails_max",
+    "fail_reasons",
     # where the time went
     "t_jac_frac",
     "t_pcsetup_frac",

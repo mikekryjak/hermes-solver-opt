@@ -20,6 +20,7 @@ import xhermes  # noqa: F401 -- registers the .hermes accessors
 
 from perftest.extract import (
     Report,
+    _fail_reasons,
     classify_outcome,
     _ddt_series,
     _infer_test,
@@ -271,3 +272,75 @@ def test_an_unknown_step_count_is_never_called_completed():
     outcome, warning = classify_outcome(True, False, 51, None)
     assert outcome is None
     assert "51 of None" in warning
+
+
+# =============================================================================
+# FAILURE BLOCKS -- what the solver was doing when it gave up
+# =============================================================================
+def _events(pairs):
+    import pandas as pd
+
+    return pd.DataFrame(
+        [{"event": kind, "reason": reason} for kind, reason in pairs],
+        columns=["event", "reason"],
+    )
+
+
+def test_fail_reasons_counts_only_the_failures():
+    frame = _events([("step", 2), ("fail", -9), ("step", 2), ("fail", -9),
+                     ("fail", -5)])
+    assert _fail_reasons(frame) == "-9:2 -5:1"
+
+
+def test_fail_reasons_is_empty_when_nothing_failed():
+    assert _fail_reasons(_events([("step", 2), ("step", 2)])) == ""
+
+
+def test_fail_reasons_survives_a_frame_from_before_the_event_column():
+    import pandas as pd
+
+    assert _fail_reasons(pd.DataFrame({"reason": [2, 2]})) == ""
+
+
+def test_consecutive_failures_are_separate_rows(tmp_path):
+    """Two failures with no step between them print two blocks and one
+    annotation, `SNES failures: 2`. Ending a block only at the next `Time:`
+    collapsed them: a real run had 326 blocks read as 267 rows."""
+
+    from perftest.logparse import snes_steps
+
+    block = (
+        "======== SNES failed =========\n\n"
+        "Return code: 0, reason: -9\n"
+        "Pd : (0 -> 65.2), ddt: (-0.001 -> 489.4)\n"
+        "Pe : (0.1 -> 5559.4), ddt: (-0.01 -> 0.016)\n"
+    )
+    (tmp_path / "BOUT.log.0").write_text(
+        block + block
+        + "Time: 288284.6, timestep: 75.4, nl iter: 4, lin iter: 4,"
+        " reason: 2, SNES failures: 2\n"
+    )
+
+    frame = snes_steps(str(tmp_path))
+    fails = frame[frame["event"] == "fail"]
+    assert len(fails) == 2
+    assert list(fails["reason"]) == [-9, -9]
+    # The retry's time is carried back onto both, which is when they happened.
+    assert list(fails["time"]) == [288284.6, 288284.6]
+
+
+def test_the_failed_block_names_the_equation_that_ran_away(tmp_path):
+    from perftest.logparse import snes_steps
+
+    (tmp_path / "BOUT.log.0").write_text(
+        "======== SNES failed =========\n\n"
+        "Return code: 0, reason: -5\n"
+        "Nd+ : (8.2 -> 1721.4), ddt: (-0.0028 -> 0.0024)\n"
+        "Pd : (0 -> 65.2), ddt: (-0.0011 -> 489.4)\n"
+        "Time: 1.0, timestep: 2.0, nl iter: 1, lin iter: 1, reason: 2\n"
+    )
+
+    fail = snes_steps(str(tmp_path)).iloc[0]
+    assert fail["event"] == "fail"
+    assert fail["worst_var"] == "Pd"
+    assert fail["worst_ddt"] == 489.4

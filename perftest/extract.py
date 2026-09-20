@@ -98,6 +98,26 @@ def _settings_finished(case_dir):
         return re.search(r"(?m)^\s*finished\s*=", f.read()) is not None
 
 
+def _fail_reasons(snes):
+    """
+    How the failed solves failed, as "<reason>:<count>", commonest first.
+
+    One string rather than a column per PETSc reason, because the index is read
+    whole and reasons are sparse. The codes are PETSc's SNESConvergedReason:
+    -9 is DTOL, the residual growing past the divergence tolerance; -5 is
+    MAX_IT; -6 a line-search failure; -3 a failed linear solve. Which one
+    dominates says which setting is worth changing.
+    """
+
+    if "event" not in snes:
+        return ""
+    fails = snes[snes["event"] == "fail"]
+    if fails.empty:
+        return ""
+    counts = fails["reason"].astype(int).value_counts()
+    return " ".join(f"{reason}:{count}" for reason, count in counts.items())
+
+
 def classify_outcome(finished, snes_failed, n_steps, expected):
     """
     What happened to a run: (outcome, warning). Either may be None.
@@ -693,10 +713,12 @@ def _physics_gates(ds, report):
     """
     The correctness quantities, in SI, at the end of the test.
 
-    Only the target maxima are computed. A separatrix value needs a poloidal
-    location to be meaningful and this is a connected double null with four
-    midplanes, so `ne_sep`/`te_sep` wait for that convention rather than being
-    filled with an arbitrary choice.
+    `ne_sep` and `te_sep` are the OUTER midplane, FIRST SOL ring, the same
+    location and arithmetic the live monitor draws: radial index ixseps1, and
+    the poloidal index midway between jyseps1_2 and jyseps2_2. A separatrix
+    value needs a poloidal location to be meaningful, and this is a connected
+    double null with four midplanes, so the column names are short for that one
+    (ruled by the user, 2026-09-20).
     """
 
     import numpy as np
@@ -717,9 +739,20 @@ def _physics_gates(ds, report):
     except Exception as exc:  # noqa: BLE001 - one missing metric must not lose a run
         report.warnings.append(f"target quantities not extracted: {exc}")
 
-    report.warnings.append(
-        "ne_sep/te_sep left empty: no separatrix location convention is agreed"
-    )
+    try:
+        meta = dict(ds.metadata) if hasattr(ds, "metadata") else {}
+        j1_2, j2_2 = meta["jyseps1_2g"], meta["jyseps2_2g"]
+        y_omp = int((j2_2 - j1_2) / 2) + j1_2
+        x_sep = meta["ixseps1"]
+        for column, field in (("ne_sep", "Ne"), ("te_sep", "Te")):
+            if field not in ds:
+                continue
+            value = ds[field].isel(t=-1, x=x_sep, theta=y_omp).values
+            if np.isfinite(value).all():
+                out[column] = float(value)
+    except Exception as exc:  # noqa: BLE001 - one missing metric must not lose a run
+        report.warnings.append(f"separatrix quantities not extracted: {exc}")
+
     return out
 
 
@@ -874,6 +907,7 @@ def extract_case(
         # from how much work the failures cost.
         measured["solver_fails"] = int(snes["solver_fails"].sum())
         measured["solver_fails_max"] = int(snes["solver_fails"].max())
+        measured["fail_reasons"] = _fail_reasons(snes)
 
     if events is not None:
         total = events["time_max"].get("Total BOUT++")

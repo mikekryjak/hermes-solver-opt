@@ -329,6 +329,31 @@ _SNES_STEP = re.compile(
     r"(?:,\s*SNES failures:\s*(?P<solver_fails>\d+))?"
 )
 
+# A failed solve prints the marker, then the PETSc reason, then one line per
+# evolved variable giving its range and the range of its rate of change, and
+# then nothing more: the attempt itself never prints a `Time:` line. The next
+# `Time:` line belongs to the retry at a cut timestep.
+_SNES_FAIL_BLOCK = (
+    re.escape(SNES_FAILED_MARKER)
+    + r"\s*\n\s*\n\s*Return code:\s*(?P<fail_code>-?\d+),\s*"
+    r"reason:\s*(?P<fail_reason>-?\d+)\n"
+    r"(?P<fields>(?:.*\n)*?)"
+    # Two failures in a row print two blocks with no step between them, so the
+    # next marker ends a block as surely as the next `Time:` does. Without this
+    # a run's consecutive failures collapse into one row: 326 became 267.
+    r"(?=Time:|" + re.escape(SNES_FAILED_MARKER) + r"|\Z)"
+)
+
+# One pattern over both, so the rows come back in the order they happened and a
+# failure sits immediately before the retry that followed it.
+_SNES_EVENT = re.compile(_SNES_FAIL_BLOCK + "|" + _SNES_STEP.pattern)
+
+_FAIL_FIELD = re.compile(
+    r"^(?P<name>\S+)\s*:\s*\((?P<lo>[-\d.eE+]+) -> (?P<hi>[-\d.eE+]+)\),\s*"
+    r"ddt:\s*\((?P<ddt_lo>[-\d.eE+]+) -> (?P<ddt_hi>[-\d.eE+]+)\)\s*$",
+    re.M,
+)
+
 
 def build_type(flags):
     """The CMake build type behind a "Compiled with flags" line.
@@ -445,20 +470,55 @@ def snes_steps(case_dir):
 
     text = _read_text(case_dir, "BOUT.log.0")
     rows = []
-    for m in _SNES_STEP.finditer(text):
-        row = m.groupdict()
+    for m in _SNES_EVENT.finditer(text):
+        if m.group("time") is not None:
+            row = m.groupdict()
+            rows.append(
+                {
+                    "event": "step",
+                    "time": float(row["time"]),
+                    "timestep": float(row["timestep"]),
+                    "nl_its": int(row["nl_its"]),
+                    "lin_its": int(row["lin_its"]),
+                    "reason": int(row["reason"]),
+                    "solver_fails": int(row["solver_fails"] or 0),
+                }
+            )
+            continue
+
+        worst_var, worst_ddt = _worst_ddt(m.group("fields") or "")
         rows.append(
             {
-                "time": float(row["time"]),
-                "timestep": float(row["timestep"]),
-                "nl_its": int(row["nl_its"]),
-                "lin_its": int(row["lin_its"]),
-                "reason": int(row["reason"]),
-                "solver_fails": int(row["solver_fails"] or 0),
+                "event": "fail",
+                "reason": int(m.group("fail_reason")),
+                "worst_var": worst_var,
+                "worst_ddt": worst_ddt,
             }
         )
 
-    return pd.DataFrame(
+    frame = pd.DataFrame(
         rows,
-        columns=["time", "timestep", "nl_its", "lin_its", "reason", "solver_fails"],
+        columns=["event", "time", "timestep", "nl_its", "lin_its", "reason",
+                 "solver_fails", "worst_var", "worst_ddt"],
     )
+    # A failed attempt prints no time of its own. The retry that follows carries
+    # the time the solver was at, so the failure is timed by it rather than left
+    # blank -- and the last failure of a run that never retried stays blank.
+    if not frame.empty:
+        frame["time"] = frame["time"].bfill()
+    return frame
+
+
+def _worst_ddt(fields):
+    """
+    The evolved variable with the largest rate of change in a failure block,
+    and that rate. This is the equation that ran away, which is what a failure
+    block is worth reading for.
+    """
+
+    worst_var, worst_ddt = None, None
+    for m in _FAIL_FIELD.finditer(fields):
+        for value in (float(m.group("ddt_lo")), float(m.group("ddt_hi"))):
+            if worst_ddt is None or abs(value) > abs(worst_ddt):
+                worst_var, worst_ddt = m.group("name"), value
+    return worst_var, worst_ddt
