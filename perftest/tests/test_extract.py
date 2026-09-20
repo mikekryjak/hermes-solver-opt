@@ -20,6 +20,7 @@ import xhermes  # noqa: F401 -- registers the .hermes accessors
 
 from perftest.extract import (
     Report,
+    classify_outcome,
     _ddt_series,
     _infer_test,
     _interior,
@@ -230,3 +231,43 @@ def test_columns_the_schema_has_never_heard_of_are_kept():
 )
 def test_test_name_survives_hyphens_in_the_name(case_dir, expected):
     assert _infer_test(case_dir) == expected
+
+
+# =============================================================================
+# OUTCOME -- what the run's ending is called
+# =============================================================================
+def test_recovered_snes_failures_do_not_make_a_run_a_failure():
+    """BOUT++ prints the failed-SNES marker every time it recovers from a
+    failure by cutting the timestep. Eleven runs in the store were recorded as
+    snes_failure on that marker alone, including two parents that finished in
+    54 s and 41 min with all 101 steps written."""
+
+    assert classify_outcome(True, True, 101, 101) == ("completed", None)
+
+
+def test_a_run_that_never_finished_and_hit_snes_failures_is_a_failure():
+    assert classify_outcome(False, True, 14, 101) == ("snes_failure", None)
+
+
+def test_a_clean_full_run_is_completed():
+    assert classify_outcome(True, False, 51, 51) == ("completed", None)
+
+
+def test_a_killed_run_without_the_marker_is_left_to_a_human():
+    outcome, warning = classify_outcome(False, False, 14, 101)
+    assert outcome is None
+    assert "killed or is still" in warning
+
+
+def test_a_finished_but_short_run_is_left_to_a_human():
+    outcome, warning = classify_outcome(True, True, 30, 101)
+    assert outcome is None
+    assert "30 of 101" in warning
+
+
+def test_an_unknown_step_count_is_never_called_completed():
+    """nout unreadable: expected is None, so a full run cannot be confirmed."""
+
+    outcome, warning = classify_outcome(True, False, 51, None)
+    assert outcome is None
+    assert "51 of None" in warning

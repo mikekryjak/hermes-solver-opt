@@ -98,6 +98,35 @@ def _settings_finished(case_dir):
         return re.search(r"(?m)^\s*finished\s*=", f.read()) is not None
 
 
+def classify_outcome(finished, snes_failed, n_steps, expected):
+    """
+    What happened to a run: (outcome, warning). Either may be None.
+
+    Reaching BoutFinalise with every expected output step written is a
+    completed run, however many SNES failures the log holds. BOUT++ prints the
+    failed-SNES marker on EVERY failure it recovers from by cutting the
+    timestep, which is ordinary behaviour -- the test5 runs of 2026-08-01
+    finished normally with 731 of them. Only a run that never reached its own
+    exit can be classified as a failure from that marker.
+
+    Anything else is left empty for a human call rather than guessed at.
+    """
+
+    if finished and expected and n_steps == expected:
+        return "completed", None
+    if not finished and snes_failed:
+        return "snes_failure", None
+    if not finished:
+        return None, (
+            "BOUT.settings is the startup stub: the run was killed or is still"
+            " going. outcome left for a human call"
+        )
+    return None, (
+        f"finished but wrote {n_steps} of {expected} output steps;"
+        " outcome left for a human call"
+    )
+
+
 def _inp_value(case_dir, section, key):
     """One value from BOUT.inp, or None. Enough for the few settings needed to
     find the grid file and the expected length; not a general options reader."""
@@ -820,20 +849,13 @@ def extract_case(
     nout = _inp_value(case_dir, "", "nout") or _inp_value(case_dir, "run", "nout")
     expected = int(nout) + 1 if nout and nout.isdigit() else None
 
-    if header["snes_failed"]:
-        measured["outcome"] = "snes_failure"
-    elif not finished:
-        report.warnings.append(
-            "BOUT.settings is the startup stub: the run was killed or is still"
-            " going. outcome left for a human call"
-        )
-    elif expected and len(steps) == expected:
-        measured["outcome"] = "completed"
-    else:
-        report.warnings.append(
-            f"finished but wrote {len(steps)} of {expected} output steps;"
-            " outcome left for a human call"
-        )
+    outcome, warning = classify_outcome(
+        finished, header["snes_failed"], len(steps), expected
+    )
+    if outcome:
+        measured["outcome"] = outcome
+    if warning:
+        report.warnings.append(warning)
 
     measured["wall_s"] = header["wall_s"]
     measured["run_started"] = header["run_started"]
