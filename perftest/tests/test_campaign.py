@@ -296,6 +296,55 @@ def test_a_crash_never_sets_the_cutoff(runner):
     assert cutoff == pytest.approx(3000.0)
 
 
+def test_a_fast_variant_never_shortens_the_cutoff(runner):
+    """The cutoff anchors on the baseline, so a configuration that happens to
+    be very fast cannot push the kill time below what a normal one needs.
+
+    On 2026-09-21 lag_jacobian=1 ran test4_2.0-3.0ms in 36 s against the
+    baseline's 213 s. Anchored on the fastest run, the cutoff fell to 108 s and
+    killed the next two configurations -- and would have killed the baseline.
+    """
+
+    add_row(runner, case_dir="base", test="test2_5.0-5.5ms", outcome="completed",
+            recipe="SNES-MUMPS-3", varied="", wall_s="213",
+            state=idx.STATE_RECORDED)
+    add_row(runner, case_dir="fast", test="test2_5.0-5.5ms", outcome="completed",
+            recipe="SNES-MUMPS-3", varied="solver:lag_jacobian=1", wall_s="36",
+            state=idx.STATE_RECORDED)
+
+    assert runner.best_wall("test2_5.0-5.5ms") == pytest.approx(36.0)
+    assert runner.baseline_wall("test2_5.0-5.5ms") == pytest.approx(213.0)
+
+    cutoff, why = runner.cutoff_s("test2_5.0-5.5ms")
+    assert cutoff == pytest.approx(639.0)
+    assert "baseline" in why
+    # The baseline's own time must survive its own cutoff, or the reference
+    # every result is read against could never be measured again.
+    assert cutoff > 213.0
+
+
+def test_the_best_anchors_the_cutoff_until_a_baseline_exists(runner):
+    """A window whose baseline has not run yet still gets a limit."""
+
+    add_row(runner, case_dir="v", test="test2_5.0-5.5ms", outcome="completed",
+            recipe="SNES-MUMPS-3", varied="solver:lag_jacobian=1", wall_s="100",
+            state=idx.STATE_RECORDED)
+    assert runner.baseline_wall("test2_5.0-5.5ms") is None
+    cutoff, why = runner.cutoff_s("test2_5.0-5.5ms")
+    assert cutoff == pytest.approx(300.0) and "the best" in why
+
+
+def test_a_baseline_of_another_recipe_does_not_anchor(runner):
+    """`varied` empty is not enough: the row must be the campaign's own
+    baseline recipe, or a walk between recipes would anchor the cutoff on
+    whichever one happened to be recorded."""
+
+    add_row(runner, case_dir="other", test="test2_5.0-5.5ms", outcome="completed",
+            recipe="CVODE-1", varied="", wall_s="900",
+            state=idx.STATE_RECORDED)
+    assert runner.baseline_wall("test2_5.0-5.5ms") is None
+
+
 # =============================================================================
 # Resumability: the index is the only state
 # =============================================================================

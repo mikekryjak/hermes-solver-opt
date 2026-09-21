@@ -404,7 +404,32 @@ class Runner:
         return shutil.disk_usage(target).free / GB
 
     def best_wall(self, window):
-        """The fastest completed run of this window, or None.
+        """The fastest completed run of this window, whatever it varied, or None.
+
+        This is the campaign's best time, reported as a result. It is no longer
+        what sets the kill cutoff -- see `cutoff_s` for why.
+        """
+
+        return self._fastest(window)
+
+    def baseline_wall(self, window):
+        """The fastest completed BASELINE run of this window, or None.
+
+        The baseline is the campaign's own recipe with nothing overridden, so
+        `varied` is empty. A row that varied something is a different
+        configuration and cannot anchor the cutoff, however fast it was.
+        """
+
+        return self._fastest(
+            window,
+            only=lambda row: (
+                (row.get("recipe") or "") == self.campaign.recipe
+                and not (row.get("varied") or "").strip()
+            ),
+        )
+
+    def _fastest(self, window, only=None):
+        """The shortest completed wall time for this window, or None.
 
         Only completed runs. A timeout is a lower bound and a crash is not
         about the recipe at all, so letting either set the cutoff would make
@@ -417,6 +442,8 @@ class Runner:
                 continue
             if row.get("outcome") != SCORING_OUTCOME:
                 continue
+            if only is not None and not only(row):
+                continue
             try:
                 times.append(float(row.get("wall_s") or ""))
             except ValueError:
@@ -424,14 +451,27 @@ class Runner:
         return min(times) if times else None
 
     def cutoff_s(self, window):
-        """When to kill a run of this window, and why that is the number."""
+        """When to kill a run of this window, and why that is the number.
 
-        best = self.best_wall(window)
-        if best is None:
+        Anchored on the baseline, not on the fastest run. The fastest run moves
+        down as the campaign succeeds, and on 2026-09-21 that killed two valid
+        configurations: lag_jacobian=1 came in at 36 s on test4_2.0-3.0ms, so
+        the cutoff became 108 s, below the 213 s the baseline itself takes.
+        Anchoring on the baseline stops the number moving once it is measured,
+        and makes cutoff_factor mean what it sounds like -- how much worse than
+        the reference is worth waiting for.
+        """
+
+        anchor, what = self.baseline_wall(window), "the baseline"
+        if anchor is None:
+            # No baseline for this window yet, so the best available time is
+            # the only anchor there is. It is still better than no limit.
+            anchor, what = self.best_wall(window), "the best"
+        if anchor is None:
             return float(self.campaign.limits["max_wall_s"]), "no completed run yet"
-        cutoff = best * self.campaign.limits["cutoff_factor"]
+        cutoff = anchor * self.campaign.limits["cutoff_factor"]
         capped = min(cutoff, float(self.campaign.limits["max_wall_s"]))
-        return capped, f"{self.campaign.limits['cutoff_factor']}x the best {best:.0f} s"
+        return capped, f"{self.campaign.limits['cutoff_factor']}x {what} {anchor:.0f} s"
 
     # --- gates ------------------------------------------------------------
     def check_gates(self):
