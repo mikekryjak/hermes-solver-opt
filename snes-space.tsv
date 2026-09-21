@@ -1,0 +1,932 @@
+option	kind	default	family	object	depends	source	help	role	n_values	in_build
+solver:asinh_vars	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:420	Apply asinh() to all variables?	tuning		bout
+solver:atol	real	1e-16	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:285	Absolute tolerance in SNES solve	tuning		bout
+solver:diagnose	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:354	Print additional diagnostics	tuning		bout
+solver:diagnose_failures	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:355	Print more diagnostics when SNES fails	tuning		bout
+solver:dt_min_reset	real	1e-6	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:273	If dt falls below this, reset to starting dt	tuning		bout
+solver:equation_form	enum	BoutSnesEquationForm::rearranged_backwar	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:278	Form of equation to solve: rearranged_backward_euler (default);	tuning		bout
+solver:jacobian_export_kind	enum	bout::JacobianExportKind::system	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:426	Which Jacobian to save: system, scaled, or rhs	tuning		bout
+solver:jacobian_persists	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:390	Re-use Jacobian and preconditioner across nonlinear solves	tuning		bout
+solver:kD	real	0.2	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:345	Derivative PID parameter	tuning		bout
+solver:kI	real	0.3	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:344	Integral PID parameter	tuning		bout
+solver:kP	real	0.7	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:343	Proportional PID parameter	tuning		bout
+solver:ksp_type	enum	default	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:362	Linear solver type. By default let PETSc decide (gmres)	tuning	47	bout
+solver:kspsetinitialguessnonzero	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:365	Set the initial guess to be non-zero	tuning		bout
+solver:lag_jacobian	int	50	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:386	Re-use the Jacobian this number of SNES iterations	tuning		bout
+solver:last_failure_weight	real	0.1	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:350	Weighting of last timestep in recent failure rate	tuning		bout
+solver:line_search_type	enum	default	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:377	Line search type: basic, bt, l2, cp, nleqerr	tuning		bout
+solver:lower_its	real	static_cast<int>(maxits * 0.5)	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:297	Iterations below which the next timestep is increased	tuning		bout
+solver:matrix_free	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:380	Use matrix free Jacobian?	tuning		bout
+solver:matrix_free_operator	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:383	Use matrix free Jacobian-vector operator?	tuning		bout
+solver:max_nonlinear_iterations	int	50	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:294	Maximum number of nonlinear iterations per SNES solve	tuning		bout
+solver:max_snes_failures	int	10	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:303	Abort after this number of consecutive failures	tuning		bout
+solver:max_timestep	real	1e37	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:276	Maximum timestep	tuning		bout
+solver:maxf	int	10000	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:291	Maximum number of function evaluations per SNES solve	tuning		bout
+solver:maxl	int	20	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:368	Maximum number of linear iterations	tuning		bout
+solver:output_residual_ratio	real	0.5	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:268	Trigger an output when residual falls by this ratio	tuning		bout
+solver:output_trigger	enum	BoutSnesOutput::fixed_time_interval	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:264	Decides when to save outputs. fixed_time_interval, residual_ratio	tuning		bout
+solver:pc_hypre_type	enum	pilut	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:373	hypre preconditioner type: euclid, pilut, parasails,	tuning	7	bout
+solver:pc_type	enum	default	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:370	Preconditioner type. By default lets PETSc decide (ilu or bjacobi)	tuning	52	bout
+solver:pid_consider_failures	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:347	Reduce timestep increases if recent solves have failed	tuning		bout
+solver:predictor	bool	true	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:358	Use linear predictor?	tuning		bout
+solver:prune_abstol	real	1e-16	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:400	Prune values with absolute values smaller than this	tuning		bout
+solver:prune_fraction	real	0.2	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:403	Prune if fraction of small elements is larger than this	tuning		bout
+solver:prune_jacobian	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:397	Remove small elements in the Jacobian?	tuning		bout
+solver:pseudo_alpha	real	100. * atol * timestep	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:320	Sets timestep using dt = alpha / residual	tuning		bout
+solver:pseudo_alpha_minimum	real	0.1 * pseudo_alpha	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:323	Minimum value of pseudo_alpha	tuning		bout
+solver:pseudo_growth_factor	real	1.1	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:326	PTC growth factor on success	tuning		bout
+solver:pseudo_max_ratio	real	2.	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:332	PTC maximum timestep ratio between neighbors	tuning		bout
+solver:pseudo_reduction_factor	real	0.5	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:329	PTC reduction factor on failure	tuning		bout
+solver:pseudo_strategy	enum	BoutPTCStrategy::inverse_residual	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:317	PTC strategy to use when setting timesteps	tuning		bout
+solver:rescale_period	int	30	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:413	Number of iterations before recalculating variable scaling	tuning		bout
+solver:rescale_threshold	real	100.	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:416	How much change their should be in the norm of the	tuning		bout
+solver:rtol	real	1e-10	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:286	Relative tolerance in SNES solve	tuning		bout
+solver:save_jacobian	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:423	Save PETSc Jacobian diagnostics to datadir	tuning		bout
+solver:scale_rhs	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:406	Scale time derivatives (Jacobian row scaling)?	tuning		bout
+solver:scale_vars	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:409	Scale variables to be order unity?	tuning		bout
+solver:snes_type	enum	anderson	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:282	PETSc nonlinear solver method to use	tuning	21	bout
+solver:stol	real	1e-8	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:287	Convergence tolerance in terms of the norm of the change in	tuning		bout
+solver:target_its	int	7	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:342	Target snes iterations	tuning		bout
+solver:timestep	real	1.0	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:272	Initial backward Euler timestep	tuning		bout
+solver:timestep_control	enum	BoutSnesTimestep::pid_nonlinear_its	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:335	Timestep control method	tuning		bout
+solver:timestep_factor	real	1.1	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:338	When timestep_control=residual_ratio, multiply timestep	tuning		bout
+solver:timestep_factor_on_failure	real	0.5	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:306	Multiply timestep on convergence failure	tuning		bout
+solver:timestep_factor_on_lower_its	real	1.4	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:314	Multiply timestep if iterations are below lower_its	tuning		bout
+solver:timestep_factor_on_upper_its	real	0.9	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:310	Multiply timestep if iterations exceed upper_its	tuning		bout
+solver:upper_its	real	static_cast<int>(maxits * 0.8)	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:300	Iterations above which the next timestep is reduced	tuning		bout
+solver:use_coloring	bool	true	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:393	Use matrix coloring to calculate Jacobian?	tuning		bout
+solver:use_precon	bool	false	bout	BOUT++ SNES solver	solver:type=snes	/home/mike/work/hermes-3/external/BOUT-dev/src/solver/impls/snes/snes.cxx:359	Use user-supplied preconditioner?	tuning		bout
+pc_gamg_agg_nsmooths	int	"""PCGAMGSetNSmooths"""	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:292	None	tuning		yes
+pc_gamg_agg_nsmooths	int	"*/ /* ""PCGAMGSetNSmooths_AGG"""	gamg	geo	pc_type=gamg	src/ksp/pc/impls/gamg/geo.c:98	None	tuning		yes
+pc_gamg_aggressive_coarsening	int	pc_gamg_agg->aggressive_coarsening_level	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:294	Number of aggressive coarsening (MIS-2) levels from finest	tuning		yes
+pc_gamg_aggressive_mis_k	int	pc_gamg_agg->aggressive_mis_k	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:306	Number of levels of multigrid to use.	tuning		yes
+pc_gamg_aggressive_square_graph	bool	new_sqr_graph	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:297	Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening	tuning		yes
+pc_gamg_asm_hem_aggs	int	pc_gamg->asm_hem_aggs	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1831	Number of HEM matching passed in aggregates for ASM smoother	tuning		yes
+pc_gamg_asm_use_agg	bool	pc_gamg->use_aggs_in_asm	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1824	Use aggregation aggregates for ASM smoother	tuning		yes
+pc_gamg_classical_interp_threshold	real	cls->interp_threshold	gamg	classical	pc_type=gamg	src/ksp/pc/impls/gamg/classical.c:892	Threshold for classical interpolator entries	tuning		yes
+pc_gamg_classical_nsmooths	int	cls->nsmooths	gamg	classical	pc_type=gamg	src/ksp/pc/impls/gamg/classical.c:893	Threshold for classical interpolator entries	tuning		yes
+pc_gamg_classical_type	enum	cls->prolongtype	gamg	classical	pc_type=gamg	src/ksp/pc/impls/gamg/classical.c:890	Type of Classical AMG prolongation	tuning		yes
+pc_gamg_coarse_eq_limit	int	pc_gamg->coarse_eq_limit	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1830	Limit on number of equations for the coarse grid	tuning		yes
+pc_gamg_coarse_grid_layout_type	enum	(PetscEnum)pc_gamg->layout_type	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1827	compact: place reduced grids on processes in natural order; spread: distribute to whole machine for more memory bandwidt	tuning	2	yes
+pc_gamg_cpu_pin_coarse_grids	bool	pc_gamg->cpu_pin_coarse_grids	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1826	Pin coarse grids to the CPU	tuning		yes
+pc_gamg_eigenvalues	array		gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1854	extreme eigenvalues for smoothed aggregation	tuning		yes
+pc_gamg_graph_symmetrize	bool	pc_gamg_agg->graph_symmetrize	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:307	Symmetrize graph for coarsening	tuning		yes
+pc_gamg_injection_index	array		gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1861	Array of indices to use to use injection coarse grid space	tuning		yes
+pc_gamg_low_memory_threshold_filter	bool	pc_gamg_agg->use_low_mem_filter	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:305	Use the (built-in) low memory graph/matrix filter	tuning		yes
+pc_gamg_mis_k_minimum_degree_ordering	bool	pc_gamg_agg->use_minimum_degree_ordering	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:304	Use minimum degree ordering for greedy MIS	tuning		yes
+pc_gamg_parallel_coarse_grid_solver	bool	pc_gamg->use_parallel_coarse_grid_solver	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1825	Use parallel coarse grid solver (otherwise put last grid on one process)	tuning		yes
+pc_gamg_process_eq_limit	int	pc_gamg->min_eq_proc	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1829	Limit (goal) on number of equations per process on coarse grids	tuning		yes
+pc_gamg_rank_reduction_factors	array		gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1845	Manual schedule of coarse grid reduction factors that overrides internal heuristics (0 for first reduction puts one proc	tuning		yes
+pc_gamg_recompute_esteig	bool	pc_gamg->recompute_esteig	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1822	Set flag to recompute eigen estimates for Chebyshev when matrix changes	tuning		yes
+pc_gamg_repartition	bool	pc_gamg->repart	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1820	Repartion coarse grids	tuning		yes
+pc_gamg_reuse_interpolation	bool	pc_gamg->reuse_prol	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1823	Reuse prolongation operator	tuning		yes
+pc_gamg_square_graph	int	nsq_graph_old	gamg	agg	pc_type=gamg	src/ksp/pc/impls/gamg/agg.c:296	Number of aggressive coarsening (MIS-2) levels from finest (deprecated alias for -pc_gamg_aggressive_coarsening)	tuning		yes
+pc_gamg_threshold	array		gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1834	Relative threshold to use for dropping edges in aggregation graph	tuning		yes
+pc_gamg_threshold_scale	real	pc_gamg->threshold_scale	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1832	Scaling of threshold for each level not specified	tuning		yes
+pc_gamg_type	enum	pc_gamg->gamg_type_name	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1818	Type of AMG method (only 'agg' supported and useful)	tuning		yes
+pc_gamg_use_sa_esteig	bool	pc_gamg->use_sa_esteig	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1821	Use eigen estimate from smoothed aggregation for smoother	tuning		yes
+pc_mg_levels	int	-1	gamg	gamg	pc_type=gamg	src/ksp/pc/impls/gamg/gamg.c:1816	Number of Levels	tuning		yes
+pc_hypre_ads_amg_options	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1653	AMG options for vector AMG solver inside ADS	tuning		yes
+pc_hypre_ads_amg_theta	real	jac->as_amg_beta_theta	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1651	Threshold for strong coupling of vector AMG solver inside ADS	tuning		yes
+pc_hypre_ads_ams_cycle_type	int	jac->ams_cycle_type	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1642	Cycle type for AMS solver inside ADS	tuning		yes
+pc_hypre_ads_ams_options	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1641	AMG options for AMS solver inside ADS	tuning		yes
+pc_hypre_ads_ams_theta	real	jac->as_amg_alpha_theta	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1639	Threshold for strong coupling of AMS solver inside ADS	tuning		yes
+pc_hypre_ads_cycle_type	int	jac->ads_cycle_type	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1630	Cycle type for ADS multigrid	tuning		yes
+pc_hypre_ads_max_iter	int	jac->as_max_iter	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1628	Maximum number of ADS multigrid iterations within PCApply	tuning		yes
+pc_hypre_ads_omega	real	jac->as_omega	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1637	SSOR coefficient for ADS smoother	tuning		yes
+pc_hypre_ads_print_level	int	jac->as_print	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1626	Debugging output level for ADS	diagnostic		yes
+pc_hypre_ads_relax_times	int	jac->as_relax_times	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1635	Number of relaxation steps for ADS smoother	tuning		yes
+pc_hypre_ads_relax_type	int	jac->as_relax_type	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1634	Relaxation type for ADS smoother	tuning		yes
+pc_hypre_ads_relax_weight	real	jac->as_relax_weight	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1636	Relaxation weight for ADS smoother	tuning		yes
+pc_hypre_ads_tol	real	jac->as_tol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1632	Error tolerance for ADS multigrid	tuning		yes
+pc_hypre_ams_amg_alpha_options	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1545	AMG options for vector Poisson	tuning		yes
+pc_hypre_ams_amg_alpha_theta	real	jac->as_amg_alpha_theta	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1543	Threshold for strong coupling of vector Poisson AMG solver	tuning		yes
+pc_hypre_ams_amg_beta_options	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1555	AMG options for scalar Poisson solver	tuning		yes
+pc_hypre_ams_amg_beta_theta	real	jac->as_amg_beta_theta	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1553	Threshold for strong coupling of scalar Poisson AMG solver	tuning		yes
+pc_hypre_ams_cycle_type	int	jac->ams_cycle_type	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1534	Cycle type for AMS multigrid	tuning		yes
+pc_hypre_ams_max_iter	int	jac->as_max_iter	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1532	Maximum number of AMS multigrid iterations within PCApply	tuning		yes
+pc_hypre_ams_omega	real	jac->as_omega	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1541	SSOR coefficient for AMS smoother	tuning		yes
+pc_hypre_ams_print_level	int	jac->as_print	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1530	Debugging output level for AMS	diagnostic		yes
+pc_hypre_ams_projection_frequency	int	jac->ams_proj_freq	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1563	Frequency at which a projection onto the compatible subspace for problems with zero conductivity regions is performed	tuning		yes
+pc_hypre_ams_relax_times	int	jac->as_relax_times	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1539	Number of relaxation steps for AMS smoother	tuning		yes
+pc_hypre_ams_relax_type	int	jac->as_relax_type	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1538	Relaxation type for AMS smoother	tuning		yes
+pc_hypre_ams_relax_weight	real	jac->as_relax_weight	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1540	Relaxation weight for AMS smoother	tuning		yes
+pc_hypre_ams_tol	real	jac->as_tol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1536	Error tolerance for AMS multigrid	tuning		yes
+pc_hypre_boomeramg_Adroptol	real	jac->Adroptol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1220	Defines the drop tolerance for the A-matrices from the 2nd level of AMG	tuning		yes
+pc_hypre_boomeramg_Adroptype	int	"-1: infinity norm"""	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1223	None	tuning		yes
+pc_hypre_boomeramg_P_max	int	jac->pmax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:953	Max elements per row for interpolation operator (0=unlimited)	tuning		yes
+pc_hypre_boomeramg_agg_nl	int	jac->agg_nl	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:956	Number of levels of aggressive coarsening	tuning		yes
+pc_hypre_boomeramg_agg_num_paths	int	jac->agg_num_paths	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:959	Number of paths for aggressive coarsening	tuning		yes
+pc_hypre_boomeramg_coarsen_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1180	Coarsen type	tuning	11	yes
+pc_hypre_boomeramg_cycle_type	enum	2	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:934	Cycle type	tuning		yes
+pc_hypre_boomeramg_eu_bj	bool	PETSC_FALSE	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1104	Use Block Jacobi for ILU in Euclid smoother?	tuning		yes
+pc_hypre_boomeramg_eu_droptolerance	real	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1097	Drop tolerance for ILU(k) in Euclid smoother	tuning		yes
+pc_hypre_boomeramg_eu_level	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1089	Number of levels for ILU(k) in Euclid smoother	tuning		yes
+pc_hypre_boomeramg_filterthresholdR	real	jac->Rfilterthreshold	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1217	Filter threshold for R	tuning		yes
+pc_hypre_boomeramg_grid_sweeps_all	int	jac->gridsweeps[0]	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:968	Number of sweeps for the up and down grid levels	tuning		yes
+pc_hypre_boomeramg_grid_sweeps_coarse	int	jac->gridsweeps[2]	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:999	Number of sweeps for the coarse level	tuning		yes
+pc_hypre_boomeramg_grid_sweeps_down	int	jac->gridsweeps[0]	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:989	Number of sweeps for the down cycles	tuning		yes
+pc_hypre_boomeramg_grid_sweeps_up	int	jac->gridsweeps[1]	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:994	Number of sweeps for the up cycles	tuning		yes
+pc_hypre_boomeramg_ilu_drop_tol	real	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1069	Drop tolerance for ILU	tuning		yes
+pc_hypre_boomeramg_ilu_iterative_setup_maxiter	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1041	Set ILU iterative setup maximum iteration count	tuning		yes
+pc_hypre_boomeramg_ilu_iterative_setup_option	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1037	Set ILU iterative setup option	tuning		yes
+pc_hypre_boomeramg_ilu_iterative_setup_tolerance	real	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1045	Set ILU iterative setup tolerance	tuning		yes
+pc_hypre_boomeramg_ilu_iterative_setup_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREILUIterSe	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1033	Set ILU iterative setup type	tuning	5	yes
+pc_hypre_boomeramg_ilu_level	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1057	Set ILU level	tuning		yes
+pc_hypre_boomeramg_ilu_local_reordering	bool	PETSC_FALSE	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1085	Enable local reordering	tuning		yes
+pc_hypre_boomeramg_ilu_logging	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1053	Set ILU logging level	diagnostic		yes
+pc_hypre_boomeramg_ilu_lower_jacobi_iters	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1077	Set lower Jacobi iteration count	tuning		yes
+pc_hypre_boomeramg_ilu_max_nnz_per_row	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1061	Set maximum NNZ per row	tuning		yes
+pc_hypre_boomeramg_ilu_maxiter	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1065	Set ILU max iterations	tuning		yes
+pc_hypre_boomeramg_ilu_print_level	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1049	Set ILU print level	diagnostic		yes
+pc_hypre_boomeramg_ilu_tri_solve	bool	PETSC_FALSE	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1073	Enable triangular solve	tuning		yes
+pc_hypre_boomeramg_ilu_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREILUType)	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1029	Choose ILU Type	tuning	46	yes
+pc_hypre_boomeramg_ilu_upper_jacobi_iters	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1081	Set upper Jacobi iteration count	tuning		yes
+pc_hypre_boomeramg_interp_refine	int	jac->interp_refine	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:987	Preprocess the interpolation matrix through iterative weight refinement	tuning		yes
+pc_hypre_boomeramg_interp_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1275	Interpolation type	tuning	19	yes
+pc_hypre_boomeramg_keeptranspose	bool	jac->keeptranspose	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1310	Avoid transpose matvecs in preconditioner application	tuning		yes
+pc_hypre_boomeramg_max_coarse_size	int	jac->maxc	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1186	Maximum size of coarsest grid	tuning		yes
+pc_hypre_boomeramg_max_iter	int	jac->maxiter	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:941	Maximum iterations used PER hypre call	tuning		yes
+pc_hypre_boomeramg_max_levels	int	jac->maxlevels	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:939	Number of levels (of grids) allowed	tuning		yes
+pc_hypre_boomeramg_max_row_sum	real	jac->maxrowsum	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:964	Maximum row sum	tuning		yes
+pc_hypre_boomeramg_measure_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1174	Measure type	tuning	2	yes
+pc_hypre_boomeramg_min_coarse_size	int	jac->minc	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1188	Minimum size of coarsest grid	tuning		yes
+pc_hypre_boomeramg_no_CF	bool	PETSC_FALSE	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1168	Do not use CF-relaxation	tuning		yes
+pc_hypre_boomeramg_nodal_coarsen	int	jac->nodal_coarsening	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:977	Use a nodal based coarsening 1-6	tuning		yes
+pc_hypre_boomeramg_nodal_coarsen_diag	int	jac->nodal_coarsening_diag	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:979	Diagonal in strength matrix for nodal based coarsening 0-2	tuning		yes
+pc_hypre_boomeramg_nodal_relaxation	bool	PETSC_FALSE	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1299	Nodal relaxation via Schwarz	tuning		yes
+pc_hypre_boomeramg_numfunctions	int	bs	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:947	Number of functions	tuning		yes
+pc_hypre_boomeramg_outer_relax_weight_all	real	jac->outerrelaxweight	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1152	Outer relaxation weight for all levels (-k = determined with k CG steps)	tuning		yes
+pc_hypre_boomeramg_outer_relax_weight_level	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1160	Set the outer relaxation weight for a particular level (weight,level)	tuning		yes
+pc_hypre_boomeramg_parasails_sym	enum	PETSC_STATIC_ARRAY_LENGTH(symtlist)	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1314	Symmetry of matrix and preconditioner	tuning	3	yes
+pc_hypre_boomeramg_postrelax	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1226	Defines postrelax scheme	tuning		yes
+pc_hypre_boomeramg_prerelax	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1225	Defines prerelax scheme	tuning		yes
+pc_hypre_boomeramg_print_debug	bool	&flg	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1290	Print debug information	diagnostic		yes
+pc_hypre_boomeramg_print_statistics	bool	&flg	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1281	Print statistics	diagnostic		yes
+pc_hypre_boomeramg_relax_type_all	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1111	Relax type for the up and down cycles	tuning	19	yes
+pc_hypre_boomeramg_relax_type_coarse	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1129	Relax type on coarse grid	tuning	19	yes
+pc_hypre_boomeramg_relax_type_down	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1119	Relax type for the down cycles	tuning	19	yes
+pc_hypre_boomeramg_relax_type_up	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1124	Relax type for the up cycles	tuning	19	yes
+pc_hypre_boomeramg_relax_weight_all	real	jac->relaxweight	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1136	Relaxation weight for all levels (0 = hypre estimates, -k = determined with k CG steps)	tuning		yes
+pc_hypre_boomeramg_relax_weight_level	array		hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1144	Set the relaxation weight for a particular level (weight,level)	tuning		yes
+pc_hypre_boomeramg_restriction_type	int	jac->Rtype	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1202	Type of AIR method (distance 1 or 2, 0 means no AIR)	tuning		yes
+pc_hypre_boomeramg_smooth_num_levels	int	25	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1015	Number of levels on which more complex smoothers are used	tuning		yes
+pc_hypre_boomeramg_smooth_num_sweeps	int	1	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1022	Set number of smoother sweeps	tuning		yes
+pc_hypre_boomeramg_smooth_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMG	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1006	Enable more complex smoothers	tuning	5	yes
+pc_hypre_boomeramg_strong_threshold	real	jac->strongthreshold	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:962	Threshold for being strongly connected	tuning		yes
+pc_hypre_boomeramg_strongthresholdR	real	jac->Rstrongthreshold	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1214	Threshold for R	tuning		yes
+pc_hypre_boomeramg_tol	real	jac->tol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:943	Convergence tolerance PER hypre call (0.0 = use a fixed number of iterations)	tuning		yes
+pc_hypre_boomeramg_truncfactor	real	jac->truncfactor	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:950	Truncation factor for interpolation (0=no truncation)	tuning		yes
+pc_hypre_boomeramg_vec_interp_qmax	int	jac->vec_interp_qmax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:983	Max elements per row for each Q	tuning		yes
+pc_hypre_boomeramg_vec_interp_smooth	bool	jac->vec_interp_smooth	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:985	Whether to smooth the interpolation vectors	tuning		yes
+pc_hypre_boomeramg_vec_interp_variant	int	jac->vec_interp_variant	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:981	Variant of algorithm 1-3	tuning		yes
+pc_hypre_euclid_bj	bool	eu_bj	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:814	Use Block Jacobi for ILU in Euclid	tuning		yes
+pc_hypre_euclid_droptolerance	real	jac->eu_droptolerance	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:805	Drop tolerance for ILU(k) in Euclid	tuning		yes
+pc_hypre_euclid_level	int	jac->eu_level	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:802	Factorization levels	tuning		yes
+pc_hypre_ilu_drop_threshold	real	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:723	Drop threshold for ILU	tuning		yes
+pc_hypre_ilu_iterative_setup_maxiter	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:691	Set ILU iterative setup maximum iteration count	tuning		yes
+pc_hypre_ilu_iterative_setup_option	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:687	Set ILU iterative setup option	tuning		yes
+pc_hypre_ilu_iterative_setup_tolerance	real	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:695	Set ILU iterative setup tolerance	tuning		yes
+pc_hypre_ilu_iterative_setup_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREILUIterSe	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:683	Set ILU iterative setup type	tuning	5	yes
+pc_hypre_ilu_level	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:707	Set ILU level	tuning		yes
+pc_hypre_ilu_local_reordering	bool	PETSC_FALSE	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:739	Enable local reordering	tuning		yes
+pc_hypre_ilu_logging	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:703	Set ILU logging level	diagnostic		yes
+pc_hypre_ilu_lower_jacobi_iters	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:731	Set lower Jacobi iteration count	tuning		yes
+pc_hypre_ilu_max_nnz_per_row	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:711	Set maximum NNZ per row	tuning		yes
+pc_hypre_ilu_maxiter	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:719	Set ILU max iterations	tuning		yes
+pc_hypre_ilu_print_level	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:699	Set ILU print level	diagnostic		yes
+pc_hypre_ilu_tol	real	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:715	Tolerance for ILU	tuning		yes
+pc_hypre_ilu_tri_solve	bool	PETSC_FALSE	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:727	Enable triangular solve	tuning		yes
+pc_hypre_ilu_type	enum	PETSC_STATIC_ARRAY_LENGTH(HYPREILUType)	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:679	Choose ILU Type	tuning	46	yes
+pc_hypre_ilu_upper_jacobi_iters	int	0	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:735	Set upper Jacobi iteration count	tuning		yes
+pc_hypre_parasails_filter	real	jac->filter	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1475	filter	tuning		yes
+pc_hypre_parasails_loadbal	real	jac->loadbal	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1478	Load balance	tuning		yes
+pc_hypre_parasails_logging	bool	(PetscBool)jac->logging	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1481	Print info to screen	diagnostic		yes
+pc_hypre_parasails_nlevels	int	jac->nlevels	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1471	Number of number of levels	tuning		yes
+pc_hypre_parasails_reuse	bool	(PetscBool)jac->ruse	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1484	Reuse nonzero pattern in preconditioner	tuning		yes
+pc_hypre_parasails_sym	enum	PETSC_STATIC_ARRAY_LENGTH(symtlist)	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1487	Symmetry of matrix and preconditioner	tuning	3	yes
+pc_hypre_parasails_thresh	real	jac->threshold	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1472	Threshold	tuning		yes
+pc_hypre_pilut_factorrowsize	int	jac->factorrowsize	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:622	FactorRowSize	tuning		yes
+pc_hypre_pilut_maxiter	int	jac->maxiter	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:618	Number of iterations	tuning		yes
+pc_hypre_pilut_tol	real	jac->tol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:620	Drop tolerance	tuning		yes
+pc_hypre_type	enum	PETSC_STATIC_ARRAY_LENGTH(type)	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2482	HYPRE preconditioner type	tuning	7	yes
+pc_mg_galerkin_mat_product_algorithm	enum	PETSC_STATIC_ARRAY_LENGTH(PCHYPRESpgemmT	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:1192	Type of SpGEMM to use in hypre (only for now)	tuning	2	yes
+pc_pfmg_its	int	ex->its	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2765	Number of iterations of PFMG to use as preconditioner	tuning		yes
+pc_pfmg_max_levels	int	ex->max_levels	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2772	Max Levels for MG hierarchy	tuning		yes
+pc_pfmg_num_post_relax	int	ex->num_post_relax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2769	Number of smoothing steps after coarse grid	tuning		yes
+pc_pfmg_num_pre_relax	int	ex->num_pre_relax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2767	Number of smoothing steps before coarse grid	tuning		yes
+pc_pfmg_print_statistics	bool	ex->print_statistics	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2764	Print statistics	diagnostic		yes
+pc_pfmg_rap_type	enum	PETSC_STATIC_ARRAY_LENGTH(PFMGRAPType)	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2779	RAP type	tuning	2	yes
+pc_pfmg_relax_type	enum	PETSC_STATIC_ARRAY_LENGTH(PFMGRelaxType)	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2777	Relax type for the up and down cycles	tuning	4	yes
+pc_pfmg_skip_relax	int	ex->skip_relax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2781	Skip relaxation on certain grids for isotropic problems. This can greatly improve efficiency by eliminating unnecessary 	tuning		yes
+pc_pfmg_tol	real	ex->tol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2775	Tolerance of PFMG	tuning		yes
+pc_smg_its	int	ex->its	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:3213	Number of iterations of SMG to use as preconditioner	tuning		yes
+pc_smg_num_post_relax	int	ex->num_post_relax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:3215	Number of smoothing steps after coarse grid	tuning		yes
+pc_smg_num_pre_relax	int	ex->num_pre_relax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:3214	Number of smoothing steps before coarse grid	tuning		yes
+pc_smg_tol	real	ex->tol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:3216	Tolerance of SMG	tuning		yes
+pc_syspfmg_its	int	ex->its	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2987	Number of iterations of SysPFMG to use as preconditioner	tuning		yes
+pc_syspfmg_num_post_relax	int	ex->num_post_relax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2991	Number of smoothing steps after coarse grid	tuning		yes
+pc_syspfmg_num_pre_relax	int	ex->num_pre_relax	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2989	Number of smoothing steps before coarse grid	tuning		yes
+pc_syspfmg_print_statistics	bool	flg	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2985	Print statistics	diagnostic		yes
+pc_syspfmg_relax_type	enum	PETSC_STATIC_ARRAY_LENGTH(SysPFMGRelaxTy	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2996	Relax type for the up and down cycles	tuning	2	yes
+pc_syspfmg_tol	real	ex->tol	hypre	hypre	pc_type=hypre	src/ksp/pc/impls/hypre/hypre.c:2994	Tolerance of SysPFMG	tuning		yes
+dm_swarm_num_species	int	Ns	ksp	dmproject		src/ksp/ksp/utils/dm/dmproject.c:755	The number of species	tuning		yes
+dm_swarm_print_coords	int	0	ksp	dmproject		src/ksp/ksp/utils/dm/dmproject.c:757	Debug output level for particle coordinate computations	diagnostic		yes
+dm_swarm_print_weights	int	0	ksp	dmproject		src/ksp/ksp/utils/dm/dmproject.c:758	Debug output level for particle weight computations	diagnostic		yes
+ksp_agmres_DeflPrecond	bool	agmres->DeflPrecond	ksp	agmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/agmres/agmres.c:572	Determine if the deflation should be applied as a preconditioner -- similar to KSP DGMRES	tuning		yes
+ksp_agmres_MaxRatio	real	agmres->bgv	ksp	agmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/agmres/agmres.c:575	Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed	tuning		yes
+ksp_agmres_MinRatio	real	agmres->smv	ksp	agmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/agmres/agmres.c:574	Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed	tuning		yes
+ksp_agmres_eigen	int	agmres->neig	ksp	agmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/agmres/agmres.c:564	Number of eigenvalues to deflate	tuning		yes
+ksp_agmres_maxeigen	int	agmres->max_neig	ksp	agmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/agmres/agmres.c:569	Maximum number of eigenvalues to deflate	tuning		yes
+ksp_agmres_ritz	bool	agmres->ritz	ksp	agmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/agmres/agmres.c:573	Compute the Ritz vectors instead of the Harmonic Ritz vectors	tuning		yes
+ksp_atol	real	ksp->abstol	ksp	itcl		src/ksp/ksp/interface/itcl.c:422	Absolute value of residual norm	tuning		yes
+ksp_bcgsl_cxpoly	bool	flga	ksp	bcgsl	ksp_type=bcgsl	src/ksp/ksp/impls/bcgsl/bcgsl.c:472	Polynomial part of BiCGStabL is MinRes + OR	tuning		yes
+ksp_bcgsl_ell	int	bcgsl->ell	ksp	bcgsl	ksp_type=bcgsl	src/ksp/ksp/impls/bcgsl/bcgsl.c:468	Number of Krylov search directions	tuning		yes
+ksp_bcgsl_mrpoly	bool	flg	ksp	bcgsl	ksp_type=bcgsl	src/ksp/ksp/impls/bcgsl/bcgsl.c:477	Polynomial part of BiCGStabL is MinRes	tuning		yes
+ksp_bcgsl_pinv	bool	flg	ksp	bcgsl	ksp_type=bcgsl	src/ksp/ksp/impls/bcgsl/bcgsl.c:487	Polynomial correction via pseudoinverse	tuning		yes
+ksp_bcgsl_xres	real	bcgsl->delta	ksp	bcgsl	ksp_type=bcgsl	src/ksp/ksp/impls/bcgsl/bcgsl.c:482	Threshold used to decide when to refresh computed residuals	tuning		yes
+ksp_cg_dtype	enum	STCG_DIRECTION_TYPES	ksp	stcg	ksp_type=cg	src/ksp/ksp/impls/cg/stcg/stcg.c:587	Norm used for direction	tuning		yes
+ksp_cg_dtype	enum	NASH_DIRECTION_TYPES	ksp	nash	ksp_type=cg	src/ksp/ksp/impls/cg/nash/nash.c:567	Norm used for direction	tuning		yes
+ksp_cg_dtype	enum	GLTR_DIRECTION_TYPES	ksp	gltr	ksp_type=cg	src/ksp/ksp/impls/cg/gltr/gltr.c:985	Norm used for direction	tuning		yes
+ksp_cg_gltr_eigen_tol	real	cg->eigen_tol	ksp	gltr	ksp_type=cg	src/ksp/ksp/impls/cg/gltr/gltr.c:988	Eigenvalue tolerance	tuning		yes
+ksp_cg_gltr_init_pert	real	cg->init_pert	ksp	gltr	ksp_type=cg	src/ksp/ksp/impls/cg/gltr/gltr.c:987	Initial perturbation	tuning		yes
+ksp_cg_gltr_max_lanczos_its	int	cg->max_lanczos_its	ksp	gltr	ksp_type=cg	src/ksp/ksp/impls/cg/gltr/gltr.c:991	Maximum Lanczos Iters	tuning		yes
+ksp_cg_gltr_max_newton_its	int	cg->max_newton_its	ksp	gltr	ksp_type=cg	src/ksp/ksp/impls/cg/gltr/gltr.c:992	Maximum Newton Iters	tuning		yes
+ksp_cg_gltr_newton_tol	real	cg->newton_tol	ksp	gltr	ksp_type=cg	src/ksp/ksp/impls/cg/gltr/gltr.c:989	Newton tolerance	tuning		yes
+ksp_cg_radius	real	cg->radius	ksp	stcg	ksp_type=cg	src/ksp/ksp/impls/cg/stcg/stcg.c:586	Trust Region Radius	tuning		yes
+ksp_cg_radius	real	cg->radius	ksp	nash	ksp_type=cg	src/ksp/ksp/impls/cg/nash/nash.c:565	Trust Region Radius	tuning		yes
+ksp_cg_radius	real	cg->radius	ksp	gltr	ksp_type=cg	src/ksp/ksp/impls/cg/gltr/gltr.c:983	Trust Region Radius	tuning		yes
+ksp_cg_single_reduction	bool	cg->singlereduction	ksp	cg	ksp_type=cg	src/ksp/ksp/impls/cg/cg.c:592	Merge inner products into single MPI_Allreduce()	tuning		yes
+ksp_cg_type	enum	(PetscEnum)cg->type	ksp	cg	ksp_type=cg	src/ksp/ksp/impls/cg/cg.c:590	Matrix is Hermitian or complex symmetric	tuning	2	not found
+ksp_chebyshev_eigenvalues	array		ksp	cheby	ksp_type=chebyshev	src/ksp/ksp/impls/cheby/cheby.c:353	extreme eigenvalues	tuning		yes
+ksp_chebyshev_esteig	array		ksp	cheby	ksp_type=chebyshev	src/ksp/ksp/impls/cheby/cheby.c:358	None	tuning		yes
+ksp_chebyshev_esteig_noisy	bool	cheb->usenoisy	ksp	cheby	ksp_type=chebyshev	src/ksp/ksp/impls/cheby/cheby.c:382	Use noisy random number generated right-hand side for estimate	tuning		yes
+ksp_chebyshev_esteig_steps	int	cheb->eststeps	ksp	cheby	ksp_type=chebyshev	src/ksp/ksp/impls/cheby/cheby.c:352	Number of est steps in Chebyshev	tuning		yes
+ksp_chebyshev_kind	enum	(PetscEnum)cheb->chebykind	ksp	cheby	ksp_type=chebyshev	src/ksp/ksp/impls/cheby/cheby.c:376	Type of Chebyshev polynomial	tuning	3	yes
+ksp_check_norm_iteration	int	ksp->chknorm	ksp	itcl		src/ksp/ksp/interface/itcl.c:478	First iteration to compute residual norm	diagnostic		yes
+ksp_constant_null_space	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:490	Add constant null space to Krylov solver matrix	tuning		yes
+ksp_converged_maxits	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:432	Declare convergence if the maximum number of iterations is reached	tuning		yes
+ksp_converged_neg_curve	bool	flag	ksp	itcl		src/ksp/ksp/interface/itcl.c:435	Declare convergence if negative curvature is detected	tuning		yes
+ksp_converged_reason_view_cancel	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:393	Cancel all the converged reason view functions set using KSPConvergedReasonViewSet	diagnostic		yes
+ksp_converged_use_initial_residual_norm	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:428	Use initial residual norm for computing relative convergence	tuning		yes
+ksp_converged_use_min_initial_residual_norm	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:430	Use minimum of initial residual norm and b for computing relative convergence	tuning		yes
+ksp_convergence_test	enum	3	ksp	itcl		src/ksp/ksp/interface/itcl.c:457	Convergence test	diagnostic	3	yes
+ksp_dgmres_eigen	int	dgmres->neig	ksp	dgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/dgmres/dgmres.c:530	Number of smallest eigenvalues to extract at each restart	tuning		yes
+ksp_dgmres_force	bool	"""KSPDGMRESForce"""	ksp	dgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/dgmres/dgmres.c:536	None	tuning		yes
+ksp_dgmres_improve	bool	dgmres->improve	ksp	dgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/dgmres/dgmres.c:535	Improve the computation of eigenvalues by solving a new generalized eigenvalue problem (experimental - not stable at thi	tuning		yes
+ksp_dgmres_max_eigen	int	dgmres->max_neig	ksp	dgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/dgmres/dgmres.c:532	Maximum Number of smallest eigenvalues to extract	tuning		yes
+ksp_dgmres_ratio	real	dgmres->smv	ksp	dgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/dgmres/dgmres.c:534	Relaxation parameter for the smaller number of matrix-vectors product allowed	tuning		yes
+ksp_diagonal_scale	bool	flag	ksp	itcl		src/ksp/ksp/interface/itcl.c:405	Diagonal scale matrix before building preconditioner	tuning		yes
+ksp_diagonal_scale_fix	bool	flag	ksp	itcl		src/ksp/ksp/interface/itcl.c:408	Fix diagonally scaled matrix after solve	tuning		yes
+ksp_divtol	real	ksp->divtol	ksp	itcl		src/ksp/ksp/interface/itcl.c:423	Residual norm increase cause divergence	tuning		yes
+ksp_error_if_not_converged	bool	ksp->errorifnotconverged	ksp	itcl		src/ksp/ksp/interface/itcl.c:388	Generate error if solver does not converge	diagnostic		yes
+ksp_fcg_mmax	int	fcg->mmax	ksp	fcg	ksp_type=fcg	src/ksp/ksp/impls/fcg/fcg.c:494	Maximum number of search directions to store	tuning		yes
+ksp_fcg_nprealloc	int	fcg->nprealloc	ksp	fcg	ksp_type=fcg	src/ksp/ksp/impls/fcg/fcg.c:496	Number of directions to preallocate	tuning		yes
+ksp_fcg_truncation_type	enum	(PetscEnum)fcg->truncstrat	ksp	fcg	ksp_type=fcg	src/ksp/ksp/impls/fcg/fcg.c:498	Truncation approach for directions	tuning	2	yes
+ksp_fetidp_check	bool	fetidp->check	ksp	fetidp	ksp_type=fetidp	src/ksp/ksp/impls/fetidp/fetidp.c:1289	Activates verbose debugging output FETI-DP operators	diagnostic		yes
+ksp_fetidp_fullyredundant	bool	fetidp->fully_redundant	ksp	fetidp	ksp_type=fetidp	src/ksp/ksp/impls/fetidp/fetidp.c:1287	Use fully redundant multipliers	tuning		yes
+ksp_fetidp_pressure_all	bool	allp	ksp	fetidp	ksp_type=fetidp	src/ksp/ksp/impls/fetidp/fetidp.c:527	Use the whole pressure set instead of just that at the interface	tuning		yes
+ksp_fetidp_pressure_field	array		ksp	fetidp	ksp_type=fetidp	src/ksp/ksp/impls/fetidp/fetidp.c:526	Field id for pressures for saddle-point problems	tuning		yes
+ksp_fetidp_pressure_schur	bool	schp	ksp	fetidp	ksp_type=fetidp	src/ksp/ksp/impls/fetidp/fetidp.c:529	Use a BDDC solver for pressure	tuning		yes
+ksp_fetidp_saddlepoint	bool	fetidp->saddlepoint	ksp	fetidp	ksp_type=fetidp	src/ksp/ksp/impls/fetidp/fetidp.c:1288	Activates support for saddle-point problems	tuning		yes
+ksp_fetidp_saddlepoint_flip	bool	flip	ksp	fetidp	ksp_type=fetidp	src/ksp/ksp/impls/fetidp/fetidp.c:528	Flip the sign of the pressure-velocity (lower-left) block	tuning		yes
+ksp_fgmres_modifypcksp	bool	&flg	ksp	fgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/fgmres/fgmres.c:430	vary the KSP based preconditioner	tuning		yes
+ksp_fgmres_modifypcnochange	bool	&flg	ksp	fgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/fgmres/fgmres.c:428	do not vary the preconditioner	tuning		yes
+ksp_fischer_guess	array		ksp	itcl		src/ksp/ksp/interface/itcl.c:450	Use Paul Fischer's algorithm or its variants for initial guess	tuning		yes
+ksp_gcr_restart	int	ctx->restart	ksp	gcr	ksp_type=gcr	src/ksp/ksp/impls/gcr/gcr.c:185	Number of Krylov search directions	tuning		yes
+ksp_gmres_breakdown_tolerance	real	gmres->breakdowntol	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:546	Divergence breakdown tolerance during GMRES restart	tuning		yes
+ksp_gmres_cgs_refinement_type	enum	(PetscEnum)gmres->cgstype	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:555	Type of iterative refinement for classical (unmodified) Gram-Schmidt	tuning	3	yes
+ksp_gmres_classicalgramschmidt	bool	&flg	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:551	Classical (unmodified) Gram-Schmidt (fast)	tuning		yes
+ksp_gmres_haptol	real	gmres->haptol	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:544	Tolerance for exact convergence (happy ending)	tuning		yes
+ksp_gmres_krylov_monitor	bool	flg	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:557	Plot the Krylov directions	diagnostic		yes
+ksp_gmres_modifiedgramschmidt	bool	&flg	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:553	Modified Gram-Schmidt (slow,more stable)	tuning		yes
+ksp_gmres_preallocate	bool	flg	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:549	Preallocate Krylov vectors	tuning		yes
+ksp_gmres_restart	int	gmres->max_k	ksp	gmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/gmres.c:542	Number of Krylov search directions	tuning		yes
+ksp_guess_fischer_model	array		ksp	fischer	ksp_type=fischer	src/ksp/ksp/guess/impls/fischer/fischer.c:345	Model type and dimension of basis	tuning		yes
+ksp_guess_fischer_monitor	bool	ITG->monitor	ksp	fischer	ksp_type=fischer	src/ksp/ksp/guess/impls/fischer/fischer.c:348	Monitor the guess	diagnostic		yes
+ksp_guess_fischer_tol	real	ITG->tol	ksp	fischer	ksp_type=fischer	src/ksp/ksp/guess/impls/fischer/fischer.c:347	Tolerance to determine rank via ratio of singular values	tuning		yes
+ksp_guess_pod_Ainner	bool	pod->Aspd	ksp	pod	ksp_type=pod	src/ksp/ksp/guess/impls/pod/pod.c:408	Use the operator as inner product (must be SPD)	tuning		yes
+ksp_guess_pod_monitor	bool	pod->monitor	ksp	pod	ksp_type=pod	src/ksp/ksp/guess/impls/pod/pod.c:406	Monitor initial guess generator	diagnostic		yes
+ksp_guess_pod_size	int	pod->maxn	ksp	pod	ksp_type=pod	src/ksp/ksp/guess/impls/pod/pod.c:405	Number of snapshots	tuning		yes
+ksp_guess_pod_tol	real	pod->tol	ksp	pod	ksp_type=pod	src/ksp/ksp/guess/impls/pod/pod.c:407	Tolerance to retain eigenvectors	tuning		yes
+ksp_guess_type	enum	NULL	ksp	itcl		src/ksp/ksp/interface/itcl.c:443	Initial guess in Krylov method	tuning		yes
+ksp_initial_guess_nonzero	bool	ksp->guess_zero ? PETSC_FALSE : PETSC_TR	ksp	itcl		src/ksp/ksp/interface/itcl.c:380	Use the contents of the solution vector for initial guess	tuning		yes
+ksp_knoll	bool	ksp->guess_knoll	ksp	itcl		src/ksp/ksp/interface/itcl.c:441	Use preconditioner applied to b for initial guess	tuning		yes
+ksp_lag_norm	bool	ksp->lagnorm	ksp	itcl		src/ksp/ksp/interface/itcl.c:480	Lag the calculation of the residual norm	tuning		yes
+ksp_lcd_haptol	real	lcd->haptol	ksp	lcd	ksp_type=lcd	src/ksp/ksp/impls/lcd/lcd.c:176	Tolerance for exact convergence (happy ending)	tuning		yes
+ksp_lcd_restart	int	lcd->restart	ksp	lcd	ksp_type=lcd	src/ksp/ksp/impls/lcd/lcd.c:175	Number of vectors conjugate	tuning		yes
+ksp_lgmres_augment	int	lgmres->aug_dim	ksp	lgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/lgmres/lgmres.c:584	Number of error approximations to augment the Krylov space with	tuning		yes
+ksp_lgmres_constant	bool	lgmres->approx_constant	ksp	lgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/lgmres/lgmres.c:583	Use constant approx. space size	tuning		yes
+ksp_lsqr_compute_standard_error	bool	lsqr->se_flg	ksp	lsqr	ksp_type=lsqr	src/ksp/ksp/impls/lsqr/lsqr.c:516	Set Standard Error Estimates of Solution	tuning		yes
+ksp_lsqr_exact_mat_norm	bool	lsqr->exact_norm	ksp	lsqr	ksp_type=lsqr	src/ksp/ksp/impls/lsqr/lsqr.c:517	Compute exact matrix norm instead of iteratively refined estimate	tuning		yes
+ksp_matsolve_batch_size	int	nmax	ksp	itcl		src/ksp/ksp/interface/itcl.c:412	Maximum number of columns treated simultaneously	tuning		yes
+ksp_max_it	int	ksp->max_it	ksp	itcl		src/ksp/ksp/interface/itcl.c:424	Maximum number of iterations	tuning		yes
+ksp_min_it	int	ksp->min_it	ksp	itcl		src/ksp/ksp/interface/itcl.c:426	Minimum number of iterations	tuning		yes
+ksp_minres_nutol	real	minres->nutol	ksp	minres	ksp_type=minres	src/ksp/ksp/impls/minres/minres.c:729	Inexactness tolerance	tuning		yes
+ksp_minres_old	bool	flg	ksp	minres	ksp_type=minres	src/ksp/ksp/impls/minres/minres.c:721	Use old implementation (to be removed)	tuning		yes
+ksp_minres_qlp	bool	minres->qlp	ksp	minres	ksp_type=minres	src/ksp/ksp/impls/minres/minres.c:725	Solve with QLP variant	tuning		yes
+ksp_minres_radius	real	minres->maxxnorm	ksp	minres	ksp_type=minres	src/ksp/ksp/impls/minres/minres.c:726	Maximum allowed norm of solution	tuning		yes
+ksp_minres_trancond	real	minres->TranCond	ksp	minres	ksp_type=minres	src/ksp/ksp/impls/minres/minres.c:727	Threshold on condition number to dynamically switch to QLP	tuning		yes
+ksp_monitor_cancel	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:368	Remove any hardwired monitor routines	diagnostic		yes
+ksp_monitor_lg_range	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:531	Monitor graphically range of preconditioned residual norm	diagnostic		yes
+ksp_monitor_pause_final	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:379	Pauses all draw monitors at the final iterate	diagnostic		yes
+ksp_monitor_python	string	monfilename	ksp	itcl		src/ksp/ksp/interface/itcl.c:526	Use Python function	diagnostic		yes
+ksp_monitor_saws	bool	PETSC_FALSE	ksp	itcl		src/ksp/ksp/interface/itcl.c:608	Publish KSP progress using SAWs	diagnostic		not found
+ksp_norm_type	enum	(PetscEnum)normtype	ksp	itcl		src/ksp/ksp/interface/itcl.c:475	KSP Norm type	tuning		yes
+ksp_pc_side	enum	(PetscEnum)pcside	ksp	itcl		src/ksp/ksp/interface/itcl.c:618	KSP preconditioner side	tuning		yes
+ksp_pipefcg_mmax	int	pipefcg->mmax	ksp	pipefcg	ksp_type=fcg	src/ksp/ksp/impls/fcg/pipefcg/pipefcg.c:562	Number of search directions to storue	tuning		yes
+ksp_pipefcg_nprealloc	int	pipefcg->nprealloc	ksp	pipefcg	ksp_type=fcg	src/ksp/ksp/impls/fcg/pipefcg/pipefcg.c:564	Number of directions to preallocate	tuning		yes
+ksp_pipefcg_truncation_type	enum	(PetscEnum)pipefcg->truncstrat	ksp	pipefcg	ksp_type=fcg	src/ksp/ksp/impls/fcg/pipefcg/pipefcg.c:566	Truncation approach for directions	tuning	2	yes
+ksp_pipefgmres_shift	real	pipefgmres->shift	ksp	pipefgmres	ksp_type=gmres|fgmres|lgmres|dgmres|pgmres|agmres	src/ksp/ksp/impls/gmres/pipefgmres/pipefgmres.c:476	shift parameter	tuning		yes
+ksp_pipegcr_mmax	int	pipegcr->mmax	ksp	pipegcr	ksp_type=gcr	src/ksp/ksp/impls/gcr/pipegcr/pipegcr.c:650	Number of search directions to storue	tuning		yes
+ksp_pipegcr_nprealloc	int	pipegcr->nprealloc	ksp	pipegcr	ksp_type=gcr	src/ksp/ksp/impls/gcr/pipegcr/pipegcr.c:652	Number of directions to preallocate	tuning		yes
+ksp_pipegcr_truncation_type	enum	(PetscEnum)pipegcr->truncstrat	ksp	pipegcr	ksp_type=gcr	src/ksp/ksp/impls/gcr/pipegcr/pipegcr.c:654	Truncation approach for directions	tuning	2	yes
+ksp_pipegcr_unroll_w	bool	pipegcr->unroll_w	ksp	pipegcr	ksp_type=gcr	src/ksp/ksp/impls/gcr/pipegcr/pipegcr.c:655	Use unrolling of w	tuning		yes
+ksp_pipelcg_lmax	real	plcg->lmax	ksp	pipelcg	ksp_type=cg	src/ksp/ksp/impls/cg/pipelcg/pipelcg.c:94	Estimate for largest eigenvalue	tuning		yes
+ksp_pipelcg_lmin	real	plcg->lmin	ksp	pipelcg	ksp_type=cg	src/ksp/ksp/impls/cg/pipelcg/pipelcg.c:92	Estimate for smallest eigenvalue	tuning		yes
+ksp_pipelcg_monitor	bool	plcg->show_rstrt	ksp	pipelcg	ksp_type=cg	src/ksp/ksp/impls/cg/pipelcg/pipelcg.c:96	Output information on restarts when they occur? (default: 0)	diagnostic		yes
+ksp_pipelcg_pipel	int	plcg->l	ksp	pipelcg	ksp_type=cg	src/ksp/ksp/impls/cg/pipelcg/pipelcg.c:90	Pipeline length	tuning		yes
+ksp_plot_eigencontours	bool		ksp	itcl		src/ksp/ksp/interface/itcl.c:586	None	tuning		yes
+ksp_plot_eigencontours_explicitly	bool		ksp	itcl		src/ksp/ksp/interface/itcl.c:595	None	tuning		not found
+ksp_plot_eigenvalues	bool		ksp	itcl		src/ksp/ksp/interface/itcl.c:575	None	tuning		yes
+ksp_plot_eigenvalues_explicitly	bool	&ksp->viewEVExp	ksp	itcl		src/ksp/ksp/interface/itcl.c:596	[deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw]	tuning		yes
+ksp_qcg_trustregionradius	real	cgP->delta	ksp	qcg	ksp_type=qcg	src/ksp/ksp/impls/qcg/qcg.c:369	Trust Region Radius	tuning		yes
+ksp_reuse_preconditioner	bool	reuse	ksp	itcl		src/ksp/ksp/interface/itcl.c:386	Use initial preconditioner and don't ever compute a new one	tuning		yes
+ksp_richardson_scale	real	rich->scale	ksp	rich	ksp_type=richardson	src/ksp/ksp/impls/rich/rich.c:174	damping factor	tuning		yes
+ksp_richardson_self_scale	bool	rich->selfscale	ksp	rich	ksp_type=richardson	src/ksp/ksp/impls/rich/rich.c:176	dynamically determine optimal damping factor	tuning		yes
+ksp_rtol	real	ksp->rtol	ksp	itcl		src/ksp/ksp/interface/itcl.c:421	Relative decrease in residual norm	tuning		yes
+ksp_saws_block	bool	((PetscObject)ksp)->amspublishblock	ksp	itcl		src/ksp/ksp/interface/itcl.c:627	Block for SAWs at end of KSPSolve	tuning		not found
+ksp_tsirm_cgls	int	tsirm->cgls	ksp	tsirm	ksp_type=tsirm	src/ksp/ksp/impls/tsirm/tsirm.c:127	Method used for the minimization step	tuning		yes
+ksp_tsirm_max_it_ls	int	tsirm->maxiter_ls	ksp	tsirm	ksp_type=tsirm	src/ksp/ksp/impls/tsirm/tsirm.c:129	Maximum number of iterations for the minimization step	tuning		yes
+ksp_tsirm_size_ls	int	tsirm->size_ls	ksp	tsirm	ksp_type=tsirm	src/ksp/ksp/impls/tsirm/tsirm.c:130	Number of residuals for minimization	tuning		yes
+ksp_tsirm_tol_ls	real	tsirm->tol_ls	ksp	tsirm	ksp_type=tsirm	src/ksp/ksp/impls/tsirm/tsirm.c:128	Tolerance threshold for the minimization step	tuning		yes
+ksp_type	enum	(char *)(((PetscObject)ksp)->type_name ?	ksp	itcl		src/ksp/ksp/interface/itcl.c:358	Krylov method	tuning	47	yes
+ksp_use_explicittranspose	bool	ksp->transpose.use_explicittranspose	ksp	itcl		src/ksp/ksp/interface/itcl.c:638	Explicitly transpose the system in KSPSolveTranspose	tuning		yes
+mat_hermitian	bool	flg	ksp	schurm		src/ksp/ksp/utils/schurm/schurm.c:587	Sets the MAT_HERMITIAN option	tuning		not found
+mat_lbfgs_recursive	bool	""""""	ksp	denseqn		src/ksp/ksp/utils/lmvm/dense/denseqn.c:193	None	tuning		yes
+mat_lbfgs_type	enum	(PetscEnum)lqn->strategy	ksp	denseqn		src/ksp/ksp/utils/lmvm/dense/denseqn.c:194	Implementation options for L-BFGS	tuning	2	yes
+mat_ldfp_recursive	bool	""""""	ksp	denseqn		src/ksp/ksp/utils/lmvm/dense/denseqn.c:197	None	tuning		yes
+mat_ldfp_type	enum	(PetscEnum)lqn->strategy	ksp	denseqn		src/ksp/ksp/utils/lmvm/dense/denseqn.c:198	Implementation options for L-DFP	tuning	2	yes
+mat_lmvm_alpha	real	ldb->alpha	ksp	diagbrdn		src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.c:362	(developer) convex ratio in the J0 scaling	tuning		yes
+mat_lmvm_alpha	real	lsb->alpha	ksp	symbrdn		src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.c:512	(developer) convex ratio in the J0 scaling	tuning		yes
+mat_lmvm_beta	real	ldb->beta	ksp	diagbrdn		src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.c:364	(developer) exponential factor in the diagonal J0 scaling	tuning		yes
+mat_lmvm_beta	real	lsb->beta	ksp	symbrdn		src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.c:509	(developer) exponential factor in the diagonal J0 scaling	tuning		yes
+mat_lmvm_eps	real	lmvm->eps	ksp	lmvmimpl		src/ksp/ksp/utils/lmvm/lmvmimpl.c:264	(developer) machine zero definition	tuning		yes
+mat_lmvm_forward	bool	ldb->forward	ksp	diagbrdn		src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.c:363	Forward -> Update diagonal scaling for B. Else -> diagonal scaling for H.	tuning		yes
+mat_lmvm_hist_size	int	m_new	ksp	lmvmimpl		src/ksp/ksp/utils/lmvm/lmvmimpl.c:262	number of past updates kept in memory for the approximation	tuning		yes
+mat_lmvm_ksp_its	int	lmvm->ksp_max_it	ksp	lmvmimpl		src/ksp/ksp/utils/lmvm/lmvmimpl.c:263	(developer) fixed number of KSP iterations to take when inverting J0	tuning		yes
+mat_lmvm_phi	real	lsb->phi	ksp	symbrdn		src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.c:493	(developer) convex ratio between BFGS and DFP components of the update	tuning		yes
+mat_lmvm_rho	real	ldb->rho	ksp	diagbrdn		src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.c:360	(developer) update limiter in the J0 scaling	tuning		yes
+mat_lmvm_rho	real	lsb->rho	ksp	symbrdn		src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.c:511	(developer) update limiter in the J0 scaling	tuning		yes
+mat_lmvm_scale_type	enum	(PetscEnum)lqn->scale_type	ksp	denseqn		src/ksp/ksp/utils/lmvm/dense/denseqn.c:191	(developer) scaling type applied to J0	tuning	4	yes
+mat_lmvm_scale_type	enum	(PetscEnum)stype	ksp	symbrdn		src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.c:514	(developer) scaling type applied to J0	tuning	4	yes
+mat_lmvm_sigma_hist	int	ldb->sigma_hist	ksp	diagbrdn		src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.c:365	(developer) number of past updates to use in the default J0 scalar	tuning		yes
+mat_lmvm_sigma_hist	int	lsb->sigma_hist	ksp	symbrdn		src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.c:513	(developer) number of past updates to use in the default J0 scalar	tuning		yes
+mat_lmvm_theta	real	ldb->theta	ksp	diagbrdn		src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.c:359	(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling	tuning		yes
+mat_lmvm_theta	real	lsb->theta	ksp	symbrdn		src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.c:510	(developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling	tuning		yes
+mat_lmvm_tol	real	ldb->tol	ksp	diagbrdn		src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.c:361	(developer) tolerance for bounding rescaling denominator	tuning		yes
+mat_lqn_type	enum	(PetscEnum)lqn->strategy	ksp	denseqn		src/ksp/ksp/utils/lmvm/dense/denseqn.c:190	Implementation options for L-QN	tuning	2	yes
+mat_schur_complement_ainv_type	enum	(PetscEnum)Na->ainvtype	ksp	schurm		src/ksp/ksp/utils/schurm/schurm.c:111	Type of approximation for DIAGFORM(A00) used when assembling Sp = A11 - A10 inv(DIAGFORM(A00)) A01	tuning		yes
+mat_symmetric	bool	flg	ksp	schurm		src/ksp/ksp/utils/schurm/schurm.c:583	Sets the MAT_SYMMETRIC option	tuning		yes
+mat_type	enum	!E && flg ? MATSBAIJ : mtype	ksp	schurm		src/ksp/ksp/utils/schurm/schurm.c:580	Matrix type	tuning		yes
+recompute_w	bool	prcg->rc_w_q	ksp	pipeprcg	ksp_type=cg	src/ksp/ksp/impls/cg/pipeprcg/pipeprcg.c:29	-recompute w_k with Ar_k? (default = True)	tuning		yes
+sub_ksp_dynamic_tolerance	string	monfilename	ksp	itcl		src/ksp/ksp/interface/itcl.c:511	Use dynamic tolerance for inner PC	tuning		yes
+snes_linesearch_alpha	real	bt->alpha	linesearch	linesearchbt	snes_linesearch_type=bt	src/snes/linesearch/impls/bt/linesearchbt.c:387	Descent tolerance	tuning		yes
+snes_linesearch_atol	real	linesearch->atol	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:840	Absolute tolerance for iterative line search	tuning		yes
+snes_linesearch_damping	real	linesearch->damping	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:845	Line search damping and initial step guess	tuning		yes
+snes_linesearch_keeplambda	bool	linesearch->keeplambda	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:847	Use previous lambda as damping	tuning		yes
+snes_linesearch_ltol	real	linesearch->ltol	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:841	Change in lambda tolerance for iterative line search	tuning		yes
+snes_linesearch_max_it	int	linesearch->max_its	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:842	Maximum iterations for iterative line searches	tuning		yes
+snes_linesearch_maxstep	real	linesearch->maxstep	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:838	Maximum step size	tuning		yes
+snes_linesearch_minlambda	real	linesearch->steptol	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:837	Minimum step length	tuning		yes
+snes_linesearch_norms	bool	linesearch->norms	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:862	Compute final norms in line search	tuning		yes
+snes_linesearch_order	int	linesearch->order	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:861	Order of approximation used in the line search	tuning		yes
+snes_linesearch_precheck_picard	bool	flg	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:850	Use a correction that sometimes improves convergence of Picard iteration	diagnostic		yes
+snes_linesearch_precheck_picard_angle	real	linesearch->precheck_picard_angle	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:855	Maximum angle at which to activate the correction	diagnostic		yes
+snes_linesearch_rtol	real	linesearch->rtol	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:839	Relative tolerance for iterative line search	tuning		yes
+snes_linesearch_type	enum	deft	linesearch	linesearch		src/snes/linesearch/interface/linesearch.c:825	Linesearch type	tuning	9	yes
+mat_cholmod_	real	tmp	mat	sbaijcholmod		src/mat/impls/sbaij/seq/cholmod/sbaijcholmod.c:36	None	tuning		not found
+mat_cholmod_factor	enum	(PetscEnum)c->supernodal	mat	sbaijcholmod		src/mat/impls/sbaij/seq/cholmod/sbaijcholmod.c:90	Factorization method	tuning	3	yes
+mat_cholmod_nrelax	array		mat	sbaijcholmod		src/mat/impls/sbaij/seq/cholmod/sbaijcholmod.c:111	3 size_t supernodal relaxed amalgamation parameters	tuning		yes
+mat_cholmod_pack	bool	chol->pack	mat	sbaijcholmod		src/mat/impls/sbaij/seq/cholmod/sbaijcholmod.c:80	Pack factors after factorization [disable for frequent repeat factorization]	tuning		yes
+mat_cholmod_zrelax	array		mat	sbaijcholmod		src/mat/impls/sbaij/seq/cholmod/sbaijcholmod.c:104	3 real supernodal relaxed amalgamation parameters	tuning		yes
+mat_coloring_distance	int	dist	mat	matcoloring		src/mat/graphops/color/interface/matcoloring.c:205	Distance of the coloring	tuning		yes
+mat_coloring_greedy_symmetric	bool	gr->symmetric	mat	greedy		src/mat/graphops/color/impls/greedy/greedy.c:532	Flag for assuming a symmetric matrix	tuning		yes
+mat_coloring_jp_local	bool	jp->local	mat	jp		src/mat/graphops/color/impls/jp/jp.c:24	Do an initial coloring of local columns	tuning		yes
+mat_coloring_maxcolors	int	maxcolors	mat	matcoloring		src/mat/graphops/color/interface/matcoloring.c:207	Maximum colors returned at the end. 1 returns an independent set	tuning		yes
+mat_coloring_test	bool	mc->valid	mat	matcoloring		src/mat/graphops/color/interface/matcoloring.c:210	Check that a valid coloring has been produced	diagnostic		yes
+mat_coloring_type	enum	deft	mat	matcoloring		src/mat/graphops/color/interface/matcoloring.c:199	The coloring method used	tuning		yes
+mat_coloring_weight_type	enum	(PetscEnum)mc->weight_type	mat	matcoloring		src/mat/graphops/color/interface/matcoloring.c:212	Sets the type of vertex weighting used	tuning	4	yes
+mat_fd_coloring_bcols	int	matfd->bcols	mat	fdmatrix		src/mat/matfd/fdmatrix.c:364	Number of block columns	tuning		yes
+mat_fd_coloring_brows	int	matfd->brows	mat	fdmatrix		src/mat/matfd/fdmatrix.c:363	Number of block rows	tuning		yes
+mat_fd_coloring_err	real	matfd->error_rel	mat	fdmatrix		src/mat/matfd/fdmatrix.c:355	Square root of relative error in function	tuning		yes
+mat_fd_coloring_umin	real	matfd->umin	mat	fdmatrix		src/mat/matfd/fdmatrix.c:356	Minimum allowable u magnitude	tuning		yes
+mat_fd_type	string	matfd->htype	mat	fdmatrix		src/mat/matfd/fdmatrix.c:357	None	tuning		yes
+mat_is_coloring_test	bool	mc->valid_iscoloring	mat	matcoloring		src/mat/graphops/color/interface/matcoloring.c:211	Check that a valid iscoloring has been produced	diagnostic		yes
+mat_mffd_check_positivity	bool	flg	mat	mffd		src/mat/impls/mffd/mffd.c:513	Insure that U + h*a is nonnegative	diagnostic		yes
+mat_mffd_complex	bool	mfctx->usecomplex	mat	mffd		src/mat/impls/mffd/mffd.c:516	Use Lyness complex number trick to compute the matrix-vector product	tuning		not found
+mat_mffd_compute_normu	bool	hctx->computenormU	mat	wp		src/mat/impls/mffd/wp.c:116	Compute the norm of u	tuning		yes
+mat_mffd_err	real	mfctx->error_rel	mat	mffd		src/mat/impls/mffd/mffd.c:509	set sqrt relative error in function	tuning		yes
+mat_mffd_period	int	mfctx->recomputeperiod	mat	mffd		src/mat/impls/mffd/mffd.c:510	how often h is recomputed	tuning		yes
+mat_mffd_type	enum	((PetscObject)mfctx)->type_name	mat	mffd		src/mat/impls/mffd/mffd.c:506	Matrix free type	tuning		yes
+mat_mffd_umin	real	hctx->umin	mat	mffddef		src/mat/impls/mffd/mffddef.c:109	umin	tuning		yes
+mat_superlu_colperm	enum	4	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:408	ColPerm	tuning	4	yes
+mat_superlu_conditionnumber	bool	(PetscBool)lu->options.ConditionNumber	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:418	ConditionNumber	tuning		yes
+mat_superlu_diagpivotthresh	real	lu->options.DiagPivotThresh	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:414	DiagPivotThresh	tuning		yes
+mat_superlu_dist_3d	bool	lu->use3d	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:716	Use SuperLU_DIST 3D distribution	tuning		yes
+mat_superlu_dist_c	int	lu->npcol	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:734	Number columns in processor partition	tuning		yes
+mat_superlu_dist_colperm	enum	5	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:625	Column permutation	tuning	4	yes
+mat_superlu_dist_d	int	lu->npdep	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:719	Number of z entries in processor partition	tuning		yes
+mat_superlu_dist_equil	bool	lu->options.Equil ? PETSC_TRUE : PETSC_F	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:602	Equilibrate matrix	tuning		yes
+mat_superlu_dist_fact	enum	3	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:664	Sparsity pattern for repeated matrix factorization	tuning	3	yes
+mat_superlu_dist_iterrefine	bool	lu->options.IterRefine == NOREFINE ? PET	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:680	Use iterative refinement	tuning		yes
+mat_superlu_dist_parsymbfact	bool	PETSC_FALSE	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:653	Parallel symbolic factorization	tuning		yes
+mat_superlu_dist_printstat	bool	(PetscBool)lu->options.PrintStat	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:689	Print factorization information	diagnostic		yes
+mat_superlu_dist_r	int	lu->nprow	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:733	Number rows in processor partition	tuning		yes
+mat_superlu_dist_replacetinypivot	bool	lu->options.ReplaceTinyPivot ? PETSC_TRU	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:649	Replace tiny pivots	tuning		yes
+mat_superlu_dist_rowperm	enum	4	mat	superlu_dist		src/mat/impls/aij/mpi/superlu_dist/superlu_dist.c:605	Row permutation	tuning	2	yes
+mat_superlu_equil	bool	(PetscBool)lu->options.Equil	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:407	Equil	tuning		yes
+mat_superlu_ilu_droprull	int	lu->options.ILU_DropRule	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:441	ILU_DropRule	tuning		yes
+mat_superlu_ilu_droptol	real	lu->options.ILU_DropTol	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:435	ILU_DropTol	tuning		yes
+mat_superlu_ilu_fillfactor	real	lu->options.ILU_FillFactor	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:439	ILU_FillFactor	tuning		yes
+mat_superlu_ilu_filltol	real	lu->options.ILU_FillTol	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:437	ILU_FillTol	tuning		yes
+mat_superlu_ilu_milu	int	lu->options.ILU_MILU	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:444	ILU_MILU	tuning		yes
+mat_superlu_ilu_norm	int	lu->options.ILU_Norm	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:442	ILU_Norm	tuning		yes
+mat_superlu_iterrefine	enum	4	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:410	IterRefine	tuning	4	yes
+mat_superlu_lwork	int	lu->lwork	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:426	size of work array in bytes used by factorization	tuning		yes
+mat_superlu_pivotgrowth	bool	(PetscBool)lu->options.PivotGrowth	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:416	PivotGrowth	tuning		yes
+mat_superlu_printstat	bool	(PetscBool)lu->options.PrintStat	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:424	PrintStat	diagnostic		yes
+mat_superlu_replacetinypivot	bool	(PetscBool)lu->options.ReplaceTinyPivot	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:422	ReplaceTinyPivot	tuning		yes
+mat_superlu_rowperm	enum	2	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:420	rowperm	tuning	2	yes
+mat_superlu_symmetricmode	bool	(PetscBool)lu->options.SymmetricMode	mat	superlu		src/mat/impls/aij/seq/superlu/superlu.c:412	SymmetricMode	tuning		yes
+mat_umfpack_aggressive	real	lu->Control[UMFPACK_AGGRESSIVE]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:246	Control[UMFPACK_AGGRESSIVE]	tuning		yes
+mat_umfpack_alloc_init	real	lu->Control[UMFPACK_ALLOC_INIT]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:265	Control[UMFPACK_ALLOC_INIT]	tuning		yes
+mat_umfpack_amd_dense	real	lu->Control[UMFPACK_AMD_DENSE]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:243	Control[UMFPACK_AMD_DENSE]	tuning		yes
+mat_umfpack_block_size	real	lu->Control[UMFPACK_BLOCK_SIZE]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:244	Control[UMFPACK_BLOCK_SIZE]	tuning		yes
+mat_umfpack_dense_col	real	lu->Control[UMFPACK_DENSE_COL]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:241	Control[UMFPACK_DENSE_COL]	tuning		yes
+mat_umfpack_dense_row	real	lu->Control[UMFPACK_DENSE_ROW]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:242	Control[UMFPACK_DENSE_ROW]	tuning		yes
+mat_umfpack_droptol	real	lu->Control[UMFPACK_DROPTOL]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:267	Control[UMFPACK_DROPTOL]	tuning		yes
+mat_umfpack_fixq	real	lu->Control[UMFPACK_FIXQ]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:245	Control[UMFPACK_FIXQ]	tuning		yes
+mat_umfpack_front_alloc_init	real	lu->Control[UMFPACK_FRONT_ALLOC_INIT]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:266	Control[UMFPACK_FRONT_ALLOC_INIT]	tuning		yes
+mat_umfpack_irstep	real	lu->Control[UMFPACK_IRSTEP]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:270	Control[UMFPACK_IRSTEP]	tuning		yes
+mat_umfpack_ordering	enum	PETSC_STATIC_ARRAY_LENGTH(UmfpackOrderin	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:239	Internal ordering method	tuning	7	yes
+mat_umfpack_pivot_tolerance	real	lu->Control[UMFPACK_PIVOT_TOLERANCE]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:249	Control[UMFPACK_PIVOT_TOLERANCE]	tuning		yes
+mat_umfpack_prl	real	lu->Control[UMFPACK_PRL]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:222	Control[UMFPACK_PRL]	tuning		yes
+mat_umfpack_scale	enum	3	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:251	Control[UMFPACK_SCALE]	tuning	3	yes
+mat_umfpack_strategy	enum	3	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:225	ordering and pivoting strategy	tuning	3	yes
+mat_umfpack_sym_pivot_tolerance	real	lu->Control[UMFPACK_SYM_PIVOT_TOLERANCE]	mat	umfpack		src/mat/impls/aij/seq/umfpack/umfpack.c:250	Control[UMFPACK_SYM_PIVOT_TOLERANCE]	tuning		yes
+mat_mumps_cntl_1	real	mumps->id.CNTL(1)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2262	CNTL(1): relative pivoting threshold	tuning		yes
+mat_mumps_cntl_2	real	mumps->id.CNTL(2)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2263	CNTL(2): stopping criterion of refinement	tuning		yes
+mat_mumps_cntl_3	real	mumps->id.CNTL(3)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2264	CNTL(3): absolute pivoting threshold	tuning		yes
+mat_mumps_cntl_4	real	mumps->id.CNTL(4)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2265	CNTL(4): value for static pivoting	tuning		yes
+mat_mumps_cntl_5	real	mumps->id.CNTL(5)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2266	CNTL(5): fixation for null pivots	tuning		yes
+mat_mumps_cntl_7	real	mumps->id.CNTL(7)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2267	CNTL(7): dropping parameter used during BLR	tuning		yes
+mat_mumps_icntl_1	int	mumps->id.ICNTL(1)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2184	ICNTL(1): output stream for error messages	tuning		yes
+mat_mumps_icntl_10	int	mumps->id.ICNTL(10)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2206	ICNTL(10): max num of refinements	tuning		yes
+mat_mumps_icntl_11	int	mumps->id.ICNTL(11)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2207	ICNTL(11): statistics related to an error analysis (via -ksp_view)	tuning		yes
+mat_mumps_icntl_12	int	mumps->id.ICNTL(12)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2208	ICNTL(12): an ordering strategy for symmetric matrices (0 to 3)	tuning		yes
+mat_mumps_icntl_13	int	mumps->id.ICNTL(13)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2209	ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting	tuning		yes
+mat_mumps_icntl_14	int	mumps->id.ICNTL(14)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2210	ICNTL(14): percentage increase in the estimated working space	tuning		yes
+mat_mumps_icntl_15	int	mumps->id.ICNTL(15)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2213	ICNTL(15): compression of the input matrix resulting from a block format	tuning		yes
+mat_mumps_icntl_19	int	mumps->id.ICNTL(19)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2218	ICNTL(19): computes the Schur complement	tuning		yes
+mat_mumps_icntl_2	int	"and warning"""	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2186	None	tuning		yes
+mat_mumps_icntl_20	int	mumps->ICNTL20	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2235	ICNTL(20): give mumps centralized (0) or distributed (10) dense right-hand sides	tuning		yes
+mat_mumps_icntl_21	int	mumps->id.ICNTL(21)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2240	ICNTL(21): the distribution (centralized or distributed) of the solution vectors	tuning		not found
+mat_mumps_icntl_22	int	mumps->id.ICNTL(22)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2242	ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)	tuning		yes
+mat_mumps_icntl_23	int	mumps->id.ICNTL(23)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2243	ICNTL(23): max size of the working memory (MB) that can allocate per processor	tuning		yes
+mat_mumps_icntl_24	int	mumps->id.ICNTL(24)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2244	ICNTL(24): detection of null pivot rows (0 or 1)	tuning		yes
+mat_mumps_icntl_25	int	mumps->id.ICNTL(25)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2247	ICNTL(25): computes a solution of a deficient matrix and a null space basis	tuning		yes
+mat_mumps_icntl_26	int	mumps->id.ICNTL(26)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2248	ICNTL(26): drives the solution phase if a Schur complement matrix	tuning		yes
+mat_mumps_icntl_27	int	mumps->id.ICNTL(27)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2249	ICNTL(27): controls the blocking size for multiple right-hand sides	tuning		yes
+mat_mumps_icntl_28	int	"""None"""	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2250	None	tuning		yes
+mat_mumps_icntl_29	int	"""None"""	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2251	None	tuning		yes
+mat_mumps_icntl_3	int	"""None"""	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2188	None	tuning		yes
+mat_mumps_icntl_30	int	mumps->id.ICNTL(30)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2252	ICNTL(30): compute user-specified set of entries in inv(A)	tuning		not found
+mat_mumps_icntl_31	int	mumps->id.ICNTL(31)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2253	ICNTL(31): indicates which factors may be discarded during factorization	tuning		yes
+mat_mumps_icntl_32	int	mumps->id.ICNTL(32)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2254	ICNTL(32): performs the forward elimination of the right-hand sides during factorization	tuning		not found
+mat_mumps_icntl_33	int	mumps->id.ICNTL(33)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2255	ICNTL(33): compute determinant	tuning		yes
+mat_mumps_icntl_35	int	mumps->id.ICNTL(35)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2256	ICNTL(35): activates Block Low Rank (BLR) based factorization	tuning		yes
+mat_mumps_icntl_36	int	mumps->id.ICNTL(36)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2257	ICNTL(36): choice of BLR factorization variant	tuning		yes
+mat_mumps_icntl_38	int	mumps->id.ICNTL(38)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2258	ICNTL(38): estimated compression rate of LU factors with BLR	tuning		yes
+mat_mumps_icntl_4	int	mumps->id.ICNTL(4)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2191	ICNTL(4): level of printing (0 to 4)	tuning		yes
+mat_mumps_icntl_48	int	mumps->id.ICNTL(48)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2259	ICNTL(48): multithreading with tree parallelism	tuning		yes
+mat_mumps_icntl_58	int	mumps->id.ICNTL(58)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2260	ICNTL(58): defines options for symbolic factorization	tuning		yes
+mat_mumps_icntl_6	int	mumps->id.ICNTL(6)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2195	ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)	tuning		yes
+mat_mumps_icntl_7	int	3=Scotch	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2198	None	tuning		yes
+mat_mumps_icntl_8	int	mumps->id.ICNTL(8)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2204	ICNTL(8): scaling strategy (-2 to 8 or 77)	tuning		yes
+mat_mumps_icntl_9	int	mumps->id.ICNTL(9)	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2205	ICNTL(9): computes the solution using A or A^T	tuning		not found
+mat_mumps_ooc_tmpdir	string	mumps->id.ooc_tmpdir	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2269	out of core directory	tuning		yes
+mat_mumps_use_omp_threads	bool	&mumps->use_petsc_omp_support	mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2094	Convert MPI processes into OpenMP threads	tuning		yes
+mat_mumps_view_info	array		mumps	mumps	pc_factor_mat_solver_type=mumps	src/mat/impls/aij/mpi/mumps/mumps.c:2271	request INFO local to each processor	diagnostic		yes
+always_use_server	bool	km->alwaysuseserver	pc	pcmpi	pc_type=mpi	src/ksp/pc/impls/mpi/pcmpi.c:902	Use the server even if only one rank is used for the solve (for debugging)	tuning		yes
+gdsw_debug	int	dbg	pc	gdsw	pc_type=mg	src/ksp/pc/impls/mg/gdsw.c:35	Debug output	diagnostic		yes
+gdsw_minmax	array		pc	gdsw	pc_type=mg	src/ksp/pc/impls/mg/gdsw.c:31	Minimum and maximum number of basis functions per connected component for adaptive GDSW	tuning		yes
+gdsw_reduced	bool	reduced	pc	gdsw	pc_type=mg	src/ksp/pc/impls/mg/gdsw.c:34	Reduced GDSW	tuning		yes
+gdsw_reuse	bool	reuse_solver	pc	gdsw	pc_type=mg	src/ksp/pc/impls/mg/gdsw.c:33	Reuse interior solver from Schur complement computations	tuning		yes
+gdsw_tolerance	real	tol	pc	gdsw	pc_type=mg	src/ksp/pc/impls/mg/gdsw.c:29	Tolerance for eigenvalue problem	tuning		yes
+gdsw_userdefined	bool	userdefined	pc	gdsw	pc_type=mg	src/ksp/pc/impls/mg/gdsw.c:30	Use user-defined functions in addition to those adaptively generated	tuning		yes
+gdsw_vertex_size	int	vsize	pc	gdsw	pc_type=mg	src/ksp/pc/impls/mg/gdsw.c:32	Connected components smaller or equal to vertex size will be considered as vertices	tuning		yes
+minimum_count_per_rank	int	km->mincntperrank	pc	pcmpi	pc_type=mpi	src/ksp/pc/impls/mpi/pcmpi.c:901	Desired minimum number of nonzeros per rank	tuning		yes
+pc_asm_blocks	int	osm->n	pc	asm	pc_type=asm	src/ksp/pc/impls/asm/asm.c:705	Number of subdomains	tuning		yes
+pc_asm_dm_subdomains	bool	osm->dm_subdomains	pc	asm	pc_type=asm	src/ksp/pc/impls/asm/asm.c:704	Use DMCreateDomainDecomposition() to define subdomains	tuning		yes
+pc_asm_local_blocks	int	osm->n_local_true	pc	asm	pc_type=asm	src/ksp/pc/impls/asm/asm.c:710	Number of local subdomains	tuning		yes
+pc_asm_local_type	enum	(PetscEnum)osm->loctype	pc	asm	pc_type=asm	src/ksp/pc/impls/asm/asm.c:724	Type of local solver composition	tuning	6	yes
+pc_asm_overlap	int	osm->overlap	pc	asm	pc_type=asm	src/ksp/pc/impls/asm/asm.c:715	Number of grid points overlap	tuning		yes
+pc_asm_sub_mat_type	enum	NULL	pc	asm	pc_type=asm	src/ksp/pc/impls/asm/asm.c:726	Subsolve Matrix Type	tuning		yes
+pc_asm_type	enum	(PetscEnum)osm->type	pc	asm	pc_type=asm	src/ksp/pc/impls/asm/asm.c:721	Type of restriction/extension	tuning	4	yes
+pc_bddc_adaptive_nmax	int	pcbddc->adaptive_nmax	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:107	Maximum number of constraints per connected components	tuning		yes
+pc_bddc_adaptive_nmin	int	pcbddc->adaptive_nmin	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:106	Minimum number of constraints per connected components	tuning		yes
+pc_bddc_adaptive_threshold	array		pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:104	Thresholds to be used for adaptive selection of constraints	tuning		yes
+pc_bddc_adaptive_userdefined	bool	pcbddc->adaptive_userdefined	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:102	Use user-defined constraints (should be attached via MatSetNearNullSpace to pmat) in addition to those adaptively genera	tuning		yes
+pc_bddc_benign_change	bool	pcbddc->benign_change_explicit	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:111	Compute the pressure change of basis explicitly	tuning		yes
+pc_bddc_benign_compute_correction	bool	pcbddc->benign_compute_correction	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:112	Compute the benign correction during PreSolve	tuning		yes
+pc_bddc_benign_trick	bool	pcbddc->benign_saddle_point	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:110	Apply the benign subspace trick to saddle point problems with discontinuous pressures	tuning		yes
+pc_bddc_check_level	int	pcbddc->dbg_flag	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:56	Verbose output for PCBDDC (intended for debug)	diagnostic		yes
+pc_bddc_coarse_adj	int	pcbddc->coarse_adj_red	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:109	Number of processors where to map the coarse adjacency list	tuning		yes
+pc_bddc_coarse_eqs_limit	int	pcbddc->coarse_eqs_limit	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:93	Set maximum number of equations on coarsest grid to aim for	tuning		yes
+pc_bddc_coarse_eqs_per_proc	int	pcbddc->coarse_eqs_per_proc	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:86	Target number of equations per process for coarse problem redistribution (significant only at the coarsest level)	tuning		yes
+pc_bddc_coarsening_ratio	int	i	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:88	Set coarsening ratio used in multilevel coarsening	tuning		yes
+pc_bddc_corner_selection	bool	pcbddc->corner_selection	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:72	Activates face-based corner selection	tuning		yes
+pc_bddc_deluxe_singlemat	bool	pcbddc->deluxe_singlemat	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:101	Collapse deluxe operators	tuning		yes
+pc_bddc_deluxe_zerorows	bool	pcbddc->deluxe_zerorows	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:100	Zero rows and columns of deluxe operators associated with primal dofs	tuning		yes
+pc_bddc_detect_disconnected	bool	pcbddc->detect_disconnected	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:114	Detects disconnected subdomains	tuning		yes
+pc_bddc_detect_disconnected_filter	bool	pcbddc->detect_disconnected_filter	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:115	Filters out small entries in the local matrix when detecting disconnected subdomains	tuning		yes
+pc_bddc_dirichlet_approximate	bool	pcbddc->NullSpace_corr[0]	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:60	Inform PCBDDC that we are using approximate Dirichlet solvers	tuning		yes
+pc_bddc_dirichlet_approximate_scale	bool	pcbddc->NullSpace_corr[1]	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:61	Inform PCBDDC that we need to scale the Dirichlet solve	tuning		yes
+pc_bddc_eliminate_dirichlet	bool	pcbddc->eliminate_dirdofs	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:116	Whether or not we want to eliminate dirichlet dofs during presolve	tuning		yes
+pc_bddc_graph_maxcount	int	pcbddc->graphmaxcount	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:71	Maximum number of shared subdomains for a connected component	tuning		yes
+pc_bddc_interface_ext_type	enum	(PetscEnum)pcbddc->interface_extension	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:58	Use DIRICHLET or LUMP to extend interface corrections to interior	tuning	2	yes
+pc_bddc_levels	int	i	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:91	Set maximum number of levels for multilevel	tuning		yes
+pc_bddc_load	string	load	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:48	Load customization from file (intended for debug)	tuning		yes
+pc_bddc_local_mat_graph_square	int	pcbddc->local_adj_square	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:70	Square adjacency graph of local mat for interface analysis	tuning		yes
+pc_bddc_monolithic	bool	monolithic	pc	bddcprivate	pc_type=bddc	src/ksp/pc/impls/bddc/bddcprivate.c:1713	Discard any information on dofs splitting	tuning		yes
+pc_bddc_nedelec_field_primal	bool	setprimal	pc	bddcprivate	pc_type=bddc	src/ksp/pc/impls/bddc/bddcprivate.c:189	All edge dofs set as primals: Toselli's algorithm C	tuning		yes
+pc_bddc_nedelec_order	int	order	pc	bddcprivate	pc_type=bddc	src/ksp/pc/impls/bddc/bddcprivate.c:191	Test variable order code (to be removed)	tuning		yes
+pc_bddc_nedelec_print	bool	print	pc	bddcprivate	pc_type=bddc	src/ksp/pc/impls/bddc/bddcprivate.c:192	Print debug info	diagnostic		yes
+pc_bddc_neumann_approximate	bool	pcbddc->NullSpace_corr[2]	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:66	Inform PCBDDC that we are using approximate Neumann solvers	tuning		yes
+pc_bddc_neumann_approximate_scale	bool	pcbddc->NullSpace_corr[3]	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:67	Inform PCBDDC that we need to scale the Neumann solve	tuning		yes
+pc_bddc_nonetflux	bool	pcbddc->compute_nonetflux	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:113	Automatic computation of no-net-flux quadrature weights	tuning		yes
+pc_bddc_pressure_blocked	bool	blocked	pc	bddcprivate	pc_type=bddc	src/ksp/pc/impls/bddc/bddcprivate.c:2704	Use blocked pressure fields	tuning		yes
+pc_bddc_pressure_field	array		pc	bddcprivate	pc_type=bddc	src/ksp/pc/impls/bddc/bddcprivate.c:2703	Field id for pressures	tuning		yes
+pc_bddc_schur_exact	bool	pcbddc->sub_schurs_exact_schur	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:99	Whether or not to use the exact Schur complement instead of the reduced one (which excludes size 1 cc)	tuning		yes
+pc_bddc_schur_layers	int	pcbddc->sub_schurs_layers	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:97	Number of dofs' layers for the computation of principal minors (i.e. -1 uses all dofs)	tuning		yes
+pc_bddc_schur_rebuild	bool	pcbddc->sub_schurs_rebuild	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:96	Whether or not the interface graph for Schur principal minors has to be rebuilt (i.e. define the interface without any a	tuning		yes
+pc_bddc_schur_use_useradj	bool	pcbddc->sub_schurs_use_useradj	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:98	Whether or not the CSR graph specified by the user should be used for computing successive layers (default is to use adj	tuning		yes
+pc_bddc_switch_static	bool	pcbddc->switch_static	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:85	Switch on static condensation ops around the interface preconditioner	tuning		yes
+pc_bddc_symmetric	bool	pcbddc->symmetric_primal	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:108	Symmetric computation of primal basis functions	tuning		yes
+pc_bddc_use_change_of_basis	bool	pcbddc->use_change_of_basis	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:81	Use or not internal change of basis on local edge nodes	tuning		yes
+pc_bddc_use_change_on_faces	bool	pcbddc->use_change_on_faces	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:82	Use or not internal change of basis on local face nodes	tuning		yes
+pc_bddc_use_coarse_estimates	bool	pcbddc->use_coarse_estimates	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:94	Use estimated eigenvalues for coarse problem	tuning		yes
+pc_bddc_use_deluxe_scaling	bool	pcbddc->use_deluxe_scaling	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:95	Use deluxe scaling for BDDC	tuning		yes
+pc_bddc_use_edges	bool	pcbddc->use_edges	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:74	Use or not edge constraints in coarse space	tuning		yes
+pc_bddc_use_faces	bool	pcbddc->use_faces	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:75	Use or not face constraints in coarse space	tuning		yes
+pc_bddc_use_local_mat_graph	bool	pcbddc->use_local_adj	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:69	Use or not adjacency graph of local mat for interface analysis	tuning		yes
+pc_bddc_use_nnsp	bool	pcbddc->use_nnsp	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:77	Use near null space attached to the matrix to compute constraints	tuning		yes
+pc_bddc_use_nnsp_true	bool	pcbddc->use_nnsp_true	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:78	Use near null space attached to the matrix to compute constraints as is	tuning		yes
+pc_bddc_use_qr_single	bool	pcbddc->use_qr_single	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:79	Use QR factorization for single constraints on cc (QR is always used when multiple constraints are present)	tuning		yes
+pc_bddc_use_vertices	bool	pcbddc->use_vertices	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:73	Use or not corner dofs in coarse space	tuning		yes
+pc_bddc_vertex_size	int	pcbddc->vertex_size	pc	bddc	pc_type=bddc	src/ksp/pc/impls/bddc/bddc.c:76	Connected components smaller or equal to vertex size will be considered as primal vertices	tuning		yes
+pc_bjacobi_blocks	int	jac->n	pc	bjacobi	pc_type=bjacobi	src/ksp/pc/impls/bjacobi/bjacobi.c:160	Total number of blocks	tuning		yes
+pc_bjacobi_local_blocks	int	jac->n_local	pc	bjacobi	pc_type=bjacobi	src/ksp/pc/impls/bjacobi/bjacobi.c:162	Local number of blocks	tuning		yes
+pc_composite_pcs	array		pc	composite	pc_type=composite	src/ksp/pc/impls/composite/composite.c:252	List of composite solvers	tuning		yes
+pc_composite_type	enum	(PetscEnum)jac->type	pc	composite	pc_type=composite	src/ksp/pc/impls/composite/composite.c:249	Type of composition	tuning	6	yes
+pc_deflation_compute_space	enum	(PetscEnum)def->spacetype	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:750	Compute deflation space	tuning	9	yes
+pc_deflation_compute_space_size	int	def->spacesize	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:751	Set size of the deflation space to compute	tuning		yes
+pc_deflation_correction	bool	def->correct	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:748	Add coarse problem correction Q to P	tuning		yes
+pc_deflation_correction_factor	real	def->correctfact	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:749	Set multiple of Q to use as coarse problem correction	tuning		yes
+pc_deflation_init_only	bool	def->init	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:745	Use only initialization step - Initdef	tuning		yes
+pc_deflation_levels	int	def->maxlvl	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:746	Maximum of deflation levels	tuning		yes
+pc_deflation_reduction_factor	int	def->reductionfact	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:747	Reduction factor for coarse problem solution using PCTELESCOPE	tuning		yes
+pc_deflation_space_extend	bool	def->extendsp	pc	deflation	pc_type=deflation	src/ksp/pc/impls/deflation/deflation.c:752	Extend deflation space instead of truncating (wavelets)	tuning		yes
+pc_eisenstat_no_diagonal_scaling	bool	eis->usediag ? PETSC_FALSE : PETSC_TRUE	pc	eisen	pc_type=eisens	src/ksp/pc/impls/eisens/eisen.c:160	Do not use standard diagonal scaling	tuning		yes
+pc_eisenstat_omega	real	eis->omega	pc	eisen	pc_type=eisens	src/ksp/pc/impls/eisens/eisen.c:158	Relaxation factor 0 < omega < 2	tuning		yes
+pc_exotic_direct_solver	bool	ctx->directSolve	pc	wb	pc_type=wb	src/ksp/pc/impls/wb/wb.c:779	use direct solver to construct interpolation	tuning		yes
+pc_exotic_type	enum	(PetscEnum)ctx->type	pc	wb	pc_type=wb	src/ksp/pc/impls/wb/wb.c:777	face or wirebasket	tuning	2	yes
+pc_factor_column_pivot	real	factor->info.dtcol	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:234	Column pivot tolerance (used only for some factorization)	tuning		yes
+pc_factor_diagonal_fill	bool	((PC_Factor *)ilu)->info.diagonal_fill ?	pc	ilu	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/ilu/ilu.c:57	Allow fill into empty diagonal entry	tuning		yes
+pc_factor_drop_tolerance	array		pc	icc	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/icc/icc.c:138	None	tuning		not found
+pc_factor_fill	real	factor->info.fill	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:227	Expected non-zeros in factored matrix	tuning		yes
+pc_factor_in_place	bool	inplace	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:225	Form factored matrix in the same memory as the matrix	tuning		yes
+pc_factor_levels	real	((PC_Factor *)icc)->info.levels	pc	icc	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/icc/icc.c:133	levels of fill	tuning		yes
+pc_factor_levels	int	(PetscInt)((PC_Factor *)ilu)->info.level	pc	ilu	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/ilu/ilu.c:54	levels of fill	tuning		yes
+pc_factor_mat_factor_on_host	bool	factor->info.factoronhost	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:251	Do mat factorization on host (with device matrix types)	tuning		yes
+pc_factor_mat_ordering_type	enum	factor->ordering	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:249	Reordering to reduce nonzeros in factored matrix	tuning		yes
+pc_factor_mat_solve_on_host	bool	factor->info.solveonhost	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:252	Do mat solve on host with the factor (with device matrix types)	tuning		yes
+pc_factor_mat_solver_type	string	solvertype	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:245	Specific direct solver to use	tuning		yes
+pc_factor_nonzeros_along_diagonal	bool	&flg	pc	ilu	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/ilu/ilu.c:59	Reorder to remove zeros from diagonal	tuning		yes
+pc_factor_nonzeros_along_diagonal	bool	&flg	pc	lu	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/lu/lu.c:30	Reorder to remove zeros from diagonal	tuning		yes
+pc_factor_pivot_in_blocks	bool	factor->info.pivotinblocks ? PETSC_TRUE 	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:236	Pivot inside matrix dense blocks for BAIJ and SBAIJ	tuning		yes
+pc_factor_reuse_fill	bool	PETSC_FALSE	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:239	Use fill from previous factorization	tuning		yes
+pc_factor_reuse_ordering	bool	PETSC_FALSE	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:241	Reuse ordering from previous factorization	tuning		yes
+pc_factor_shift_amount	real	factor->info.shiftamount	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:231	Shift added to diagonal	tuning		yes
+pc_factor_shift_type	enum	(PetscEnum)(int)factor->info.shifttype	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:229	Type of shift to add to diagonal	tuning	4	yes
+pc_factor_zeropivot	real	factor->info.zeropivot	pc	factimpl	pc_type=lu|ilu|cholesky|icc	src/ksp/pc/impls/factor/factimpl.c:233	Pivot is considered zero if less than	tuning		yes
+pc_fieldsplit_block_size	int	jac->bs	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1896	Blocksize that defines number of fields	tuning		yes
+pc_fieldsplit_detect_saddle_point	bool	jac->detect	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1902	Form 2-way split by detecting zero diagonal entries	tuning		yes
+pc_fieldsplit_diag_use_amat	bool	jac->diag_use_amat	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1899	Use Amat (not Pmat) to extract diagonal fieldsplit blocks	tuning		yes
+pc_fieldsplit_dm_splits	bool	jac->dm_splits	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1895	Whether to use DMCreateFieldDecomposition() for splits	tuning		yes
+pc_fieldsplit_gkb_delay	int	jac->gkbdelay	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1921	The delay value for lower bound criterion	tuning		yes
+pc_fieldsplit_gkb_maxit	int	jac->gkbmaxit	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1923	Maximum allowed number of iterations	tuning		yes
+pc_fieldsplit_gkb_monitor	bool	jac->gkbmonitor	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1924	Prints number of GKB iterations and error	diagnostic		yes
+pc_fieldsplit_gkb_nu	real	jac->gkbnu	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1922	Parameter in augmented Lagrangian approach	tuning		yes
+pc_fieldsplit_gkb_tol	real	jac->gkbtol	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1920	The tolerance for the lower bound stopping criterion	tuning		yes
+pc_fieldsplit_off_diag_use_amat	bool	jac->offdiag_use_amat	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1901	Use Amat (not Pmat) to extract off-diagonal fieldsplit blocks	tuning		yes
+pc_fieldsplit_schur_fact_type	enum	(PetscEnum)jac->schurfactorization	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1916	Which off-diagonal parts of the block factorization to use	tuning	4	yes
+pc_fieldsplit_schur_precondition	enum	(PetscEnum)jac->schurpre	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1917	How to build preconditioner for Schur complement	tuning	5	yes
+pc_fieldsplit_schur_scale	real	jac->schurscale	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1918	Scale Schur complement	tuning		yes
+pc_fieldsplit_type	enum	(PetscEnum)jac->type	pc	fieldsplit	pc_type=fieldsplit	src/ksp/pc/impls/fieldsplit/fieldsplit.c:1904	Type of composition	tuning	6	yes
+pc_gasm_overlap	int	osm->overlap	pc	gasm	pc_type=gasm	src/ksp/pc/impls/gasm/gasm.c:878	Number of overlapping degrees of freedom	tuning		yes
+pc_gasm_total_subdomains	int	osm->N	pc	gasm	pc_type=gasm	src/ksp/pc/impls/gasm/gasm.c:876	Total number of subdomains across communicator	tuning		yes
+pc_gasm_type	enum	(PetscEnum)osm->type	pc	gasm	pc_type=gasm	src/ksp/pc/impls/gasm/gasm.c:884	Type of restriction/extension	tuning	4	yes
+pc_gasm_use_dm_subdomains	bool	"""PCGASMSetUseDMSubdomains"""	pc	gasm	pc_type=gasm	src/ksp/pc/impls/gasm/gasm.c:875	None	tuning		yes
+pc_gasm_use_hierachical_partitioning	bool	osm->hierarchicalpartitioning	pc	gasm	pc_type=gasm	src/ksp/pc/impls/gasm/gasm.c:886	use hierarchical partitioning	tuning		yes
+pc_h2opus_atol	real	pch2opus->atol	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:142	Absolute tolerance	tuning		not found
+pc_h2opus_eta	real	pch2opus->eta	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:147	Admissibility condition tolerance	tuning		not found
+pc_h2opus_forcecpu	bool	pch2opus->forcecpu	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:151	Force construction on CPU	tuning		not found
+pc_h2opus_hyperorder	int	pch2opus->hyperorder	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:145	Hyper power order of sampling	tuning		not found
+pc_h2opus_leafsize	int	pch2opus->leafsize	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:146	Leaf size when constructed from kernel	tuning		not found
+pc_h2opus_maxits	int	pch2opus->maxits	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:140	Maximum number of iterations for Newton-Schultz	tuning		not found
+pc_h2opus_maxrank	int	pch2opus->max_rank	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:148	Maximum rank when constructed from matvecs	tuning		not found
+pc_h2opus_monitor	bool	pch2opus->monitor	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:141	Monitor Newton-Schultz convergence	diagnostic		not found
+pc_h2opus_mrtol	real	pch2opus->mrtol	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:150	Relative tolerance for construction from sampling	tuning		not found
+pc_h2opus_norm_type	enum	(PetscEnum)pch2opus->normtype	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:144	Norm type for convergence monitoring	tuning	5	not found
+pc_h2opus_rtol	real	pch2opus->rtol	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:143	Relative tolerance	tuning		not found
+pc_h2opus_samples	int	pch2opus->bs	pc	pch2opus	pc_type=h2opus	src/ksp/pc/impls/h2opus/pch2opus.c:149	Number of samples to be taken concurrently when constructing from matvecs	tuning		not found
+pc_hmg_coarsening_component	int	hmg->component	pc	hmg	pc_type=hmg	src/ksp/pc/impls/hmg/hmg.c:262	Which component is chosen for the subspace-based coarsening algorithm	tuning		yes
+pc_hmg_reuse_interpolation	bool	hmg->reuseinterp	pc	hmg	pc_type=hmg	src/ksp/pc/impls/hmg/hmg.c:259	Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)	tuning		yes
+pc_hmg_use_matmaij	bool	hmg->usematmaij	pc	hmg	pc_type=hmg	src/ksp/pc/impls/hmg/hmg.c:261	Use MatMAIJ store interpolation for saving memory	tuning		yes
+pc_hmg_use_subspace_coarsening	bool	hmg->subcoarsening	pc	hmg	pc_type=hmg	src/ksp/pc/impls/hmg/hmg.c:260	Use the subspace coarsening to compute the interpolations	tuning		yes
+pc_jacobi_abs	bool	jac->useabs	pc	jacobi	pc_type=jacobi	src/ksp/pc/impls/jacobi/jacobi.c:440	Use absolute values of diagonal entries	tuning		yes
+pc_jacobi_fixdiagonal	bool	jac->fixdiag	pc	jacobi	pc_type=jacobi	src/ksp/pc/impls/jacobi/jacobi.c:441	Fix null terms on diagonal	tuning		yes
+pc_jacobi_rowl1_scale	real	jac->scale	pc	jacobi	pc_type=jacobi	src/ksp/pc/impls/jacobi/jacobi.c:442	scaling of off-diagonal elements for rowl1	tuning		yes
+pc_jacobi_type	enum	(PetscEnum)deflt	pc	jacobi	pc_type=jacobi	src/ksp/pc/impls/jacobi/jacobi.c:438	How to construct diagonal matrix	tuning	4	yes
+pc_kaczmarz_lambda	real	jac->lambda	pc	kaczmarz	pc_type=kaczmarz	src/ksp/pc/impls/kaczmarz/kaczmarz.c:76	relaxation factor (0 < lambda)	tuning		yes
+pc_kaczmarz_symmetric	bool	jac->symmetric	pc	kaczmarz	pc_type=kaczmarz	src/ksp/pc/impls/kaczmarz/kaczmarz.c:77	apply row projections symmetrically	tuning		yes
+pc_lsc_commute	bool	lsc->commute	pc	lsc	pc_type=lsc	src/ksp/pc/impls/lsc/lsc.c:167	Whether to commute the LSC preconditioner in the style of Olshanskii	tuning		yes
+pc_lsc_scale_diag	bool	lsc->scalediag	pc	lsc	pc_type=lsc	src/ksp/pc/impls/lsc/lsc.c:168	Whether to scale BBt products. Will use the inverse of the diagonal of Qscale or A if the former is not provided.	tuning		yes
+pc_mg_adapt_cr	bool	PETSC_FALSE	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:701	Monitor coarse space quality using Compatible Relaxation (CR)	tuning		yes
+pc_mg_adapt_interp_coarse_space	enum	eigenvector	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:696	None	tuning	6	yes
+pc_mg_adapt_interp_n	int	mg->Nc	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:698	Size of the coarse space for adaptive interpolation	tuning		yes
+pc_mg_cycle_type	enum	(PetscEnum)mgctype	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:693	V cycle or for W-cycle	tuning	3	yes
+pc_mg_distinct_smoothup	bool	PETSC_FALSE	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:704	Create separate smoothup KSP and append the prefix _up	tuning		yes
+pc_mg_galerkin	enum	(PetscEnum)mg->galerkin	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:706	Use Galerkin process to compute coarser operators	tuning	5	yes
+pc_mg_levels	int	levels	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:683	Number of Levels	tuning		yes
+pc_mg_log	bool	flg	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:716	Log times for each multigrid level	diagnostic		yes
+pc_mg_mesp_monitor	bool	PETSC_FALSE	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:699	Monitor the multilevel eigensolver	diagnostic		yes
+pc_mg_multiplicative_cycles	int	mg->cyclesperpcapply	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:712	Number of cycles for each preconditioner step	tuning		yes
+pc_mg_type	enum	(PetscEnum)mgtype	pc	mg	pc_type=mg	src/ksp/pc/impls/mg/mg.c:709	Multigrid type	tuning	4	yes
+pc_ml_Aux	bool	pc_ml->Aux	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1056	Aggregate using auxiliary coordinate-based laplacian	tuning		not found
+pc_ml_AuxThreshold	real	pc_ml->AuxThreshold	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1057	Auxiliary smoother drop tol	tuning		not found
+pc_ml_BlockScaling	bool	pc_ml->BlockScaling	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1000	Scale all dofs at each node together	tuning		not found
+pc_ml_CoarsenScheme	enum	4	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:992	Aggregate Coarsen Scheme	tuning	4	not found
+pc_ml_DampingFactor	real	pc_ml->DampingFactor	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:996	P damping factor	tuning		not found
+pc_ml_EnergyMinimization	int	pc_ml->EnergyMinimization	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1002	Energy minimization norm type (0=no minimization; see ML manual for 1,2,3; -1 and 4 undocumented)	tuning		not found
+pc_ml_EnergyMinimizationCheap	bool	pc_ml->EnergyMinimizationCheap	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1017	Use cheaper variant of norm type 2	tuning		not found
+pc_ml_EnergyMinimizationDropTol	real	pc_ml->EnergyMinimizationDropTol	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1014	Energy minimization drop tolerance	tuning		not found
+pc_ml_KeepAggInfo	bool	"""None"""	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1021	None	tuning		not found
+pc_ml_OldHierarchy	bool	pc_ml->OldHierarchy	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1032	Use old routine to generate hierarchy	tuning		not found
+pc_ml_PrintLevel	int	PrintLevel	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:988	Print level	tuning		not found
+pc_ml_Reusable	bool	pc_ml->Reusable	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1024	Store intermedaiate data structures so that the multilevel hierarchy is reusable	tuning		not found
+pc_ml_SpectralNormScheme_Anorm	bool	pc_ml->SpectralNormScheme_Anorm	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:998	Method used for estimating spectral radius	tuning		not found
+pc_ml_Symmetrize	bool	pc_ml->Symmetrize	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:999	Symmetrize aggregation	tuning		not found
+pc_ml_Threshold	real	pc_ml->Threshold	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:997	Smoother drop tol	tuning		not found
+pc_ml_maxCoarseSize	int	pc_ml->MaxCoarseSize	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:991	Maximum coarsest mesh size	tuning		not found
+pc_ml_maxNlevels	int	pc_ml->MaxNlevels	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:990	Maximum number of levels	tuning		not found
+pc_ml_nullspace	enum	(PetscEnum)pc_ml->nulltype	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1001	Which type of null space information to use	tuning	4	not found
+pc_ml_repartition	bool	pc_ml->Repartition	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1033	Allow ML to repartition levels of the hierarchy	tuning		not found
+pc_ml_repartitionMaxMinRatio	real	pc_ml->MaxMinRatio	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1035	Acceptable ratio of repartitioned sizes	tuning		not found
+pc_ml_repartitionMinPerProc	int	pc_ml->MinPerProc	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1036	Smallest repartitioned size	tuning		not found
+pc_ml_repartitionPutOnSingleProc	int	pc_ml->PutOnSingleProc	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1037	Problem size automatically repartitioned to one processor	tuning		not found
+pc_ml_repartitionType	enum	2	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1040	Repartitioning library to use	tuning	2	not found
+pc_ml_repartitionZoltanScheme	enum	3	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1046	Repartitioning scheme to use	tuning	3	not found
+pc_ml_reuse_interpolation	bool	pc_ml->reuse_interpolation	pc	ml	pc_type=ml	src/ksp/pc/impls/ml/ml.c:1003	Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)	tuning		not found
+pc_parms_blocksize	int	parms->blocksize	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:275	Block size	tuning		not found
+pc_parms_droptol_factors	real	"L^{-1}F and EU^{-1}"""	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:292	None	tuning		not found
+pc_parms_droptol_last_schur	real	parms->droptol[5]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:295	drop tolerance for ILUT in last level schur complement	tuning		not found
+pc_parms_droptol_schur_compl	real	parms->droptol[4]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:293	drop tolerance for schur complement at each level	tuning		not found
+pc_parms_global	enum	(PetscEnum)parms->global	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:268	Global preconditioner	tuning	3	not found
+pc_parms_ind_tol	real	parms->indtol	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:276	Tolerance for independent sets	tuning		not found
+pc_parms_inter_column_perm	bool	parms->meth[1]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:280	column permutation for interlevel blocks	tuning		not found
+pc_parms_inter_column_scaling	bool	parms->meth[3]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:282	column scaling for interlevel blocks	tuning		not found
+pc_parms_inter_nonsymmetric_perm	bool	parms->meth[0]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:279	nonsymmetric permutation for interlevel blocks	tuning		not found
+pc_parms_inter_row_scaling	bool	parms->meth[2]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:281	row scaling for interlevel blocks	tuning		not found
+pc_parms_last_column_perm	bool	parms->meth[5]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:284	column permutation for last level blocks	tuning		not found
+pc_parms_last_column_scaling	bool	parms->meth[7]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:286	column scaling for last level blocks	tuning		not found
+pc_parms_last_nonsymmetric_perm	bool	parms->meth[4]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:283	nonsymmetric permutation for last level blocks	tuning		not found
+pc_parms_last_row_scaling	bool	parms->meth[6]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:285	row scaling for last level blocks	tuning		not found
+pc_parms_levels	int	parms->levels	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:273	Number of levels	tuning		not found
+pc_parms_lfil_ilu_arms	int	"""PCPARMSSetFill"""	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:287	None	tuning		not found
+pc_parms_lfil_ilut_L_U	int	parms->lfil[5]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:290	amount of fill-in for ILUT L and U	tuning		not found
+pc_parms_lfil_schur	int	parms->lfil[4]	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:289	amount of fill-in for schur	tuning		not found
+pc_parms_local	enum	(PetscEnum)parms->local	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:270	Local preconditioner	tuning	4	not found
+pc_parms_max_dim	int	parms->maxdim	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:277	Inner Krylov dimension	tuning		not found
+pc_parms_max_it	int	parms->maxits	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:278	Maximum number of inner iterations	tuning		not found
+pc_parms_nonsymmetric_perm	bool	parms->nonsymperm	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:274	Use nonsymmetric permutation	tuning		not found
+pc_parms_solve_tol	real	parms->solvetol	pc	parms	pc_type=parms	src/ksp/pc/impls/parms/parms.c:272	Tolerance for local solve	tuning		not found
+pc_redundant_number	int	red->nsubcomm	pc	redundant	pc_type=redundant	src/ksp/pc/impls/redundant/redundant.c:303	Number of redundant pc	tuning		yes
+pc_sor_backward	bool	&flg	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:81	use backward sweep instead of forward	tuning		yes
+pc_sor_diagonal_shift	real	jac->fshift	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:76	Add to the diagonal entries	tuning		yes
+pc_sor_forward	bool	&flg	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:83	use forward sweep	tuning		yes
+pc_sor_its	int	jac->its	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:77	number of inner SOR iterations	tuning		yes
+pc_sor_lits	int	jac->lits	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:78	number of local inner SOR iterations	tuning		yes
+pc_sor_local_backward	bool	&flg	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:87	use backward sweep locally	tuning		yes
+pc_sor_local_forward	bool	&flg	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:89	use forward sweep locally	tuning		yes
+pc_sor_local_symmetric	bool	&flg	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:85	use SSOR separately on each processor	tuning		yes
+pc_sor_omega	real	jac->omega	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:74	relaxation factor (0 < omega < 2)	tuning		yes
+pc_sor_symmetric	bool	"""PCSORSetSymmetric"""	pc	sor	pc_type=sor	src/ksp/pc/impls/sor/sor.c:79	None	tuning		yes
+pc_spai_block_size	int	ispai->block_size	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:451		tuning		not found
+pc_spai_cache_size	int	ispai->cache_size	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:453		tuning		not found
+pc_spai_epsilon	real	ispai->epsilon	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:442		tuning		not found
+pc_spai_max	int	ispai->max	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:447		tuning		not found
+pc_spai_maxnew	int	ispai->maxnew	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:449		tuning		not found
+pc_spai_nbsteps	int	ispai->nbsteps	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:444		tuning		not found
+pc_spai_sp	int	ispai->sp	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:457		tuning		not found
+pc_spai_verbose	int	ispai->verbose	pc	ispai	pc_type=spai	src/ksp/pc/impls/spai/ispai.c:455		diagnostic		not found
+pc_svd_ess_rank	int	jac->essrank	pc	svd	pc_type=svd	src/ksp/pc/impls/svd/svd.c:308	Essential rank of operator (0 to use entire operator)	tuning		yes
+pc_svd_zero_sing	real	jac->zerosing	pc	svd	pc_type=svd	src/ksp/pc/impls/svd/svd.c:307	Singular values smaller than this treated as zero	tuning		yes
+pc_telescope_ignore_dm	bool	sred->ignore_dm	pc	telescope	pc_type=telescope	src/ksp/pc/impls/telescope/telescope.c:723	Ignore any DM attached to the PC	tuning		yes
+pc_telescope_ignore_kspcomputeoperators	bool	sred->ignore_kspcomputeoperators	pc	telescope	pc_type=telescope	src/ksp/pc/impls/telescope/telescope.c:724	Ignore method used to compute A	tuning		yes
+pc_telescope_reduction_factor	int	sred->redfactor	pc	telescope	pc_type=telescope	src/ksp/pc/impls/telescope/telescope.c:721	Factor to reduce comm size by	tuning		yes
+pc_telescope_subcomm_type	enum	(PetscEnum)sred->subcommtype	pc	telescope	pc_type=telescope	src/ksp/pc/impls/telescope/telescope.c:719	Subcomm type (interlaced or contiguous)	tuning	3	yes
+pc_telescope_use_coarse_dm	bool	sred->use_coarse_dm	pc	telescope	pc_type=telescope	src/ksp/pc/impls/telescope/telescope.c:725	Define sub-communicator from the coarse DM	tuning		yes
+pc_type	enum	def	pc	pcset		src/ksp/pc/interface/pcset.c:142	Preconditioner	tuning	52	yes
+pc_use_amat	bool	pc->useAmat	pc	pcset		src/ksp/pc/interface/pcset.c:152	use Amat (instead of Pmat) to define preconditioner in nested inner solves	tuning		yes
+sub_schurs_debug	bool	sub_schurs->debug	pc	bddcschurs	pc_type=bddc	src/ksp/pc/impls/bddc/bddcschurs.c:1960	Debug output	diagnostic		yes
+sub_schurs_debug_ranks	array		pc	bddcschurs	pc_type=bddc	src/ksp/pc/impls/bddc/bddcschurs.c:435	Ranks to debug (all if the option is not used)	diagnostic		yes
+sub_schurs_discrete_harmonic	bool	discrete_harmonic	pc	bddcprivate	pc_type=bddc	src/ksp/pc/impls/bddc/bddcprivate.c:9390	None	tuning		yes
+sub_schurs_hermitian	bool	sub_schurs->is_hermitian	pc	bddcschurs	pc_type=bddc	src/ksp/pc/impls/bddc/bddcschurs.c:1957	Hermitian problem	tuning		yes
+sub_schurs_mat_solver_type	string	sub_schurs->mat_solver_type	pc	bddcschurs	pc_type=bddc	src/ksp/pc/impls/bddc/bddcschurs.c:1955	Specific direct solver to use	tuning		yes
+sub_schurs_posdef	bool	sub_schurs->is_posdef	pc	bddcschurs	pc_type=bddc	src/ksp/pc/impls/bddc/bddcschurs.c:1958	Positive definite problem	tuning		yes
+sub_schurs_restrictcomm	bool	sub_schurs->restrict_comm	pc	bddcschurs	pc_type=bddc	src/ksp/pc/impls/bddc/bddcschurs.c:1959	Restrict communicator on active processes only	tuning		yes
+sub_schurs_symmetric	bool	sub_schurs->is_symmetric	pc	bddcschurs	pc_type=bddc	src/ksp/pc/impls/bddc/bddcschurs.c:1956	Symmetric problem	tuning		yes
+adaptor_criterion	enum	(PetscEnum)criterion	snes	dmadapt		src/snes/utils/dm/dmadapt.c:503	Criterion used to drive adaptation	tuning	4	yes
+adaptor_mixed_setup_function	string	funcname	snes	dmadapt		src/snes/utils/dm/dmadapt.c:508	Function to setup the mixed problem	tuning		yes
+adaptor_refinement_factor	real	adaptor->refinementFactor	snes	dmadapt		src/snes/utils/dm/dmadapt.c:507	Set r such that N_adapt = r^dim N_orig	tuning		yes
+adaptor_sequence_num	int	adaptor->numSeq	snes	dmadapt		src/snes/utils/dm/dmadapt.c:505	Number of adaptations to generate an optimal grid	tuning		yes
+adaptor_target_num	int	"""DMAdaptor"""	snes	dmadapt		src/snes/utils/dm/dmadapt.c:506	None	tuning		yes
+adaptor_type	enum	defName	snes	dmadapt		src/snes/utils/dm/dmadapt.c:500	DMAdaptor	tuning		yes
+convest_monitor	bool	ce->monitor	snes	convest		src/snes/utils/convest.c:60	Monitor the error for each convergence check	diagnostic		yes
+convest_no_refine	bool	ce->noRefine	snes	convest		src/snes/utils/convest.c:61	Debugging flag to run on the same mesh each time	tuning		yes
+convest_num_refine	int	ce->Nr	snes	convest		src/snes/utils/convest.c:58	The number of refinements for the convergence check	tuning		yes
+convest_refine_factor	real	ce->r	snes	convest		src/snes/utils/convest.c:59	The increase in resolution in each dimension	tuning		yes
+ksp_ew_alpha	real	kctx->alpha	snes	snes		src/snes/interface/snes.c:883	1 < alpha <= 2	tuning		yes
+ksp_ew_alpha2	real	kctx->alpha2	snes	snes		src/snes/interface/snes.c:884	alpha2	tuning		yes
+ksp_ew_gamma	real	kctx->gamma	snes	snes		src/snes/interface/snes.c:882	0 <= gamma <= 1	tuning		yes
+ksp_ew_rtol0	real	kctx->rtol_0	snes	snes		src/snes/interface/snes.c:879	0 <= rtol0 < 1	tuning		yes
+ksp_ew_rtolmax	real	kctx->rtol_max	snes	snes		src/snes/interface/snes.c:881	0 <= rtolmax < 1	tuning		yes
+ksp_ew_threshold	real	kctx->threshold	snes	snes		src/snes/interface/snes.c:885	0 < threshold < 1	tuning		yes
+ksp_ew_v4_m1	real		snes	snes		src/snes/interface/snes.c:889	None	tuning		yes
+ksp_ew_v4_m2	real		snes	snes		src/snes/interface/snes.c:890	None	tuning		yes
+ksp_ew_v4_m3	real	kctx->v4_m3	snes	snes		src/snes/interface/snes.c:891	Threshold for successive rtol (0.1 in Eq.7)	tuning		yes
+ksp_ew_v4_m4	real	kctx->v4_m4	snes	snes		src/snes/interface/snes.c:892	Adaptation scaling (0.5 in Eq.7)	tuning		yes
+ksp_ew_v4_p1	real	kctx->v4_p1	snes	snes		src/snes/interface/snes.c:886	p1	tuning		yes
+ksp_ew_v4_p2	real	kctx->v4_p2	snes	snes		src/snes/interface/snes.c:887	p2	tuning		yes
+ksp_ew_v4_p3	real	kctx->v4_p3	snes	snes		src/snes/interface/snes.c:888	p3	tuning		yes
+ksp_ew_version	int	api	snes	snes		src/snes/interface/snes.c:878	None	tuning		yes
+mat_fd_type	enum	2	snes	snesj		src/snes/interface/snesj.c:99	Algorithm to compute difference parameter	tuning	3	yes
+snes_anderson_beta	real	ngmres->andersonBeta	snes	anderson	snes_type=ngmres	src/snes/impls/ngmres/anderson.c:11	Mixing parameter	tuning		yes
+snes_anderson_m	int	ngmres->msize	snes	anderson	snes_type=ngmres	src/snes/impls/ngmres/anderson.c:10	Number of directions	tuning		yes
+snes_anderson_monitor	bool	ngmres->monitor ? PETSC_TRUE : PETSC_FAL	snes	anderson	snes_type=ngmres	src/snes/impls/ngmres/anderson.c:15	Monitor steps of Anderson Mixing	diagnostic		yes
+snes_anderson_restart	int	ngmres->restart_periodic	snes	anderson	snes_type=ngmres	src/snes/impls/ngmres/anderson.c:12	Iterations before forced restart	tuning		yes
+snes_anderson_restart_it	int	ngmres->restart_it	snes	anderson	snes_type=ngmres	src/snes/impls/ngmres/anderson.c:13	Tolerance iterations before restart	tuning		yes
+snes_anderson_restart_type	enum	(PetscEnum)ngmres->restart_type	snes	anderson	snes_type=ngmres	src/snes/impls/ngmres/anderson.c:14	Restart type	tuning	3	yes
+snes_atol	real	snes->abstol	snes	snes		src/snes/interface/snes.c:987	Stop if function norm less than	tuning		yes
+snes_check_jacobian_domain_error	bool	snes->checkjacdomainerror	snes	snes		src/snes/interface/snes.c:1004	Check Jacobian domain error after Jacobian evaluation	diagnostic		yes
+snes_composite_damping	array		snes	snescomposite	snes_type=composite	src/snes/impls/composite/snescomposite.c:432	Damping of the additive composite solvers	tuning		yes
+snes_composite_rtol	real	jac->rtol	snes	snescomposite	snes_type=composite	src/snes/impls/composite/snescomposite.c:437	Residual tolerance for the additive composite solvers	tuning		yes
+snes_composite_sneses	array		snes	snescomposite	snes_type=composite	src/snes/impls/composite/snescomposite.c:425	List of composite solvers	tuning		yes
+snes_composite_stol	real	jac->stol	snes	snescomposite	snes_type=composite	src/snes/impls/composite/snescomposite.c:436	Step tolerance for restart on the additive composite solvers	tuning		yes
+snes_composite_type	enum	(PetscEnum)jac->type	snes	snescomposite	snes_type=composite	src/snes/impls/composite/snescomposite.c:423	Type of composition	tuning	3	yes
+snes_converged_reason_view_cancel	bool	flg	snes	snes		src/snes/interface/snes.c:1085	Remove all converged reason viewers	diagnostic		yes
+snes_convergence_test	enum	PETSC_STATIC_ARRAY_LENGTH(convtests)	snes	snes		src/snes/interface/snes.c:1024	Convergence test	diagnostic	3	yes
+snes_divergence_tolerance	real	snes->divtol	snes	snes		src/snes/interface/snes.c:993	Stop if residual norm increases by this factor	tuning		yes
+snes_error_if_not_converged	bool	snes->errorifnotconverged	snes	snes		src/snes/interface/snes.c:1002	Generate error if solver does not converge	diagnostic		yes
+snes_fas_continuation	bool	fas->continuation	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:212	Corrected grid-sequence continuation	tuning		yes
+snes_fas_cycles	int	fas->n_cycles	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:210	Number of cycles	tuning		yes
+snes_fas_full_downsweep	bool	fas->full_downsweep	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:219	Smooth on the initial down sweep for full FAS cycles	tuning		yes
+snes_fas_full_total	bool	fas->full_total	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:221	Use total restriction and interpolaton on the indial down and up sweeps for the full FAS cycle	tuning		yes
+snes_fas_galerkin	bool	fas->galerkin	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:215	Form coarse problems with Galerkin	tuning		yes
+snes_fas_levels	int	levels	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:198	Number of Levels	tuning		yes
+snes_fas_log	bool	monflg	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:242	Log times for each FAS level	diagnostic		yes
+snes_fas_smoothdown	int	fas->max_down_it	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:227	Number of pre-smoothing steps	tuning		yes
+snes_fas_smoothup	int	fas->max_up_it	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:225	Number of post-smoothing steps	tuning		yes
+snes_fas_type	enum	(PetscEnum)fastype	snes	fas	snes_type=fas	src/snes/impls/fas/fas.c:206	FAS correction type	tuning	4	yes
+snes_fd	bool	flg	snes	snes		src/snes/interface/snes.c:1089	Use finite differences (slow) to compute Jacobian	tuning		yes
+snes_fd_color	bool	flg	snes	snes		src/snes/interface/snes.c:1105	Use finite differences with coloring to compute Jacobian	tuning		yes
+snes_fd_function	bool	flg	snes	snes		src/snes/interface/snes.c:1101	Use finite differences (slow) to compute function from user objective	tuning		yes
+snes_fd_function_eps	real	eps	snes	snesob		src/snes/interface/snesob.c:150	Tolerance for nonzero entries in fd function	tuning		yes
+snes_force_iteration	bool	snes->forceiteration	snes	snes		src/snes/interface/snes.c:1003	Force SNESSolve() to take at least one iteration	tuning		yes
+snes_function_type	enum	2	snes	snes		src/snes/interface/snes.c:1042	SNES Norm schedule	tuning		yes
+snes_grid_sequence	int	snes->gridsequence	snes	snes		src/snes/interface/snes.c:1021	Use grid sequencing to generate initial guess	tuning		yes
+snes_ksp_ew	bool	snes->ksp_ewconv	snes	snes		src/snes/interface/snes.c:1047	Use Eisentat-Walker linear system convergence test	tuning		yes
+snes_lag_jacobian	int	snes->lagjacobian	snes	snes		src/snes/interface/snes.c:1013	How often to rebuild Jacobian	tuning		yes
+snes_lag_jacobian_persists	bool	snes->lagjac_persist	snes	snes		src/snes/interface/snes.c:1018	Jacobian lagging through multiple SNES solves	tuning		yes
+snes_lag_preconditioner	int	snes->lagpreconditioner	snes	snes		src/snes/interface/snes.c:1006	How often to rebuild preconditioner	tuning		yes
+snes_lag_preconditioner_persists	bool	snes->lagjac_persist	snes	snes		src/snes/interface/snes.c:1011	Preconditioner lagging through multiple SNES solves	tuning		yes
+snes_max_fail	int	snes->maxFailures	snes	snes		src/snes/interface/snes.c:996	Maximum nonlinear step failures	tuning		yes
+snes_max_funcs	int	snes->max_funcs	snes	snes		src/snes/interface/snes.c:990	Maximum function evaluations	tuning		yes
+snes_max_it	int	snes->max_its	snes	snes		src/snes/interface/snes.c:989	Maximum iterations	tuning		yes
+snes_max_linear_solve_fail	int	snes->maxLinearSolveFailures	snes	snes		src/snes/interface/snes.c:999	Maximum failures in linear solves allowed	tuning		yes
+snes_mf	bool	PETSC_FALSE	snes	snes		src/snes/interface/snes.c:1121	Use a Matrix-Free Jacobian with no matrix for computing the preconditioner	tuning		yes
+snes_mf_operator	bool	PETSC_FALSE	snes	snes		src/snes/interface/snes.c:1115	Use a Matrix-Free Jacobian with user-provided matrix for computing the preconditioner	tuning		yes
+snes_mf_version	int	snes->mf_version	snes	snes		src/snes/interface/snes.c:1123	Matrix-Free routines version 1 or 2	tuning		yes
+snes_monitor_cancel	bool	flg	snes	snes		src/snes/interface/snes.c:1054	Remove all monitors	diagnostic		yes
+snes_monitor_lg_range	bool	flg	snes	snes		src/snes/interface/snes.c:1074	Plot function range at each iteration	diagnostic		yes
+snes_monitor_pause_final	bool	PETSC_FALSE	snes	snes		src/snes/interface/snes.c:1068	Pauses all draw monitors at the final iterate	diagnostic		yes
+snes_monitor_python	string	monfilename	snes	snes		src/snes/interface/snes.c:1070	Use Python function	diagnostic		yes
+snes_monitor_saws	bool	flg	snes	snes		src/snes/interface/snes.c:1135	Publish SNES progress using SAWs	diagnostic		not found
+snes_ms_damping	real	damping	snes	ms	snes_type=ms	src/snes/impls/ms/ms.c:421	Damping for multistage method	tuning		yes
+snes_ms_norms	bool	norms	snes	ms	snes_type=ms	src/snes/impls/ms/ms.c:426	None	tuning		yes
+snes_ms_type	enum	count	snes	ms	snes_type=ms	src/snes/impls/ms/ms.c:417	Multistage smoother type	tuning		yes
+snes_multiblock_block_size	int	mb->bs	snes	multiblock	snes_type=multiblock	src/snes/impls/multiblock/multiblock.c:397	Blocksize that defines number of fields	tuning		yes
+snes_multiblock_type	enum	(PetscEnum)mb->type	snes	multiblock	snes_type=multiblock	src/snes/impls/multiblock/multiblock.c:399	Type of composition	tuning	6	yes
+snes_nasm_damping	real	nasm->damping	snes	nasm	snes_type=nasm	src/snes/impls/nasm/nasm.c:176	The new solution is obtained as old solution plus dmp times (sum of the solutions on the subdomains)	tuning		yes
+snes_nasm_finaljacobian	bool	nasm->finaljacobian	snes	nasm	snes_type=nasm	src/snes/impls/nasm/nasm.c:179	Compute the global jacobian of the final iterate (for ASPIN)	tuning		yes
+snes_nasm_finaljacobian_type	enum	3	snes	nasm	snes_type=nasm	src/snes/impls/nasm/nasm.c:180	The type of the final jacobian computed.	tuning	3	yes
+snes_nasm_log	bool	monflg	snes	nasm	snes_type=nasm	src/snes/impls/nasm/nasm.c:181	Log times for subSNES solves and restriction	diagnostic		yes
+snes_nasm_type	enum	(PetscEnum)nasm->type	snes	nasm	snes_type=nasm	src/snes/impls/nasm/nasm.c:172	Type of restriction/extension	tuning	4	yes
+snes_ncg_monitor	bool	ncg->monitor ? PETSC_TRUE : PETSC_FALSE	snes	snesncg	snes_type=ncg	src/snes/impls/ncg/snesncg.c:95	Monitor the beta values used in the NCG iterations	diagnostic		yes
+snes_ncg_type	enum	(PetscEnum)ncg->type	snes	snesncg	snes_type=ncg	src/snes/impls/ncg/snesncg.c:97	NCG Beta type used	tuning	5	yes
+snes_newtonal_correction_type	enum	(PetscEnum)correction_type	snes	al	snes_type=al	src/snes/impls/al/al.c:563	Type of correction to use in the arc-length continuation method	tuning	2	yes
+snes_newtonal_lambda_max	real	data->lambda_max	snes	al	snes_type=al	src/snes/impls/al/al.c:561	Maximum value of the load parameter lambda	tuning		yes
+snes_newtonal_lambda_min	real	data->lambda_min	snes	al	snes_type=al	src/snes/impls/al/al.c:560	Minimum value of the load parameter lambda	tuning		yes
+snes_newtonal_max_continuation_steps	int	data->max_continuation_steps	snes	al	snes_type=al	src/snes/impls/al/al.c:558	Maximum number of increment steps	tuning		yes
+snes_newtonal_psisq	real	"""SNESNewtonAL"""	snes	al	snes_type=al	src/snes/impls/al/al.c:559	None	tuning		yes
+snes_newtonal_scale_rhs	bool	data->scale_rhs	snes	al	snes_type=al	src/snes/impls/al/al.c:562	Scale the constant vector passed to `SNESSolve` by the load parameter lambda	tuning		yes
+snes_newtonal_step_size	real	data->step_size	snes	al	snes_type=al	src/snes/impls/al/al.c:557	Initial arc length increment step size	tuning		yes
+snes_ngmres_approxfunc	bool	ngmres->approxfunc	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:90	Linearly approximate the function	tuning		yes
+snes_ngmres_candidate	bool	ngmres->candidate	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:89	Use candidate storage	tuning		yes
+snes_ngmres_deltaB	real	ngmres->deltaB	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:99	Difference residual selection constant	tuning		yes
+snes_ngmres_epsilonB	real	ngmres->epsilonB	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:98	Difference selection constant	tuning		yes
+snes_ngmres_gammaA	real	ngmres->gammaA	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:96	Residual selection constant	tuning		yes
+snes_ngmres_gammaC	real	ngmres->gammaC	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:97	Residual restart constant	tuning		yes
+snes_ngmres_m	int	ngmres->msize	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:91	Number of directions	tuning		yes
+snes_ngmres_monitor	bool	ngmres->monitor ? PETSC_TRUE : PETSC_FAL	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:94	Monitor actions of NGMRES	diagnostic		yes
+snes_ngmres_restart	int	ngmres->restart_periodic	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:92	Iterations before forced restart	tuning		yes
+snes_ngmres_restart_fm_rise	bool	ngmres->restart_fm_rise	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:100	Restart on F_M residual rise	tuning		yes
+snes_ngmres_restart_it	int	ngmres->restart_it	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:93	Tolerance iterations before restart	tuning		yes
+snes_ngmres_restart_type	enum	(PetscEnum)ngmres->restart_type	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:88	Restart type	tuning	3	yes
+snes_ngmres_select_type	enum	(PetscEnum)ngmres->select_type	snes	snesngmres	snes_type=ngmres	src/snes/impls/ngmres/snesngmres.c:87	Select type	tuning	3	yes
+snes_ngs_atol	real	gs->abstol	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:180	Absolute residual tolerance for GS iteration	tuning		yes
+snes_ngs_max_it	int	gs->max_its	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:183	Maximum number of sweeps of GS to apply	tuning		yes
+snes_ngs_rtol	real	gs->rtol	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:181	Relative residual tolerance for GS iteration	tuning		yes
+snes_ngs_secant	bool	flg	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:186	Use finite difference secant approximation with coloring	tuning		yes
+snes_ngs_secant_h	real	gs->h	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:191	Differencing parameter for secant search	tuning		yes
+snes_ngs_secant_mat_coloring	bool	gs->secant_mat	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:192	Use the graph coloring of the Jacobian for the secant GS	tuning		yes
+snes_ngs_stol	real	gs->stol	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:182	Absolute update tolerance for GS iteration	tuning		yes
+snes_ngs_sweeps	int	gs->sweeps	snes	snesgs	snes_type=ngs	src/snes/impls/gs/snesgs.c:178	Number of sweeps of GS to apply	tuning		yes
+snes_norm_schedule	enum	5	snes	snes		src/snes/interface/snes.c:1039	SNES Norm schedule	tuning		yes
+snes_npc_side	enum	(PetscEnum)pcside	snes	snes		src/snes/interface/snes.c:1127	SNES nonlinear preconditioner side	tuning		yes
+snes_qn_m	int	qn->m	snes	qn	snes_type=qn	src/snes/impls/qn/qn.c:342	Number of past states saved for L-BFGS methods	tuning		yes
+snes_qn_monitor	bool	qn->monflg	snes	qn	snes_type=qn	src/snes/impls/qn/qn.c:344	Monitor for the QN methods	diagnostic		yes
+snes_qn_powell_gamma	real	qn->powell_gamma	snes	qn	snes_type=qn	src/snes/impls/qn/qn.c:343	Powell angle tolerance	tuning		yes
+snes_qn_restart_type	enum	(PetscEnum)rtype	snes	qn	snes_type=qn	src/snes/impls/qn/qn.c:348	Restart type	tuning	4	yes
+snes_qn_scale_type	enum	(PetscEnum)stype	snes	qn	snes_type=qn	src/snes/impls/qn/qn.c:345	Scaling type	tuning	5	yes
+snes_qn_type	enum	(PetscEnum)qtype	snes	qn	snes_type=qn	src/snes/impls/qn/qn.c:351	Quasi-Newton update type	tuning	3	yes
+snes_rtol	real	snes->rtol	snes	snes		src/snes/interface/snes.c:986	Stop if decrease in function norm less than	tuning		yes
+snes_saws_block	bool	((PetscObject)snes)->amspublishblock	snes	snes		src/snes/interface/snes.c:1146	Block for SAWs at end of SNESSolve	tuning		not found
+snes_stol	real	snes->stol	snes	snes		src/snes/interface/snes.c:988	Stop if step length less than	tuning		yes
+snes_test_function	bool	&test	snes	snes		src/snes/interface/snes.c:2647	Compare hand-coded and finite difference function	diagnostic		yes
+snes_test_jacobian	bool	&test	snes	snes		src/snes/interface/snes.c:2729	Compare hand-coded and finite difference Jacobians	diagnostic		yes
+snes_test_jacobian_display_threshold	real	threshold	snes	snes		src/snes/interface/snes.c:2734	Display difference between hand-coded and finite difference Jacobians which exceed input threshold	diagnostic		yes
+snes_tr_delta0	real	ctx->delta0	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:842	Initial trust region size	tuning		yes
+snes_tr_deltamax	real	ctx->deltaM	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:844	Maximum allowed trust region size	tuning		yes
+snes_tr_deltamin	real	ctx->deltam	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:843	Minimum allowed trust region size	tuning		yes
+snes_tr_eta1	real	ctx->eta1	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:837	eta1	tuning		yes
+snes_tr_eta2	real	ctx->eta2	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:838	eta2	tuning		yes
+snes_tr_eta3	real	ctx->eta3	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:839	eta3	tuning		yes
+snes_tr_fallback_type	enum	(PetscEnum)fallback	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:848	Type of fallback if subproblem solution is outside of the trust region	tuning	3	yes
+snes_tr_kmdc	real	ctx->kmdc	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:845	sufficient decrease parameter	tuning		yes
+snes_tr_norm_type	enum	(PetscEnum)norm	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:856	Type of norm for trust region bounds	tuning	5	yes
+snes_tr_qn	enum	(PetscEnum)qn	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:852	Use Quasi-Newton approximations for the model	tuning	3	yes
+snes_tr_t1	real	ctx->t1	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:840	t1	tuning		yes
+snes_tr_t2	real	ctx->t2	snes	tr	snes_type=newtontr	src/snes/impls/tr/tr.c:841	t2	tuning		yes
+snes_trdc_auto_scale_max	real	ctx->auto_scale_max	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:608	auto_scale_max	tuning		yes
+snes_trdc_auto_scale_multiphase	bool	ctx->auto_scale_multiphase	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:610	auto_scale_multiphase	tuning		yes
+snes_trdc_delta0	real	ctx->delta0	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:607	delta0	tuning		yes
+snes_trdc_deltaM	real	ctx->deltaM	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:606	deltaM	tuning		yes
+snes_trdc_eta1	real	ctx->eta1	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:601	eta1	tuning		yes
+snes_trdc_eta2	real	ctx->eta2	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:602	eta2	tuning		yes
+snes_trdc_eta3	real	ctx->eta3	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:603	eta3	tuning		yes
+snes_trdc_t1	real	ctx->t1	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:604	t1	tuning		yes
+snes_trdc_t2	real	ctx->t2	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:605	t2	tuning		yes
+snes_trdc_tol	real	ctx->deltatol	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:600	Trust region tolerance	tuning		yes
+snes_trdc_use_cauchy	bool	ctx->use_cauchy	snes	ntrdc	snes_type=ntrdc	src/snes/impls/ntrdc/ntrdc.c:609	use_cauchy	tuning		yes
+snes_type	enum	deft	snes	snes		src/snes/interface/snes.c:974	Nonlinear solver method	tuning	21	yes
+snes_vi_monitor	bool	flg	snes	vi	snes_type=vinewtonrsls|vinewtonssls	src/snes/impls/vi/vi.c:584	Monitor all non-active variables	diagnostic		yes
+snes_vi_zero_tolerance	real	snes->vizerotolerance	snes	vi	snes_type=vinewtonrsls|vinewtonssls	src/snes/impls/vi/vi.c:583	Tolerance for considering x[] value to be on a bound	tuning		yes
+mat_strumpack_colperm	bool	flg	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1196	Find a col perm to get nonzero diagonal	tuning		yes
+mat_strumpack_compression	enum	(PetscEnum)compcurrent	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1154	Rank-structured compression type	tuning	8	yes
+mat_strumpack_compression_abs_tol	real	ctol	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1166	Absolute compression tolerance	tuning		yes
+mat_strumpack_compression_butterfly_levels	int	bfly_lvls	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1185	Number of levels in the HODLR matrix for which to use butterfly compression	tuning		not found
+mat_strumpack_compression_leaf_size	int	leaf_size	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1174	Size of diagonal blocks in rank-structured approximation	tuning		yes
+mat_strumpack_compression_lossy_precision	int	lossy_prec	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1179	Number of bitplanes to use in lossy compression	tuning		yes
+mat_strumpack_compression_min_sep_size	int	min_sep_size	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1170	Minimum size of separator for compression	tuning		yes
+mat_strumpack_compression_rel_tol	real	ctol	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1162	Relative compression tolerance	tuning		yes
+mat_strumpack_geometric_components	int	"""None"""	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1212	None	tuning		yes
+mat_strumpack_geometric_width	int	"""None"""	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1214	None	tuning		yes
+mat_strumpack_geometric_xyz	array		strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1207	None	tuning		yes
+mat_strumpack_gpu	bool	flg	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1191	Enable GPU acceleration (not supported for all compression types)	tuning		not found
+mat_strumpack_metis_nodeNDP	bool	"""None"""	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1218	None	tuning		yes
+mat_strumpack_reordering	enum	(PetscEnum)ndcurrent	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1200	Sparsity reducing matrix reordering	tuning	12	yes
+mat_strumpack_verbose	bool	verb	strumpack	strumpack	pc_factor_mat_solver_type=strumpack	src/mat/impls/aij/mpi/strumpack/strumpack.c:1144	Print STRUMPACK information	diagnostic		yes

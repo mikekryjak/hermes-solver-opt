@@ -5,8 +5,14 @@
 # naming a knob that is not here, or a value outside its range, is rejected
 # before anything is launched.
 #
-# INCOMPLETE. It covers the SNES path, which is what the first campaigns use.
-# The CVODE and TS paths are named but not described.
+# INCOMPLETE, and deliberately so. The SNES path exposes 865 tuning knobs; this
+# file describes 85 of them, 66 of which are live in the configuration the
+# campaigns run. The rest are undescribed, not rejected. `snes-space.tsv` is the
+# full inventory, `option-space.md` explains it, and `cli/scan_options.py`
+# rebuilds it from the PETSc and BOUT++ sources.
+#
+# It covers the SNES path, which is what the first campaigns use. The CVODE and
+# TS paths are named but not described.
 #
 # Sources, so a wrong entry can be traced:
 #
