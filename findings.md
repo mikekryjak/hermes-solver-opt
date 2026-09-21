@@ -38,6 +38,24 @@ findings exist; the cap is on how many are loaded at once.
   distribution, and a campaign that wants a real noise bound still needs
   repeats at its own window length.
 
+### An evenly split parent millisecond predicts a window's cost badly, both ways
+- date: 2026-09-21
+- status: active
+- scope: windows cut inside a transient. Shown on test4's 2-6 ms transient;
+  expected wherever a parent's cost varies sharply within one millisecond.
+- evidence: the baseline study of the test4-jacobian campaign, three windows at
+  SNES-MUMPS-3 on build ef2ef9dd. Predicted by splitting the parent's in-line
+  cost for the enclosing millisecond evenly: 68 / 272 / 170 s. Measured:
+  test4_2.0-2.3ms 21 s (83 nl_its, t_jac_frac 0.58), test4_3.0-3.2ms 205 s
+  (1082 nl_its, 0.73), test4_4.0-4.3ms 414 s (2155 nl_its, 0.73). Wrong by 3.2x
+  low and 2.4x high. The total, 640 s against 510 s predicted, hides both
+  errors, so an aggregate check would have passed.
+- rule: never size a window from a parent's per-millisecond cost. Run a
+  baseline-only study first and read the real costs off it. Keep a window only
+  if it does solver work throughout: test4_2.0-2.3ms ends with output steps of
+  one RHS evaluation and over 90% I/O, so it coasts and no Jacobian knob can
+  move it.
+
 ## Traps
 
 ### In the run screens, `python` is the pyenv shim and it bus-errors on pandas

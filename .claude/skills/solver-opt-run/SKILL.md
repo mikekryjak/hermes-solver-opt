@@ -83,3 +83,18 @@ Name it `<window>-<YYYY-MM-DD>[-<desc>]`, e.g.
 - Deviations from the named recipe land in `diffs` automatically. Anything in
   `diffs` that is not in `varied` means a setting changed that nobody intended;
   resolve it rather than recording both.
+
+## Campaigns
+
+- Before queueing a campaign, run `run_campaign.py --dry-run`: it checks every
+  override against the search space, so a rejected knob costs no launch.
+- Before launching a study, check its knobs against the built libraries, not
+  the executable: every solver knob lives in `libbout++.so`, not `hermes-3`.
+- Pass `--hermes` on every launch and match that checkout's HEAD to the
+  campaign's `hermes_commit`: the `hermes` variable can name another build.
+- Before any variant study, run a baseline-only study on that rung: cost is
+  concentrated inside a transient, so a predicted window cost misleads.
+- When a rung's results land, judge each window by `nl_its` and `t_jac_frac`,
+  not by wall time: a step with one RHS evaluation coasted past every knob.
+- After a rung finishes, choose which configurations go up and write the next
+  study: the runner runs the study it is given and then stops.
