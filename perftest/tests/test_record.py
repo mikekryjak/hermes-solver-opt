@@ -514,3 +514,14 @@ def test_a_run_that_never_reported_does_not_block():
     report = ex.Report("case")
     ex._check_options_used("petsc:ksp_gmres_restart = 100", None, report)
     assert report.ok
+
+
+def test_a_clean_report_is_not_a_blank_cell(tmp_path, monkeypatch):
+    """An empty cell is skipped when the row is filled, so "PETSc reported
+    nothing left over" and "PETSc never reported" would look the same."""
+
+    row = {"options_left": ""}
+    idx.fill_row(row, {"options_left": ""}, ["options_left"])
+    assert row["options_left"] == ""          # an empty value writes nothing
+    idx.fill_row(row, {"options_left": "none"}, ["options_left"])
+    assert row["options_left"] == "none"

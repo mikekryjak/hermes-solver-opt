@@ -1130,10 +1130,11 @@ def extract_case(
             report.warnings.append(
                 "PETSc never used these options: " + ", ".join(unused)
             )
-        # None means the run never reported, which is not the same answer as an
-        # empty list, so the column keeps the two apart.
+        # A blank cell would mean two different things, because fill_row skips
+        # an empty value: the run never reported, or it reported nothing left
+        # over. "none" is written for the second so the column can be read.
         if unused is not None:
-            measured["options_left"] = " ".join(unused)
+            measured["options_left"] = " ".join(unused) or "none"
         notes = "\n\n".join(
             block
             for block in (
