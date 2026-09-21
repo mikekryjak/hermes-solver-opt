@@ -90,7 +90,8 @@ repository, `$store` the results store, `$data` the case and seed directory.
 - Learned conclusions: `findings.md`. Terse, agent-facing, with no cap on the
   number of entries: the cap is on how many are loaded at once.
   Graduate a finding into requirements / the run skill / a test / a ledger
-  column, then delete it from the log.
+  column, then mark it graduated with a pointer to where it landed. Delete
+  nothing while the project is exploratory; the user will revisit this.
 - Tasks: beads. Never TodoWrite or markdown lists.
 - Run results — the index, its schema, the per-run bundles — and the analysis
   that reads them: the private `solver-opt-store` repo at `$store`.
