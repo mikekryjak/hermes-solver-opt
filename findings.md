@@ -56,49 +56,78 @@ findings exist; the cap is on how many are loaded at once.
   one RHS evaluation and over 90% I/O, so it coasts and no Jacobian knob can
   move it.
 
-### Lagging the Jacobian costs more than it saves on the test4 transient
+### The Jacobian must be rebuilt every iteration on the test4 transient
 - date: 2026-09-21
 - status: active
 - scope: test4's 2-6 ms transient, build ef2ef9dd, recipe SNES-MUMPS-3, rung 0.
   NOT yet shown at rung 1 or 2, nor on test2 or test5.
-- evidence: rung 0 batch 1 of the test4-jacobian campaign, `solver:lag_jacobian`
-  at 1, the baseline's 3, 10 and 20, on three windows.
+- supersedes: the 2026-09-21 entry that read "Lagging the Jacobian costs more
+  than it saves", whose claim of a monotonic cost curve the fuller sweep below
+  falsifies. The winner is unchanged; the shape of the curve is not.
+- evidence: rung 0 of the test4-jacobian campaign, `solver:lag_jacobian` swept
+  over 1, 2, the baseline's 3, 4, 6, 10 and 20 on three windows. Wall seconds /
+  nonlinear iterations.
 
-  | window | lag 1 | lag 3 | lag 10 | lag 20 |
-  |---|---|---|---|---|
-  | 2.0-3.0ms | 36 s / 81 | 213 s / 1094 | killed | killed |
-  | 3.0-3.2ms | 126 s / 273 | 205 s / 1082 | 238 s / 2404 | 234 s / 2404 |
-  | 4.0-4.1ms | 79 s / 170 | 129 s / 646 | 174 s / 1779 | 173 s / 1779 |
+  | window | 1 | 2 | 3 | 4 | 6 | 10 | 20 |
+  |---|---|---|---|---|---|---|---|
+  | 2.0-3.0ms | 36/81 | 281/1071 | 213/1094 | 349/2190 | 423/3619 | 423/4350 | 450/4636 |
+  | 3.0-3.2ms | 126/273 | 251/941 | 205/1082 | 227/1432 | 254/2032 | 238/2404 | 234/2404 |
+  | 4.0-4.1ms | 79/170 | 130/466 | 129/646 | 215/1342 | 186/1603 | 174/1779 | 173/1779 |
 
-  Wall seconds / nonlinear iterations. Cost rises monotonically with the lag on
-  every window. Solver failures track it: 1, 54 on the 2.0-3.0 ms window.
-  Target density and temperature agree to about 5e-5 across all four settings
-  on both short windows.
-- rule: rebuild the Jacobian every iteration on this transient. The fresher
-  Newton direction cuts nonlinear iterations by 4 to 13 times, which more than
-  pays for the extra assembly. The production recipe's lag of 3 is a cost, not
-  a saving, and the search space's range of 1-20 has its optimum at the floor,
-  so the range may need to open below 1 if the knob allows it.
-- caution: the two killed cells are the cutoff ratchet, not a result. Their
-  target values come from partial windows and must not be compared.
+- rule: set `solver:lag_jacobian = 1`. It wins on every window by 1.6 to 5.9
+  times, with 4 to 13 times fewer nonlinear iterations, and target density and
+  temperature agree with the baseline to about 5e-5. The production recipe's
+  lag of 3 is a cost, not a saving.
+- the minimum is sharp, not the end of a trend: lag 2 is WORSE than lag 3 on
+  all three windows, and on 4.0-4.1ms wall time falls again from lag 4 to lag
+  20. Nothing between 2 and 20 is worth sampling.
+- rank on wall clock, never on iteration counts alone. Nonlinear iterations
+  rise monotonically with the lag while wall time does not, so the two metrics
+  disagree across most of this range and only agree at the winner.
+- the search space gives this knob the range 1-20 with its optimum at the
+  floor, so the range is pointing the wrong way and should be reconsidered.
 
-### The Jacobian lag saturates above about 10, which measures the timing noise
+### Neither of the other two Jacobian knobs is usable on this problem
 - date: 2026-09-21
 - status: active
-- scope: test4 rung-0 windows; the mechanism should hold wherever SNES
+- scope: test4 rung-0 windows, build ef2ef9dd. Both knobs were untested before
+  today, on this or any test.
+- evidence: `solver:jacobian_persists = true` diverged on all three windows,
+  alone and combined with lag 10. On test4_2.0-3.0ms it reached 20 SNES
+  failures in 8 s with the solution blown up -- Nd+ to 1807, Nd to 5466, Pd+ to
+  5482 against physical values of order 10. `solver:prune_jacobian = true`
+  wrote exactly one internal solver step, at the initial timestep of 0.1, and
+  then advanced no further until the cutoff killed it, on all three windows,
+  with no SNES failure and no error.
+- rule: do not propose either knob for this problem again without a reason to
+  think something changed. Persisting the Jacobian is the same trade as lagging
+  it, further in the direction the sweep above shows is wrong.
+- open, and NOT established: whether pruning was actually active. The killed
+  run's `BOUT.settings` lists `prune_jacobian` as unused, but that file is
+  written before finalize, and the input sets `error_on_unused_options = true`,
+  which would have stopped the run outright had the option been unread.
+  Deciding this needs a pruning run that finishes.
+
+### The Jacobian lag saturates where a solve is shorter than the lag
+- date: 2026-09-21
+- status: active
+- scope: test4 rung-0 windows. The mechanism should hold wherever SNES
   converges in fewer iterations than the lag.
-- evidence: at lag 10 and lag 20 the solver does identical work -- 2404 and
-  2404 nonlinear iterations on test4_3.0-3.2ms, 1779 and 1779 on
-  test4_4.0-4.1ms, the same solver_fails, and target values identical to every
-  printed digit. Beyond the iterations a solve actually takes, a larger lag
-  changes nothing.
-- rule: treat lag_jacobian above roughly 10 as one setting, and do not spend
-  runs sampling it. The saturation is also a free control: two runs doing
-  provably identical work differed by 1.7% and 0.6% in wall clock, at
-  concurrency 2.35 against 1.81 and 2.05 against 2.00, with the more loaded run
-  slower both times. That is the project's first same-work timing comparison,
-  and it puts wall-clock noise plus loading at a few per cent, well inside the
-  15% rung-0 bound. It is two pairs, not a distribution.
+- evidence: lag 10 and lag 20 did identical work on the two short windows --
+  2404 and 2404 nonlinear iterations on test4_3.0-3.2ms, 1779 and 1779 on
+  test4_4.0-4.1ms, same solver_fails, target values identical to every printed
+  digit. On the whole-millisecond window test4_2.0-3.0ms they did NOT: 4350
+  against 4636. That window's solves are long enough for a lag of 20 to differ
+  from a lag of 10.
+- rule: treat a lag above the typical iterations per solve as one setting, but
+  check the window before assuming it, because a longer window moves the point
+  where saturation starts.
+- the saturation is also a free control: on the two windows where the work was
+  provably identical, wall clock differed by 1.7% and 0.6%, at concurrency 2.35
+  against 1.81 and 2.05 against 2.00, with the more loaded run slower both
+  times. That is the project's first same-work timing comparison and puts noise
+  plus loading at a few per cent, well inside the 15% rung-0 bound. Two pairs,
+  not a distribution.
 
 ## Traps
 
