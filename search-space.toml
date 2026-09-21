@@ -43,7 +43,7 @@
 #   note     anything a proposer would otherwise get wrong
 
 [meta]
-written = "2026-09-20"
+written = "2026-09-20, revised 2026-09-21"
 covers = "SNES path only"
 build = "hermes-3 neutlim-lagging at ef2ef9dd"
 petsc = "3.23.3"
@@ -53,15 +53,37 @@ petsc_view = "bundles/test2_20.0-21.0ms-20260920-160050/petsc_views.txt"
 
 # A knob written as "solver:x" goes in the [solver] section of BOUT.inp and is
 # read by BOUT++. A knob written as "petsc:x" goes in the [petsc] section and
-# is passed straight to PETSc as -x. Some settings exist on both sides; where
-# they do, the note says which one wins.
+# is passed straight to PETSc as -x.
+#
+# ONE HOME PER SETTING. A setting must appear on one side only, because the two
+# sides do not tie. BOUT++ applies the [solver] settings with explicit calls and
+# then reads [petsc] last (snes.cxx line 770, SNESSetFromOptions), so a [petsc]
+# entry silently overrides the [solver] one and a run can be labelled with a
+# setting it did not use.
+#
+# Which side is the home is not a matter of taste. BOUT++ reads most of these
+# values itself, so moving one to the petsc side changes PETSc and leaves BOUT++
+# behind:
+#
+#   rtol       is also the floor scale_vars applies when rescaling (snes.cxx:815)
+#   atol       sets the pseudo-transient and convergence thresholds (1547, 1595)
+#   max_nonlinear_iterations  gives lower_its and upper_its their defaults (299)
+#   maxl       drives the Jacobian-pruning and failure logic (1046, 1176)
+#   pc_type    branches the setup: hypre at 747, fieldsplit for DAEs at 758
+#   matrix_free, use_coloring, lag_jacobian  each gate BOUT++ code paths
+#
+# Those keep [solver] as their home. Only snes_type, ksp_type and the line
+# search type are pure forwards, where BOUT++ does nothing but pass the value
+# on, and those three live in [petsc] -- which is where the recipes already put
+# the line search. Anything with no BOUT++ spelling at all is a petsc knob by
+# definition.
 
 
 # ---------------------------------------------------------------------------
 # 1. The nonlinear solve
 # ---------------------------------------------------------------------------
 
-[knobs."solver:snes_type"]
+[knobs."petsc:snes_type"]
 type = "choice"
 values = ["newtonls", "newtontr", "anderson", "ngmres", "qn", "ncg", "nrichardson"]
 default = "anderson"
@@ -69,7 +91,7 @@ current = "newtonls"
 applies = "snes"
 cost = "newtonls is Newton with a line search: fastest when it converges, fragile when far from the solution. newtontr is a trust region: slower per step, more robust on hard steps. anderson and ngmres are acceleration methods that need no Jacobian, so they are cheap per iteration and usually need many more."
 status = "candidate"
-note = "The recipe comment records that newtontr was tried and was not as good, but the comparison is not in this project's record. Worth repeating on the window ladder before the question is treated as settled."
+note = "The recipe comment records that newtontr was tried and was not as good, but the comparison is not in this project's record. Worth repeating on the window ladder before the question is treated as settled. BOUT++ calls SNESSetType unconditionally with its own default of anderson, so PETSc builds anderson and then switches when it reads this option. The captured view is what says which type was used."
 
 [knobs."solver:max_nonlinear_iterations"]
 type = "integer"
@@ -123,16 +145,16 @@ cost = "Cap on function evaluations per solve. A backstop, not a tuning knob: it
 status = "fixed"
 note = "Vary only if a configuration is seen hitting it. Hitting it is a sign something else is wrong."
 
-[knobs."solver:line_search_type"]
+[knobs."petsc:snes_linesearch_type"]
 type = "choice"
-values = ["default", "basic", "bt", "l2", "cp", "nleqerr"]
-default = "default"
-current = "unset, see note"
+values = ["basic", "bt", "l2", "cp", "nleqerr"]
+default = "bt"
+current = "basic"
 applies = "snes"
-depends = { "solver:snes_type" = "newtonls" }
+depends = { "petsc:snes_type" = "newtonls" }
 cost = "basic takes the full Newton step with no damping: cheapest per iteration, and it diverges on steps a damped search would have saved. bt backtracks until the residual decreases, costing extra function evaluations per iteration and buying robustness. l2 and cp minimise along the step direction. nleqerr is an affine-invariant criterion for badly scaled problems."
 status = "candidate"
-note = "SNES-MUMPS-3 sets this through petsc:snes_linesearch_type = basic rather than through solver:line_search_type, and the captured view confirms PETSc built a basic line search. Prior work on this project attributed a burst of solver failures partly to the undamped basic search, so bt is a specific candidate. Set only one of the two spellings, or they will disagree."
+note = "The recipes set this, and the captured view confirms PETSc built a basic line search. Prior work on this project attributed a burst of solver failures partly to the undamped basic search, so bt is a specific candidate. BOUT++ spells the same setting solver:line_search_type; that spelling is not a knob here and must not be used, because whichever section is read last wins."
 
 [knobs."solver:max_snes_failures"]
 type = "integer"
@@ -312,10 +334,10 @@ note = "Plausibly powerful for edge plasma, where densities span many decades an
 # 4. The linear solve
 # ---------------------------------------------------------------------------
 
-[knobs."solver:ksp_type"]
+[knobs."petsc:ksp_type"]
 type = "choice"
-values = ["default", "fgmres", "gmres", "bcgs", "bcgsl", "tfqmr", "cg", "richardson", "preonly"]
-default = "default"
+values = ["fgmres", "gmres", "bcgs", "bcgsl", "tfqmr", "cg", "richardson", "preonly"]
+default = "gmres"
 current = "fgmres"
 applies = "ksp"
 cost = "fgmres allows the preconditioner to vary between iterations, which gmres does not, and stores more vectors for the privilege. bcgs and tfqmr keep no Krylov history so their memory is constant, but they converge irregularly. preonly applies the preconditioner once with no Krylov iteration at all."
@@ -338,7 +360,7 @@ range = [10, 300]
 default = 30
 current = "unset, so 30"
 applies = "ksp"
-depends = { "solver:ksp_type" = "fgmres or gmres" }
+depends = { "petsc:ksp_type" = "fgmres or gmres" }
 cost = "How many Krylov vectors are kept before the method restarts and discards its accumulated subspace. A long restart converges in fewer iterations and costs memory and orthogonalisation work that grows with the square of the restart length. A short one is cheap per iteration and throws away convergence history."
 status = "candidate"
 note = "THE FIRST THING TO TRY. The captured view shows restart = 30 against maxl = 260, so one solve may restart nearly nine times, discarding its subspace each time. Nobody chose 30; it is the PETSc default and the input file never mentions it. This is the clearest case in the whole space of a setting in force that nobody decided. Caveat from the same view: the linear solve currently converges in 1 iteration, so with the direct preconditioner this may never bind. It will bind the moment the preconditioner is weakened, which every cheaper preconditioner does."
@@ -349,7 +371,7 @@ values = ["refine_never", "refine_ifneeded", "refine_always"]
 default = "refine_never"
 current = "unset, so refine_never"
 applies = "ksp"
-depends = { "solver:ksp_type" = "fgmres or gmres" }
+depends = { "petsc:ksp_type" = "fgmres or gmres" }
 cost = "Iterative refinement of the Gram-Schmidt orthogonalisation. Guards against loss of orthogonality in long restarts, at the cost of extra work per iteration."
 status = "untested"
 note = "Only worth considering alongside a long restart, where orthogonality actually degrades."
@@ -498,6 +520,282 @@ applies = "pc"
 depends = { "petsc:mat_mumps_icntl_35" = "1, 2 or 3" }
 cost = "The dropping tolerance for block low-rank compression. Larger means a cruder and faster factorisation."
 status = "untested"
+
+
+# ---------------------------------------------------------------------------
+# 5b. What each preconditioner brings with it
+# ---------------------------------------------------------------------------
+#
+# pc_type decides which other knobs exist at all. This build exposes 372
+# `-pc_*` options: 126 for hypre, 31 for gamg, 19 for fieldsplit, 17 for the
+# factorisation, 15 for multigrid, 10 for sor, 8 for asm, 2 for bjacobi. A
+# catalogue of all of them would be unreadable, so what follows is a working
+# subset per family, each gated by `depends` so a sampler reaches it only when
+# that preconditioner is in force.
+#
+# NO DEFAULT BELOW IS CAPTURED. Every other entry in this file takes its default
+# from a -snes_view of this build. No run in this project has used any of these
+# preconditioners, so there is nothing to read and each says "not captured".
+# The first run with one of these families should capture a -pc_view and fill
+# them in. Where a note gives the PETSc manual's default it says so, and that is
+# documentation, not evidence about this build.
+#
+# Names verified against the option strings in this build's libpetsc.
+#
+# Three knobs are deliberately left out because their allowed values could not
+# be verified here and a wrong list would reject a valid proposal:
+# pc_gamg_type, pc_hypre_ilu_type and pc_hypre_boomeramg_relax_type_all.
+
+# The factorisation, shared by lu, ilu and the sub-solves inside bjacobi and asm.
+
+[knobs."petsc:pc_factor_shift_type"]
+type = "choice"
+values = ["NONE", "NONZERO", "POSITIVE_DEFINITE", "INBLOCKS"]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "lu, ilu, bjacobi or asm" }
+cost = "What to do when the factorisation meets a zero or negative pivot. Shifting lets it finish on a matrix that would otherwise abort, at the price of factorising something that is not quite the matrix, so the preconditioner is weaker and the Krylov method does more work."
+status = "candidate"
+note = "The manual's default is NONE. Two STRUMPACK recipes already set NONZERO with an amount of 1e-12, which is evidence that this problem does produce awkward pivots. mat_mumps_icntl_24 is the MUMPS-side answer to the same question, and the baseline uses it; setting both invites them to disagree."
+
+[knobs."petsc:pc_factor_shift_amount"]
+type = "continuous"
+range = [1e-14, 1e-6]
+scale = "log"
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "petsc:pc_factor_shift_type" = "NONZERO" }
+cost = "How much to add to a pivot that is too small. Larger keeps the factorisation alive on harder matrices and moves it further from the true one."
+status = "untested"
+
+[knobs."petsc:pc_factor_reuse_ordering"]
+type = "switch"
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "lu or ilu" }
+cost = "Keeps the fill-reducing permutation from the first factorisation instead of computing a new one each time. The sparsity pattern does not change between steps here, so the work is repeated for nothing unless the ordering is adaptive."
+status = "candidate"
+note = "Worth trying with lag_jacobian, which decides how often a factorisation happens at all. If the analysis phase is a real share of the cost, this removes most of it; the captured view reports the MUMPS analysis separately, so the log_view timings can say."
+
+[knobs."petsc:pc_factor_reuse_fill"]
+type = "switch"
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "lu or ilu" }
+cost = "Reuses the fill estimate from the previous factorisation, so the allocation is not recomputed or re-grown."
+status = "untested"
+
+[knobs."petsc:pc_factor_fill"]
+type = "continuous"
+range = [1.0, 20.0]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "ilu" }
+cost = "The expected ratio of factor nonzeros to matrix nonzeros. Too low and PETSc reallocates during the factorisation; too high and it holds memory it never uses."
+status = "untested"
+
+# Block Jacobi and additive Schwarz: how the domain is cut up and how much the
+# pieces overlap.
+
+[knobs."petsc:pc_asm_overlap"]
+type = "integer"
+range = [0, 4]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "asm" }
+cost = "How many cells each subdomain reaches into its neighbour. More overlap makes each block solve a better approximation of the global one, so the Krylov method needs fewer iterations, and makes each block solve bigger."
+status = "candidate"
+note = "The manual's default is 1. This is the knob that decides whether asm is worth having over bjacobi, which is the same thing with no overlap."
+
+[knobs."petsc:pc_asm_type"]
+type = "choice"
+values = ["NONE", "RESTRICT", "INTERPOLATE", "BASIC"]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "asm" }
+cost = "What happens in the overlap region when the block solutions are put back together. RESTRICT discards the neighbour's values on the way out and is the cheapest; BASIC adds both and costs an extra communication."
+status = "untested"
+note = "The manual's default is RESTRICT."
+
+[knobs."petsc:pc_asm_blocks"]
+type = "integer"
+range = [1, 100]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "asm" }
+cost = "How many subdomains in total. Fewer, larger blocks approximate the global solve better and parallelise worse."
+status = "untested"
+note = "Without it there is one block per process, so this knob and the core count move the same thing. Record both or neither."
+
+[knobs."petsc:pc_bjacobi_blocks"]
+type = "integer"
+range = [1, 100]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "bjacobi" }
+cost = "The same trade as pc_asm_blocks, with no overlap between the blocks."
+status = "untested"
+
+# hypre boomeramg: algebraic multigrid. The one hypre method worth a campaign,
+# and the one with the most knobs.
+
+[knobs."petsc:pc_hypre_boomeramg_strong_threshold"]
+type = "continuous"
+range = [0.1, 0.9]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "boomeramg" }
+cost = "How strong a coupling has to be before the coarsening keeps it. Low values make coarse grids that represent the problem well and cost more to build and apply; high values make cheap coarse grids that may not converge."
+status = "candidate"
+note = "The manual's default is 0.25, which hypre's own documentation says is for two-dimensional problems, with 0.5 to 0.6 suggested in three. This grid is two-dimensional, so the default is the right starting point rather than an obvious fault, and this is still the first knob to move within boomeramg."
+
+[knobs."petsc:pc_hypre_boomeramg_coarsen_type"]
+type = "choice"
+values = ["CLJP", "Ruge-Stueben", "modifiedRuge-Stueben", "Falgout", "PMIS", "HMIS"]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "boomeramg" }
+cost = "Which algorithm picks the coarse grid. The choice changes how many levels there are, how dense they get and how well the method scales in parallel."
+status = "untested"
+note = "PMIS and HMIS are the parallel-friendly ones and produce sparser coarse grids; Falgout is the usual serial-leaning default."
+
+[knobs."petsc:pc_hypre_boomeramg_interp_type"]
+type = "choice"
+values = ["classical", "direct", "multipass", "ext+i", "ext+i-cc", "standard"]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "boomeramg" }
+cost = "How values move between a coarse grid and the fine one. Richer interpolation converges in fewer iterations and makes each level denser and slower."
+status = "untested"
+note = "The value list here is the subset that could be verified in this build's library; hypre offers more."
+
+[knobs."petsc:pc_hypre_boomeramg_max_levels"]
+type = "integer"
+range = [5, 40]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "boomeramg" }
+cost = "Cap on the number of grids in the hierarchy. Hitting the cap leaves a coarsest grid that is still large and has to be solved directly."
+status = "untested"
+
+[knobs."petsc:pc_hypre_boomeramg_agg_nl"]
+type = "integer"
+range = [0, 4]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "boomeramg" }
+cost = "How many of the finest levels use aggressive coarsening. It cuts the setup cost and the memory sharply and weakens the preconditioner, so the iteration count rises."
+status = "untested"
+
+# hypre's ILU, which SNES-1 uses.
+
+[knobs."petsc:pc_hypre_ilu_level"]
+type = "integer"
+range = [0, 5]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "ilu" }
+cost = "Fill level for hypre's incomplete factorisation, the same trade as pc_factor_levels."
+status = "untested"
+note = "SNES-1 sets 1."
+
+[knobs."petsc:pc_hypre_ilu_drop_threshold"]
+type = "continuous"
+range = [1e-6, 1e-1]
+scale = "log"
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "ilu" }
+cost = "Entries smaller than this are dropped from the factor. Smaller keeps more, giving a stronger and denser preconditioner."
+status = "untested"
+note = "Only meaningful for the threshold variants of hypre's ILU, which pc_hypre_ilu_type selects. That type knob is not in this file yet, so check the variant before proposing this."
+
+[knobs."petsc:pc_hypre_ilu_max_nnz_per_row"]
+type = "integer"
+range = [20, 300]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "ilu" }
+cost = "Caps how dense each row of the factor may become, which bounds memory and the cost of applying it."
+status = "untested"
+
+[knobs."petsc:pc_hypre_ilu_local_reordering"]
+type = "switch"
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "ilu" }
+cost = "Reorders each process's own rows before factorising, which reduces fill and usually helps robustness."
+status = "untested"
+
+[knobs."petsc:pc_hypre_ilu_tri_solve"]
+type = "switch"
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_hypre_type" = "ilu" }
+cost = "Applies the factor with a triangular solve rather than an iterative smoother. The solve is exact and serial along each block; the smoother is approximate and parallel."
+status = "untested"
+
+# gamg: PETSc's own algebraic multigrid, so no hypre dependency.
+
+[knobs."petsc:pc_gamg_threshold"]
+type = "continuous"
+range = [0.0, 0.2]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "gamg" }
+cost = "The gamg equivalent of boomeramg's strong threshold: how weak a coupling may be and still be kept when the graph is coarsened."
+status = "untested"
+
+[knobs."petsc:pc_gamg_agg_nsmooths"]
+type = "integer"
+range = [0, 3]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "gamg" }
+cost = "How many smoothing passes are applied to the interpolation. Zero gives plain aggregation, which is cheap to build and converges more slowly."
+status = "untested"
+
+[knobs."petsc:pc_gamg_aggressive_coarsening"]
+type = "integer"
+range = [0, 4]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "gamg" }
+cost = "How many of the finest levels coarsen aggressively. Same trade as boomeramg's agg_nl: a cheaper setup for a weaker preconditioner."
+status = "untested"
+
+[knobs."petsc:pc_mg_levels"]
+type = "integer"
+range = [2, 10]
+default = "not captured"
+current = "unset"
+applies = "pc"
+depends = { "solver:pc_type" = "gamg" }
+cost = "How many grids the multigrid hierarchy has. Too few leaves a coarse problem that is expensive to solve; too many spends setup time on levels that carry little of the error."
+status = "untested"
+note = "gamg chooses this itself unless it is set, so setting it overrides a decision the method made from the matrix."
 
 
 # ---------------------------------------------------------------------------
@@ -748,6 +1046,9 @@ status = "untested"
 #                            between runs and with the 50-output rule.
 #   petsc:log_view           Prints the PETSc profile. The time-share columns in
 #                            the index come from it.
+#   petsc:options_left       Makes PETSc report the options it never used, which
+#                            is how a knob that did nothing is caught. In every
+#                            recipe that builds a PETSc object, and never varied.
 #   petsc:snes_view          Diagnostic, added per case by hand. PETSc prints
 #   petsc:ksp_view           one view per solve, so a long run writes gigabytes.
 #

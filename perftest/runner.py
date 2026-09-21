@@ -36,6 +36,7 @@ import sys
 import time
 
 from . import index as idx
+from . import recipe as rcp
 from . import store as st
 from .campaign import (  # noqa: F401  (re-exported for the console tool)
     ApprovalMissing,
@@ -494,6 +495,20 @@ class Runner:
             raise RunnerProblem(f"no recipe file for {trial.recipe} at {named}")
         if not trial.overrides:
             return named
+
+        settings = rcp.parse_settings(named)
+        for key, _ in trial.overrides:
+            twin = rcp.shadowed(settings, key)
+            if twin:
+                # Refused before anything is generated. Writing the override
+                # would produce a case whose recipe says one thing and whose
+                # solver does another, and the row would carry the value that
+                # was not used.
+                raise RunnerProblem(
+                    f"{trial.recipe} sets {twin}, which BOUT++ reads after"
+                    f" {key} and which would override it. Give the setting one"
+                    " home in the recipe before varying it."
+                )
 
         with open(named) as handle:
             lines = handle.read().splitlines()

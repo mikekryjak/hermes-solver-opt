@@ -20,6 +20,68 @@ MANAGED_SECTIONS = ("solver", "petsc")
 # deviated from its recipe and must not be reported as though it had.
 TOOLING_FLAGS = ("petsc:snes_view", "petsc:ksp_view")
 
+# The same setting under its two spellings. BOUT++ applies the [solver] values
+# with explicit calls and reads [petsc] last (snes.cxx line 770), so a setting
+# written on both sides is decided by the petsc one whatever the other says.
+# A run whose recipe does that is mislabelled, not merely untidy, which is why
+# the pairs are listed rather than left to whoever reads the recipe.
+#
+# These pairs hold for the SNES solver only. Under `type = petsc`, which is the
+# TS path, BOUT++ spends solver:atol and solver:rtol on TSSetTolerances and
+# leaves the SNES tolerances to PETSc (petsc.cxx lines 330 and 397), so there
+# solver:atol and petsc:snes_atol are two different settings that happen to
+# share a name. The same caution applies to the CVODE path.
+#
+# Option names checked against this build's libpetsc.
+SAME_SETTING = {
+    "solver:snes_type": "petsc:snes_type",
+    "solver:ksp_type": "petsc:ksp_type",
+    "solver:pc_type": "petsc:pc_type",
+    "solver:pc_hypre_type": "petsc:pc_hypre_type",
+    "solver:line_search_type": "petsc:snes_linesearch_type",
+    "solver:atol": "petsc:snes_atol",
+    "solver:rtol": "petsc:snes_rtol",
+    "solver:stol": "petsc:snes_stol",
+    "solver:max_nonlinear_iterations": "petsc:snes_max_it",
+    "solver:maxf": "petsc:snes_max_funcs",
+    "solver:maxl": "petsc:ksp_max_it",
+    "solver:max_snes_failures": "petsc:snes_max_linear_solve_fail",
+    "solver:lag_jacobian": "petsc:snes_lag_jacobian",
+    "solver:jacobian_persists": "petsc:snes_lag_jacobian_persists",
+    "solver:kspsetinitialguessnonzero": "petsc:ksp_initial_guess_nonzero",
+    "solver:matrix_free": "petsc:snes_mf",
+    "solver:matrix_free_operator": "petsc:snes_mf_operator",
+}
+
+
+def other_spelling(key):
+    """The same setting written for the other section, or None."""
+
+    if key in SAME_SETTING:
+        return SAME_SETTING[key]
+    for solver_key, petsc_key in SAME_SETTING.items():
+        if petsc_key == key:
+            return solver_key
+    return None
+
+
+def shadowed(settings, key):
+    """The key in `settings` that would override `key`, or None.
+
+    `settings` is a parsed recipe. A setting written in both sections is
+    decided by the [petsc] one, so setting the [solver] spelling changes the
+    file and not the run.
+    """
+
+    family = settings.get("solver:type", "snes").strip().lower()
+    if family not in ("", "snes"):
+        return None
+    twin = other_spelling(key)
+    if twin is None or twin not in settings:
+        return None
+    # The petsc side wins, so nothing shadows a key that is itself on it.
+    return None if key.startswith("petsc:") else twin
+
 
 def parse_settings(path, sections=MANAGED_SECTIONS):
     """

@@ -1113,6 +1113,7 @@ def extract_case(
     console = os.path.join(case_dir, lp.CONSOLE_LOG)
     notes = ""
     measured = {}
+    unused = None
     if os.path.exists(console):
         measured["petsc_version"] = lp.petsc_version(console)
         banner = lp.run_banner(console)
@@ -1129,6 +1130,10 @@ def extract_case(
             report.warnings.append(
                 "PETSc never used these options: " + ", ".join(unused)
             )
+        # None means the run never reported, which is not the same answer as an
+        # empty list, so the column keeps the two apart.
+        if unused is not None:
+            measured["options_left"] = " ".join(unused)
         notes = "\n\n".join(
             block
             for block in (
@@ -1336,6 +1341,8 @@ def extract_case(
         measured["diffs"] = "; ".join(diffs)
         _check_varied(row.get("varied", ""), diffs, report)
 
+    _check_options_used(row.get("varied", ""), unused, report)
+
     parent_inp = _seed_input(measured.get("seed"), rows, store_dir)
     if parent_inp:
         measured["physics_diffs"] = " ".join(
@@ -1388,6 +1395,38 @@ def _seed_input(seed, rows, store_dir):
             path = os.path.join(bundle, "BOUT.inp")
             return path if os.path.exists(path) else None
     return None
+
+
+def _check_options_used(varied, unused, report):
+    """
+    Refuse the extraction when PETSc ignored a setting this run was varying.
+
+    PETSc takes any option into its database and consumes it only if some
+    object asks for it, so a misspelled or inapplicable knob is silently
+    dropped. A run like that measured the baseline under another name, and a
+    row saying otherwise is worse than no row: it is used. This is a problem
+    rather than a warning, so the case is kept and nothing records a result.
+    """
+
+    if not varied or not unused:
+        return
+
+    ignored = {name.lstrip("-").strip() for name in unused}
+    hit = []
+    for part in varied.split(";"):
+        key = part.split("=")[0].strip()
+        if not key:
+            continue
+        option = key.split(":", 1)[-1]
+        twin = recipe.other_spelling(key) or ""
+        if option in ignored or twin.split(":", 1)[-1] in ignored:
+            hit.append(key)
+
+    if hit:
+        report.problems.append(
+            "PETSc never used " + ", ".join(hit) + ", which this run was"
+            " varying: it ran the baseline under another name"
+        )
 
 
 def _check_varied(varied, diffs, report):

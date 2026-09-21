@@ -70,6 +70,7 @@ INDEX_COLUMNS = [
     "reference_id",
     # what it ran as
     "diffs",
+    "options_left",
     "epoch",
     "hermes_commit",
     "hermes_branch",

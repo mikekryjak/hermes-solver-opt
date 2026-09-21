@@ -17,6 +17,7 @@ import sys
 
 import pytest
 
+from perftest import extract as ex
 from perftest import logparse as lp
 from perftest import index as idx
 from perftest import recipe
@@ -468,3 +469,48 @@ def test_removing_a_recipe_flag_is_still_a_deviation(tmp_path):
     assert recipe.diff_against_recipe(str(case), named) == [
         "petsc:log_view: (set) -> (absent)"
     ]
+
+
+# =============================================================================
+# A knob PETSc ignored is not a result
+# =============================================================================
+def test_an_ignored_knob_blocks_the_extraction():
+    """PETSc takes any option into its database and consumes it only if some
+    object asks for it. A run varying an option nothing asked for measured the
+    baseline, so it must not be recorded as a result for that option."""
+
+    report = ex.Report("case")
+    ex._check_options_used(
+        "petsc:ksp_gmres_restart = 100", ["-ksp_gmres_restart"], report
+    )
+    assert not report.ok
+
+
+def test_the_other_spelling_of_the_varied_knob_counts_too():
+    """The run declares BOUT++'s name for the setting; PETSc reports its own."""
+
+    report = ex.Report("case")
+    ex._check_options_used(
+        "solver:line_search_type = bt", ["-snes_linesearch_type"], report
+    )
+    assert not report.ok
+
+
+def test_an_ignored_option_nobody_varied_does_not_block():
+    """snes_fd_color_use_mat sits unused in the baseline recipe and has done on
+    every run ever made. Blocking on it would stop every extraction."""
+
+    report = ex.Report("case")
+    ex._check_options_used(
+        "petsc:ksp_gmres_restart = 100", ["-snes_fd_color_use_mat"], report
+    )
+    assert report.ok
+
+
+def test_a_run_that_never_reported_does_not_block():
+    """None is "never checked", which is not evidence that anything was
+    ignored."""
+
+    report = ex.Report("case")
+    ex._check_options_used("petsc:ksp_gmres_restart = 100", None, report)
+    assert report.ok

@@ -16,6 +16,7 @@ call them in the right order under the right conditions.
 """
 
 import datetime
+import glob
 import os
 import sys
 
@@ -23,6 +24,7 @@ import pytest
 
 from perftest import campaign as cp
 from perftest import index as idx
+from perftest import recipe as rcp
 from perftest import runner as rn
 
 
@@ -673,3 +675,103 @@ def test_the_tools_run_under_this_python(runner, monkeypatch):
     runner.extract("a-case")
     assert commands[0][:2] == [rn.PYTHON, rn.EXTRACT]
     assert rn.PYTHON == sys.executable
+
+
+# =============================================================================
+# One home per setting: a [petsc] entry overrides the [solver] one
+# =============================================================================
+def test_an_override_the_recipe_would_shadow_is_refused(tmp_path, runner):
+    """BOUT++ reads [petsc] after it has applied [solver], so a recipe holding
+    the same setting twice decides the run by its [petsc] copy. Writing the
+    override anyway would produce a case whose recipe says ilu, whose solver
+    runs lu, and whose row reports ilu."""
+
+    recipes = tmp_path / "recipes"
+    recipes.mkdir()
+    (recipes / "SNES-MUMPS-3.txt").write_text(
+        "[solver]\ntype = snes\npc_type = lu\n\n[petsc]\npc_type = lu\n"
+    )
+    runner.recipes_dir = str(recipes)
+    case = tmp_path / "case"
+    case.mkdir()
+    trial = rn.Trial(window="test2_5.0-5.5ms", recipe="SNES-MUMPS-3",
+                     overrides=(("solver:pc_type", "ilu"),), rung=0)
+
+    with pytest.raises(rn.RunnerProblem, match="one home"):
+        runner.write_recipe(trial, str(case))
+
+
+def test_the_two_spellings_of_one_setting_are_recognised(tmp_path, runner):
+    """The names differ across the two sections, so a literal match is not
+    enough: BOUT++'s line_search_type is PETSc's snes_linesearch_type."""
+
+    recipes = tmp_path / "recipes"
+    recipes.mkdir()
+    (recipes / "SNES-MUMPS-3.txt").write_text(
+        "[solver]\ntype = snes\n\n[petsc]\nsnes_linesearch_type = basic\n"
+    )
+    runner.recipes_dir = str(recipes)
+    case = tmp_path / "case"
+    case.mkdir()
+    trial = rn.Trial(window="test2_5.0-5.5ms", recipe="SNES-MUMPS-3",
+                     overrides=(("solver:line_search_type", "bt"),), rung=0)
+
+    with pytest.raises(rn.RunnerProblem, match="one home"):
+        runner.write_recipe(trial, str(case))
+
+
+def test_the_petsc_side_of_a_pair_is_not_refused(tmp_path, runner):
+    """It is the side that wins, so setting it is exactly what should happen."""
+
+    recipes = tmp_path / "recipes"
+    recipes.mkdir()
+    (recipes / "SNES-MUMPS-3.txt").write_text(
+        "[solver]\ntype = snes\npc_type = lu\n\n[petsc]\nsnes_linesearch_type = basic\n"
+    )
+    runner.recipes_dir = str(recipes)
+    case = tmp_path / "case"
+    case.mkdir()
+    trial = rn.Trial(window="test2_5.0-5.5ms", recipe="SNES-MUMPS-3",
+                     overrides=(("petsc:snes_linesearch_type", "bt"),), rung=0)
+
+    text = open(runner.write_recipe(trial, str(case))).read()
+    assert "snes_linesearch_type = bt" in text
+
+
+def test_the_search_space_gives_every_setting_one_home():
+    """A knob offered under both spellings would let a proposal set the side
+    that loses."""
+
+    space = rn.load_space(os.path.join(rn.TOOL_ROOT, "search-space.toml"))
+    twinned = [k for k in space if rcp.other_spelling(k) in space]
+    assert twinned == []
+
+
+def test_no_recipe_writes_one_setting_on_both_sides():
+    """Every recipe a campaign may name, checked against the same rule the
+    runner enforces on overrides."""
+
+    for path in sorted(glob.glob(os.path.join(rn.DEFAULT_RECIPES, "*.txt"))):
+        settings = rcp.parse_settings(path)
+        clashes = [k for k in settings if rcp.shadowed(settings, k)]
+        assert clashes == [], f"{os.path.basename(path)}: {clashes}"
+
+
+def test_the_ts_path_keeps_its_two_tolerances_apart(tmp_path, runner):
+    """Under `type = petsc` BOUT++ spends solver:atol on TSSetTolerances and
+    leaves the SNES tolerance to PETSc, so the two names are two settings and
+    refusing the override would be wrong."""
+
+    recipes = tmp_path / "recipes"
+    recipes.mkdir()
+    (recipes / "SNES-MUMPS-3.txt").write_text(
+        "[solver]\ntype = petsc\natol = 4e-8\n\n[petsc]\nsnes_atol = 4e-8\n"
+    )
+    runner.recipes_dir = str(recipes)
+    case = tmp_path / "case"
+    case.mkdir()
+    trial = rn.Trial(window="test2_5.0-5.5ms", recipe="SNES-MUMPS-3",
+                     overrides=(("solver:atol", "1e-7"),), rung=0)
+
+    text = open(runner.write_recipe(trial, str(case))).read()
+    assert "atol = 1e-7" in text
