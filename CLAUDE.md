@@ -87,7 +87,8 @@ repository, `$store` the results store, `$data` the case and seed directory.
 - Rules and constraints: `requirements.md`. IDs R1.. are stable and never
   reused, so numbering is not reading order. New proposals go in the candidates
   section for the user to accept or reject; never promote your own.
-- Learned conclusions: `findings.md`. Terse, agent-facing, capped at 20 entries.
+- Learned conclusions: `findings.md`. Terse, agent-facing, with no cap on the
+  number of entries: the cap is on how many are loaded at once.
   Graduate a finding into requirements / the run skill / a test / a ledger
   column, then delete it from the log.
 - Tasks: beads. Never TodoWrite or markdown lists.

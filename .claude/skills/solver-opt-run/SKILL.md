@@ -94,6 +94,12 @@ Name it `<window>-<YYYY-MM-DD>[-<desc>]`, e.g.
   campaign's `hermes_commit`: the `hermes` variable can name another build.
 - Before any variant study, run a baseline-only study on that rung: cost is
   concentrated inside a transient, so a predicted window cost misleads.
+- Set repeats on the campaign's rung, not the study: every variant on a rung
+  gets the same count, so one study cannot mix repeats with single-shot work.
+- Before sizing a repeat block, subtract the runs that already exist: repeat 1
+  carries no suffix, so the runner finds the earlier case and skips it.
+- Before queueing a long window, check its output interval against `stall_s`:
+  the generator writes 50 outputs whatever the length, so a slow run is killed.
 - When a rung's results land, judge each window by `nl_its` and `t_jac_frac`,
   not by wall time: a step with one RHS evaluation coasted past every knob.
 - After a rung finishes, choose which configurations go up and write the next
