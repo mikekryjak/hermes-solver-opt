@@ -1344,7 +1344,7 @@ def extract_case(
 
     _check_options_used(row.get("varied", ""), unused, report)
 
-    parent_inp = _seed_input(measured.get("seed"), rows, store_dir)
+    parent_inp = _seed_input(measured.get("seed"), rows, store_dir, index_name)
     if parent_inp:
         measured["physics_diffs"] = " ".join(
             recipe.diff_physics(case_dir, parent_inp)
@@ -1378,7 +1378,27 @@ def extract_case(
     return report
 
 
-def _seed_input(seed, rows, store_dir):
+CAMPAIGN_DIR = "campaigns"
+
+
+def _project_index(store_dir, index_name):
+    """The top-level index, when `store_dir` is a campaign's own directory.
+
+    A campaign keeps its index local, at `<store>/campaigns/<name>`, while a
+    parent run belongs to the shared record and has a row only in the
+    top-level `<store>/index.tsv`. A lookup that reads the campaign's index
+    alone therefore never finds a parent. Returns None when `store_dir` is
+    already the top-level store, or the file is not there.
+    """
+
+    campaigns = os.path.dirname(os.path.normpath(store_dir))
+    if os.path.basename(campaigns) != CAMPAIGN_DIR:
+        return None
+    path = os.path.join(os.path.dirname(campaigns), index_name)
+    return path if os.path.isfile(path) else None
+
+
+def _seed_input(seed, rows, store_dir, index_name="index.tsv"):
     """
     The BOUT.inp of the run this one restarted from, or None.
 
@@ -1386,16 +1406,31 @@ def _seed_input(seed, rows, store_dir):
     finds it, and its bundle keeps its input. A from-scratch run has no seed
     and so no reference: its physics is compared against nothing rather than
     against a template it may legitimately differ from.
+
+    Searched in the index given first, then in the top-level one, because a
+    campaign's parent is recorded there and not in the campaign's own index.
+    The bundle itself is found under the data directory either way.
     """
 
     if not seed:
         return None
-    for row in rows:
-        if row.get("run_id", "") == seed and row.get("test_id"):
-            bundle = st.bundle_path(row["test_id"], store_dir=store_dir)
-            path = os.path.join(bundle, "BOUT.inp")
-            return path if os.path.exists(path) else None
-    return None
+
+    def look(in_rows):
+        for row in in_rows:
+            if row.get("run_id", "") == seed and row.get("test_id"):
+                bundle = st.bundle_path(row["test_id"], store_dir=store_dir)
+                path = os.path.join(bundle, "BOUT.inp")
+                return path if os.path.exists(path) else None
+        return None
+
+    found = look(rows)
+    if found:
+        return found
+
+    shared = _project_index(store_dir, index_name)
+    if not shared:
+        return None
+    return look(idx.read_index(shared)[0])
 
 
 def _check_options_used(varied, unused, report):

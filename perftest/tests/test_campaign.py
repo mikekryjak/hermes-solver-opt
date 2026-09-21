@@ -121,9 +121,14 @@ def without(text, table):
 
 
 @pytest.fixture
-def runner(tmp_path):
-    """A runner over an empty index, with the disk and the clock in hand."""
+def runner(tmp_path, monkeypatch):
+    """A runner over an empty index, with the disk and the clock in hand.
 
+    Free space is fixed here so no test depends on what this machine has
+    today. A test about the disk patches it again with its own number.
+    """
+
+    monkeypatch.setattr(rn.Runner, "free_gb", lambda self: 500.0)
     path = write_campaign(tmp_path)
     made = rn.Runner(
         cp.load_campaign(path),
@@ -824,3 +829,35 @@ def test_the_ts_path_keeps_its_two_tolerances_apart(tmp_path, runner):
 
     text = open(runner.write_recipe(trial, str(case))).read()
     assert "atol = 1e-7" in text
+
+
+def test_an_unreachable_disk_budget_stops_before_anything_runs(runner, monkeypatch):
+    """A budget bigger than the usable space means pruning never fires, and
+    the campaign dies on the floor hours in instead. Caught at the start.
+
+    Found 2026-09-21: budget_gb was 200 on a machine with 92 GB free and a
+    50 GB floor, so the prune threshold could not be reached.
+    """
+
+    monkeypatch.setattr(rn.Runner, "free_gb", lambda self: 92.0)
+    runner.campaign.disk["budget_gb"] = 200.0
+    runner.campaign.disk["floor_gb"] = 50.0
+    with pytest.raises(rn.Stop, match="budget_gb"):
+        runner.require_reachable_disk_budget()
+
+    runner.campaign.disk["floor_gb"] = 20.0
+    runner.campaign.disk["budget_gb"] = 40.0
+    runner.require_reachable_disk_budget()
+
+
+def test_the_disk_budget_check_runs_before_any_trial(runner, monkeypatch):
+    """It is a gate on the loop, not on each trial, so nothing is generated."""
+
+    monkeypatch.setattr(rn.Runner, "free_gb", lambda self: 92.0)
+    runner.campaign.disk["budget_gb"] = 200.0
+    runner.campaign.disk["floor_gb"] = 50.0
+    made = []
+    monkeypatch.setattr(rn.Runner, "prepare", lambda self, t: made.append(t))
+    with pytest.raises(rn.Stop, match="budget_gb"):
+        runner.run([a_trial()])
+    assert made == []

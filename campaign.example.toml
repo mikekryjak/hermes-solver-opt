@@ -80,9 +80,14 @@ poll_s = 20
 slot_hours = 120.0
 
 [disk]
-budget_gb = 200.0
+# Two rules bind these. floor_gb must be below budget_gb, checked on load. And
+# budget_gb must fit in the free space above floor_gb, checked by the runner
+# before it generates anything -- otherwise the prune threshold is never
+# reached, nothing is ever deleted, and a long campaign stops on the floor with
+# a disk full of the dumps it was meant to prune.
+budget_gb = 40.0
 # The runner refuses to launch with less than this free on the data directory.
-floor_gb = 50.0
+floor_gb = 30.0
 # Keep the dumps of this many most recent runs; prune older ones when over the
 # disk budget.
 keep_recent = 20

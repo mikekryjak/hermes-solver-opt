@@ -473,6 +473,28 @@ class Runner:
         capped = min(cutoff, float(self.campaign.limits["max_wall_s"]))
         return capped, f"{self.campaign.limits['cutoff_factor']}x {what} {anchor:.0f} s"
 
+    def require_reachable_disk_budget(self):
+        """Raise unless pruning can fire before the disk floor stops the loop.
+
+        The runner prunes dumps only once a campaign's dumps exceed
+        `[disk] budget_gb`, and refuses to launch once free space falls below
+        `floor_gb`. A budget larger than the space actually available is never
+        reached, so nothing is ever pruned and a long campaign dies on the
+        floor instead. Checked once, before anything is generated, so the
+        failure names the setting rather than arriving hours in.
+        """
+
+        budget = self.campaign.disk["budget_gb"]
+        floor = self.campaign.disk["floor_gb"]
+        headroom = self.free_gb() - floor
+        if budget <= headroom:
+            return
+        raise Stop(
+            f"[disk] budget_gb is {budget:.0f} GB but only {headroom:.0f} GB"
+            f" can be used on {self.data_dir} before the {floor:.0f} GB floor,"
+            " so pruning would never fire. Lower budget_gb below that."
+        )
+
     # --- gates ------------------------------------------------------------
     def check_gates(self):
         """Approval, budget and disk. Raises Stop when the loop must end."""
@@ -881,6 +903,7 @@ class Runner:
         # with no approval must say so once and stop, rather than report the
         # same refusal against every trial in turn.
         self.campaign.require_approval()
+        self.require_reachable_disk_budget()
 
         self.say(
             f"campaign {self.campaign.name}: {len(trials)} trials, slot"
