@@ -22,7 +22,21 @@ findings exist; the cap is on how many are loaded at once.
 
 ## Findings
 
-(none yet)
+### A repeat of a 17-hour run lands within 1.4%, and the counts are not identical
+- date: 2026-09-21
+- status: active
+- scope: any comparison of two full 0-100 ms parent runs.
+- evidence: test5_0.0-100.0ms-2026-09-19-neutlag-va against its -repeat, same
+  input and same binary. wall_s 59773 -> 60583 (+1.4%), nl_its 160777 ->
+  161284 (+0.3%), solver_fails 63019 -> 63721 (+1.1%). The original ran beside
+  two other parents at concurrency 1.06 and the repeat ran alone at 1.00, so
+  1.4% is an upper bound on the clock and the true repeat spread is smaller.
+- rule: the counts are the better metric but they are NOT exactly reproducible
+  either, so a difference under about 0.5% in nl_its is noise. A wall-clock
+  difference under 2% between runs at different concurrency says nothing at
+  all. This is the project's first repeat measurement; one pair is not a
+  distribution, and a campaign that wants a real noise bound still needs
+  repeats at its own window length.
 
 ## Traps
 
