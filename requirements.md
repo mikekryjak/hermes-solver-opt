@@ -510,6 +510,32 @@ workstation), R26, R27. Still open:
   settings may be slow early in a run and fast late, so a short window may
   never rank recipes the way the full run does.
 
+Round 7, proposed 2026-09-21, after an adversarial review of the overnight plan
+found three ways a night could be spent producing nothing the record would
+notice.
+
+- C1. A knob's declared dependency is enforced before a run is launched.
+  `search-space.toml` declares `depends` on 65 knobs and `check_overrides`
+  never reads it, so the runner will spend machine time on a setting that
+  cannot apply — a `pc_factor_*` option under a preconditioner that factorises
+  nothing, for instance, which the extractor then refuses to record at all.
+
+- C2. Every attempt that occupies a slot charges the slot-hour budget, whether
+  it finished, was killed or crashed. A killed run records no `wall_s` and so
+  costs the budget nothing today, which means a slot can spend a whole night
+  being killed while the approved budget appears untouched.
+
+- C3. A performance result is not a result until the answer has been compared
+  with the baseline's. The tooling records no verdict at all: the runner never
+  reads the `[correctness]` table and the extractor hard-codes `no_reference`.
+  Until that closes, a loosened tolerance is indistinguishable from a faster
+  solver, and the record will call it completed either way.
+
+Round 3's C1, on holding loading constant, is still unruled and now has its
+evidence: two runs of bit-identical work differed by 1.7 per cent in wall clock
+at concurrency 2.35 against 1.81, with the more loaded run slower.
+
+
 ## Glossary
 
 - PETSc: numerical solver library used by BOUT++ for implicit time

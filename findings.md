@@ -160,3 +160,58 @@ findings exist; the cap is on how many are loaded at once.
   the blank-cells-only rule never fired.
 - rule: a stub standing in for a stage must write what the real stage writes,
   or it tests the caller against a world that does not exist.
+
+### Krylov settings are inert while the preconditioner is an exact solve
+- date: 2026-09-21
+- status: active
+- scope: any SNES recipe with `solver:pc_type = lu` and a direct factorisation
+  package. It stops holding the moment the preconditioner is inexact.
+- evidence: all 34 rows of the test4-jacobian index have `lin_its` equal to
+  `nl_its`, so every Krylov solve converged in one iteration.
+- rule: spend no runs on `petsc:ksp_type` or `solver:maxl` under an exact LU.
+  They cannot move the wall clock. The one meaningful KSP change there is
+  `preonly`, which drops the Krylov wrapper altogether. Screen Krylov settings
+  only after an inexact preconditioner has won.
+
+### PETSc's own ILU is sequential, and pc_factor options die under a non-factor PC
+- date: 2026-09-21
+- status: active
+- scope: this build, 10 ranks, an MPIAIJ Jacobian. Any parallel run.
+- evidence: PCILU is registered for sequential matrices only, so
+  `solver:pc_type = ilu` on 10 ranks fails in PCSetUp within seconds.
+  Separately, `petsc:pc_factor_*` options belong to a factorisation
+  preconditioner and are never consumed under bjacobi, asm or gamg, and the
+  extractor refuses any run whose varied key PETSc left unused.
+- rule: reach incomplete factorisation in parallel through `bjacobi` or `asm`,
+  whose per-rank sub-preconditioner is ILU, and set its options with the `sub_`
+  prefix. Never pair a `pc_factor_*` override with a non-factorising `pc_type`:
+  the run records nothing at all, so the slot time is spent for no row.
+
+### Two runs with identical iteration counts are not a noise measurement
+- date: 2026-09-21
+- status: active
+- scope: reading repeat spread out of this project's index.
+- evidence: the lag 10 and lag 20 rows on test4_3.0-3.2ms and test4_4.0-4.1ms
+  have bit-identical `nl_its`, 2404 and 1779, yet differ by 1.7 and 0.6 per
+  cent in wall clock. They also ran at different loading, concurrency 2.35
+  against 1.81 and 2.05 against 2.00, and the more loaded run was the slower
+  one both times. `wall_s` is the difference of two one-second log stamps, so
+  174 against 173 is a single quantum.
+- rule: identical work at different loading measures loading, not noise. Quote
+  a noise figure only from repeats that hold loading fixed, and never from a
+  pair. On a run of a few hundred seconds the timestamp alone carries a few
+  tenths of a per cent.
+
+### A long window's output cadence is fixed, and can trip the stall limit
+- date: 2026-09-21
+- status: active
+- scope: any window much longer than a millisecond cut by make_window.py.
+- evidence: NOUT is 50 whatever the window's length, so a 0-100 ms window
+  writes an output every 2 ms while its parent wrote every 1 ms. The test4
+  parent spent 1360 s on 3-4 ms, so one output interval runs about 1590 s
+  against a 1800 s stall limit: a 12 per cent margin for the baseline and a
+  kill for anything slower.
+- rule: before queueing a long window, multiply the parent's worst
+  per-millisecond cost by the window's output interval and compare it with
+  `stall_s`. A stall kill also records no `wall_s`, so it costs the slot-hour
+  budget nothing and the gate never sees the time it spent.
