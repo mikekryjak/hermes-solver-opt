@@ -56,6 +56,50 @@ findings exist; the cap is on how many are loaded at once.
   one RHS evaluation and over 90% I/O, so it coasts and no Jacobian knob can
   move it.
 
+### Lagging the Jacobian costs more than it saves on the test4 transient
+- date: 2026-09-21
+- status: active
+- scope: test4's 2-6 ms transient, build ef2ef9dd, recipe SNES-MUMPS-3, rung 0.
+  NOT yet shown at rung 1 or 2, nor on test2 or test5.
+- evidence: rung 0 batch 1 of the test4-jacobian campaign, `solver:lag_jacobian`
+  at 1, the baseline's 3, 10 and 20, on three windows.
+
+  | window | lag 1 | lag 3 | lag 10 | lag 20 |
+  |---|---|---|---|---|
+  | 2.0-3.0ms | 36 s / 81 | 213 s / 1094 | killed | killed |
+  | 3.0-3.2ms | 126 s / 273 | 205 s / 1082 | 238 s / 2404 | 234 s / 2404 |
+  | 4.0-4.1ms | 79 s / 170 | 129 s / 646 | 174 s / 1779 | 173 s / 1779 |
+
+  Wall seconds / nonlinear iterations. Cost rises monotonically with the lag on
+  every window. Solver failures track it: 1, 54 on the 2.0-3.0 ms window.
+  Target density and temperature agree to about 5e-5 across all four settings
+  on both short windows.
+- rule: rebuild the Jacobian every iteration on this transient. The fresher
+  Newton direction cuts nonlinear iterations by 4 to 13 times, which more than
+  pays for the extra assembly. The production recipe's lag of 3 is a cost, not
+  a saving, and the search space's range of 1-20 has its optimum at the floor,
+  so the range may need to open below 1 if the knob allows it.
+- caution: the two killed cells are the cutoff ratchet, not a result. Their
+  target values come from partial windows and must not be compared.
+
+### The Jacobian lag saturates above about 10, which measures the timing noise
+- date: 2026-09-21
+- status: active
+- scope: test4 rung-0 windows; the mechanism should hold wherever SNES
+  converges in fewer iterations than the lag.
+- evidence: at lag 10 and lag 20 the solver does identical work -- 2404 and
+  2404 nonlinear iterations on test4_3.0-3.2ms, 1779 and 1779 on
+  test4_4.0-4.1ms, the same solver_fails, and target values identical to every
+  printed digit. Beyond the iterations a solve actually takes, a larger lag
+  changes nothing.
+- rule: treat lag_jacobian above roughly 10 as one setting, and do not spend
+  runs sampling it. The saturation is also a free control: two runs doing
+  provably identical work differed by 1.7% and 0.6% in wall clock, at
+  concurrency 2.35 against 1.81 and 2.05 against 2.00, with the more loaded run
+  slower both times. That is the project's first same-work timing comparison,
+  and it puts wall-clock noise plus loading at a few per cent, well inside the
+  15% rung-0 bound. It is two pairs, not a distribution.
+
 ## Traps
 
 ### In the run screens, `python` is the pyenv shim and it bus-errors on pandas
