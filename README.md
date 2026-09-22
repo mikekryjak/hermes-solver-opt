@@ -82,7 +82,10 @@ campaign or host. `design.md` section 4 explains parents, windows and rungs.
    on one slot per process, inside a session that survives a logout.
 
 Two machines commit to the same repositories, so every session on either one
-syncs the same way: at the start, `bd dolt pull` for the tracker and
+syncs the same way. Once per machine, point the tracker at the repository's
+hidden Dolt ref: `bd dolt remote add origin
+git+ssh://git@github.com/mikekryjak/hermes-solver-opt.git`. Then at the
+start of every session, `bd dolt pull` for the tracker and
 `git pull --rebase` in this repository and the store; at the end, `bd dolt
 push`, then `git pull --rebase` and `git push` in both. The tracker's
 `.beads/issues.jsonl` is a passive export, so if it conflicts on a rebase,
