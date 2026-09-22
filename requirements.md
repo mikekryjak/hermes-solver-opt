@@ -562,6 +562,64 @@ Round 3's C1, on holding loading constant, is still unruled and now has its
 evidence: two runs of bit-identical work differed by 1.7 per cent in wall clock
 at concurrency 2.35 against 1.81, with the more loaded run slower.
 
+Round 9, proposed 2026-09-22, after the user asked whether the option space
+can be described by what a knob does rather than by the shape of its value.
+The search-space file already groups knobs by level (its section headings and
+the `applies` field) but records only the value's shape: switch, choice,
+integer, continuous. Two continuous knobs can be quite different levers, a
+tolerance and a damping factor. The user accepted the idea in principle and
+asked that it be introduced in stages, study by study, because a wrong
+taxonomy muddles more than it clarifies.
+
+- C1. Every knob in the search space carries a role beside its level. The
+  role vocabulary, to be revised as studies test it:
+
+    approach      a categorical that picks an algorithm and re-trees what is
+                  below it: snes_type, ksp_type, pc_type, line search type
+    tolerance     how converged a level must be before it hands up: nonlinear
+                  atol and rtol, linear rtol, stol
+    cap           a hard bound on work at a level, usually a failure trigger
+                  rather than a tuning knob: Newton cap, maxl, maxf
+    reuse         staleness traded for cost: Jacobian lag, preconditioner
+                  lag, colouring reuse
+    controller    an operating point in a closed loop: target iterations,
+                  step growth and shrink factors
+    transform     a change to the problem the solver sees, not to effort:
+                  variable scaling, asinh, predictor
+    internal      effort or approach inside a package: MUMPS icntl, hypre
+
+  A knob may carry a secondary role where it does two jobs: nonlinear rtol is
+  a tolerance and also the scaling floor; the Newton cap is a cap and also
+  the controller's default bounds. A knob also carries a flag saying whether
+  it changes the trajectory or only the cost of reaching it.
+
+  What the role buys, and what a study has to show before the next stage:
+
+  1. Each role predicts a response shape. Tolerances are log-scale with a
+     U-shaped total cost. Caps are flat then a cliff. Reuse is a sawtooth.
+     Approaches are branches, not points. A search that knows the shape per
+     role spends fewer runs than one generic optimiser over a mixed space.
+  2. Role and level predict interactions: tolerances at adjacent levels
+     couple, caps couple with controller targets. The low-dimensional
+     coordinate is the balance of effort across levels: linear iterations per
+     Newton iteration, Newton iterations per step, steps per unit of
+     simulation time. Searching in those derived coordinates is the main
+     prize.
+  3. Each level has a counter in the diagnostics. A knob's role and level say
+     which counter it should move, so the runner can check attribution: a
+     knob that fails to move its own counter is dead in that configuration.
+  4. Findings at role level transfer across tests and across time
+     integrators; findings at knob level do not.
+
+  Staging. Stage one tags only the knobs the completed campaigns varied and
+  checks, on their recorded runs, whether runs grouped by role share a
+  response shape better than runs grouped by value shape. Stage two, only if
+  stage one holds, tags the rest of the 85 described knobs by hand and adds
+  the derived coordinates to the analysis. Stage three, only if stage two
+  earns it, lets the proposer reason in roles. The 780 undescribed knobs are
+  not classified until a role has paid for itself; role cannot be scraped
+  from the registration calls the way kind and default were.
+
 
 ## Glossary
 
