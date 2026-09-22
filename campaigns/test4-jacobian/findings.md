@@ -174,3 +174,83 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   as a prediction of the rung-1 ratio. To measure the correlation, promote
   four mid-field settings to rung 1 regardless of their rung-0 result (about
   2.5 slot-hours); this is an open decision.
+
+### The solver stops on neutral pressure in every window past 3 ms, whatever the setting
+- date: 2026-09-22
+- status: active
+- scope: test4-jacobian, every completed run; shares from the bundles'
+  `series.tsv` (`share_<equation>`, time-mean over output steps after the
+  first). Report section 6; per-run values in the store's
+  `campaigns/test4-jacobian/shares.tsv`.
+- evidence: on the 3.0-3.2, 4.0-4.1, 3.0-4.0 and 4.0-5.0 ms windows neutral
+  pressure `Pd` holds 0.55 to 0.78 of the residual sum of squares under every
+  setting, neutral momentum and density most of the rest. Repeat spread of a
+  share is about 0.01 outside the 2-3 ms transient, against 0.08-0.10 between
+  settings. Lag 1 moves a share by about 0.1 at most on those windows, but on
+  2.0-3.0 ms it flips the dominant equation from `Pd` (0.69) to `NVd+` (0.65)
+  with the three repeats disagreeing widely. `rtol=1e-4` leaves 0.97 on `Pd`;
+  `target_its=3` moves 0.48 onto `NVd`; the controller gains raise `Pd` to
+  0.72-0.78. The full 100 ms run is `Pe`-dominated (0.82-0.91) because its
+  outputs are 2 ms apart and mostly in the quiet phase.
+- caveats: end-of-step remainders after a converged solve, not within-step
+  history. They say which equation the solver stopped on, not which one cost
+  the iterations. Settings that change the stopping rule (tolerances,
+  iteration caps, target iterations) change the remainder by construction.
+- reading: the equation that lingers after Newton is the one whose
+  linearisation is weakest, and lag 1 does not change it, so a stale Jacobian
+  is not the cause. Since `Pd` dominates the norm, the global tolerance is in
+  effect a test on one equation. Untested leads: per-equation scaling
+  (`scale_vars`), the colouring stencil against the neutral diffusion
+  operator, the per-region shares (`resid_regions.tsv`, whose "core" region
+  holds 99 per cent on the window checked and needs a grid check first).
+
+### Every setting pays the same 0.28 s per Jacobian build, so the only lever is builds per iteration
+- date: 2026-09-22
+- status: active
+- scope: the two rung-0 screening windows, every setting; PETSc profile
+  fractions from the index. Report section 7.
+- evidence: one finite-difference Jacobian build costs 0.27-0.30 s on every
+  setting and both windows; the MUMPS factorisation 0.08 s, strumpack 0.15 s,
+  superlu_dist 0.25 s, bjacobi and asm about 0. Building is 70-75 per cent of
+  every run that keeps MUMPS, factorising 21 per cent, linear solves and
+  residual evaluations under a tenth together. Builds per Newton iteration:
+  0.51 baseline, 0.69 lag 2, 1.2 lag 1, 0.24 lag 10 and 20, 1.7 for the
+  controller gains kI 0.3 kP 0.7 (retried steps).
+- rule: seconds per iteration is builds per iteration times 0.28 s plus a
+  fifth for the factorisation. Rank a setting by iterations times builds per
+  iteration; no preconditioner or Krylov setting in the search space changes
+  the price of a build. Only a change to the colouring, the stencil or the RHS
+  would.
+
+### The end-of-step residual is set by the tolerance, not by the setting or the step
+- date: 2026-09-22
+- status: active
+- scope: the two rung-0 screening windows, every setting; `snes_global_residual`
+  per output step from the bundles. Report section 8.
+- evidence: median end-of-step residual 2e-4 to 6e-4 on every setting; log-log
+  slope against the timestep at the output 0.03 over every run on both
+  windows; orders dropped across a window within -0.7 to +0.7 for every
+  setting.
+- rule: on a window, read the residual's split between equations (section 6),
+  never its level. See the root findings entry on `resid_drop` and
+  `resid_per_rhs`.
+
+### Lag 1 wins twice: fewer iterations per step, and the controller rewards that with bigger steps
+- date: 2026-09-22
+- status: active
+- scope: the two rung-0 screening windows; per-internal-step histories from
+  the bundles' `snes_steps.tsv`. Report section 9.
+- evidence: on 3.0-3.2 ms the baseline takes 277 steps at 3.9 Newton
+  iterations each, lag 1 121 steps at 2.8: of the 3.2-fold fall in iterations,
+  1.4 is per step and 2.3 is fewer steps, because the controller grows the
+  step when a solve is short (mean step 1.7 µs against 0.7). The controller
+  gains kI 0.3 kP 0.7 reach 15-20 µs steps and take 40 steps; `target_its=3`
+  holds the step under a microsecond and takes 323. Failed solves, each
+  retried with a shorter step: about a fifth of the baseline's steps, a
+  quarter of lag 1's, more than half of the gains' (23 of 40), almost none
+  with `target_its=3`. The gains win on 3.0-3.2 ms (0.34) while discarding
+  most of their solves, because the surviving steps are so long.
+- rule: the lag and the controller are one mechanism. A setting that shortens
+  the Newton solve is rewarded again by the controller; judge a controller
+  setting by its failed-solve fraction as well as its wall time, and take the
+  failure fraction into the rung-1 decision on the gains.

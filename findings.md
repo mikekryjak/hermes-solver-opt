@@ -174,3 +174,21 @@ findings exist; the cap is on how many are loaded at once.
   per-millisecond cost by the window's output interval and compare it with
   `stall_s`. A stall kill also records no `wall_s`, so it costs the slot-hour
   budget nothing and the gate never sees the time it spent.
+
+### `resid_drop` and `resid_per_rhs` carry nothing on a window
+- date: 2026-09-22
+- status: active
+- scope: the index columns derived from `snes_global_residual` on any short
+  window run under a relative-tolerance stop (every SNES recipe so far).
+- evidence: test4-jacobian, both rung-0 screening windows, every setting: the
+  end-of-step residual sits at 2e-4 to 6e-4 whatever the setting, is
+  independent of the timestep (log-log slope 0.03), and the orders dropped
+  across a window are within ±0.7 for every setting, so `resid_per_rhs` is a
+  small number of either sign. On the full 100 ms run the drop is about 2
+  orders and may mean something.
+- rule: never rank or filter on `resid_drop` or `resid_per_rhs` from a window.
+  The informative reduction of the same data is the per-equation share
+  (`share_<equation>` in the bundle series), which is a remainder after a
+  converged solve and reads as "which equation the solver stopped on", never
+  as cost. Candidate for the capture set: drop the two columns or mark them
+  full-run only.
