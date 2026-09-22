@@ -192,3 +192,25 @@ findings exist; the cap is on how many are loaded at once.
   converged solve and reads as "which equation the solver stopped on", never
   as cost. Candidate for the capture set: drop the two columns or mark them
   full-run only.
+
+### `solver:prune_jacobian` aborts with C++ heap corruption in BOUT++
+- date: 2026-09-22
+- status: active
+- scope: any run setting `solver:prune_jacobian = true` in BOUT++.
+- evidence: test5-pilot screening batch 1, 4 trials across `test5_0.0-0.1ms` and
+  `test5_24.0-24.2ms`. All 4 crashed after 0.3 min with SIGABRT (exit code 134)
+  and glibc heap corruption error: `free(): corrupted unsorted chunks` /
+  `corrupted size vs. prev_size`.
+- rule: quarantine `solver:prune_jacobian = true`. Never sample it in any
+  campaign until the BOUT++ CSR element filtering routine is patched.
+
+### `solver:jacobian_persists` diverges across time steps unconditionally
+- date: 2026-09-22
+- status: active
+- scope: implicit time integration with PETSc SNES across step boundaries.
+- evidence: 4 of 4 trials in test5-pilot (`test5_0.0-0.1ms` and
+  `test5_24.0-24.2ms`) and 4 of 4 trials in test4-jacobian diverged with SNES
+  reason -9:1 (`DIVERGED_STEP_TRUNCATED`).
+- rule: never set `solver:jacobian_persists = true` in Hermes-3. Carrying
+  Jacobians across time steps causes line search step truncation failures in
+  every plasma regime tested.
