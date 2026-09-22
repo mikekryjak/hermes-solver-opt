@@ -621,6 +621,42 @@ taxonomy muddles more than it clarifies.
   from the registration calls the way kind and default were.
 
 
+Round 10, proposed 2026-09-22 evening, after the user asked for a report
+structure that stays readable across thousands of runs and tens of studies and
+for every study and investigation to be numbered and dated. Built the same
+evening under one phrase; the candidates record what was built so the user can
+accept or amend the rules.
+
+- C1. Studies and investigations are numbered and dated. A study is numbered
+  per campaign (S01, S02, ...) and dated by its first launch; an investigation
+  is numbered across the project (I01, I02, ...) and dated by its opening. A
+  manifest holds each one's identity, question, scope and result, the id and
+  date appear in the script, the output stem, the title and every path, and a
+  generated register in the store lists them all. The index has no study
+  column yet, so a study's runs are selected by launch window; a separate
+  issue asks the runner to record the study file.
+
+- C2. Every study report has one standard skeleton. A Brief with a fixed
+  header block, four tiles, the headline table, caveats, the decision and a
+  Terms fold; a Full analysis with ten standard sections in a fixed order (what
+  ran, wall time against the reference, correctness, repeat spread, iterations
+  against cost per iteration, cost per stage, the timestep controller, the
+  residual's shares and level, where the residual sits, agreement across
+  rungs), each headed by its finding and holding a library-owned figure and
+  table; then study-specific sections, marked as such. A standard section a
+  study cannot fill is listed as skipped with a reason; nothing is dropped
+  silently. The user chose all ten as mandatory so the data can be looked at
+  before deciding what is useful.
+
+- C3. Report code is general, prose is specific. A figure or table method
+  takes what it plots as arguments (windows, settings, the reference, runs)
+  and derives its choices from the data: the order of settings by wall ratio,
+  the equation with the largest share, the median repeat. Only a study
+  script's configuration block and its prose may name a quantity, a test, a
+  window, a setting or a run. Test: the method runs unchanged on another
+  campaign's tables. Campaign constants come from `campaign.toml` through one
+  loader, never from the library.
+
 ## Glossary
 
 - PETSc: numerical solver library used by BOUT++ for implicit time
