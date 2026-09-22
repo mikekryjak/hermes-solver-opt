@@ -121,6 +121,12 @@ repository, `$store` the results store, `$data` the case and seed directory.
   not a handover.
 - Close with `--reason`.
 - In conversation, name the work, not the ID.
+- At session start run `bd dolt pull` and `git pull --rebase` here and in
+  `$store`; at session end run `bd dolt push`, then pull and push both repos.
+- At session end write this machine's handoff to the `bd remember` key
+  `handoff-<hostname>`; another machine's key is its state, never yours.
+- Never rewrite pushed history in either repository; rebase this machine's
+  commits onto it instead, because the other machine has already built on it.
 
 Do not edit inside the BEADS INTEGRATION markers above — that block is
 generated.
