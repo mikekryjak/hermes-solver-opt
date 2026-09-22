@@ -151,3 +151,26 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   loses where it is not. Screen it on rung 1 before believing it. The
   preconditioner and the Krylov side are settled: an exact MUMPS solve with
   lag 1 is the floor for this problem on this build.
+### The rungs agree on the order of settings, not on the size of their gain
+- date: 2026-09-22
+- status: active
+- scope: every pair of windows the campaign ran, on the settings both windows
+  completed, baseline excluded; ratios are against the baseline on the same
+  window. Report section 7, made by `analysis/rung_agreement.py` in the store.
+- evidence: lag 1 beats lag 2 and lag 20 on every window of every rung. The
+  two 0.2 ms screening windows (3.0-3.2ms, 4.0-4.1ms) rank-correlate 0.67 over
+  21 settings but give the same verdict (faster, slower, within the noise
+  bound) for only 38 per cent of them. The settings that look best on one
+  window move most on the other: kI=0.3, kP=0.7 is 0.34 and 0.81;
+  matrix_free_operator 0.83 and 1.37. The 2.0-3.0ms window sits in the
+  transient and exaggerates everything (lag 1 at 0.18 there, 0.74 and 0.57 on
+  the other two). Rung 0 to rung 1 at the same start time: Spearman 1.00, but
+  on three settings that are the extremes of the field. Rung 1 to rung 2 has
+  one setting in common.
+- caveats: the ladder promotes only winners, so it never measures how wrong
+  rung 0 is about the middle of the field, where promotion decisions are made.
+- rule: rung 0 is a filter, not a measurement. Drop a setting that loses by
+  more than the noise bound on a screening window; do not read a rung-0 ratio
+  as a prediction of the rung-1 ratio. To measure the correlation, promote
+  four mid-field settings to rung 1 regardless of their rung-0 result (about
+  2.5 slot-hours); this is an open decision.
