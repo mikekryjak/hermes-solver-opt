@@ -345,3 +345,25 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   norm onto NVd+, as lag 1 did on 2.0-3.0 ms.
 - rule: the controller cannot touch the residual that sits at the inboard
   core edge; that is a physics or boundary change, not a solver setting.
+
+### The SCOTCH MUMPS ordering aborts the run before the first solve
+- date: 2026-09-22
+- status: active
+- scope: study 3, slot 2, every trial carrying petsc:mat_mumps_icntl_7=3.
+- evidence: six trials so far, five repeats on test4_3.0-3.2ms and one on
+  test4_4.0-4.1ms, all dead with rank 0 on signal 6. The stack is inside the
+  ordering itself: SCOTCH_graphOrderList -> _ESMUMPSorderGraph ->
+  mumps_scotch_ -> dmumps_ana_driver_, so MUMPS aborts in its analysis phase
+  and the solver never runs. The log stops after the first residual line and
+  no field is out of range, which is why this reads as a crash and not as a
+  divergence.
+- reading: icntl_7 = 3 selects SCOTCH, and the SCOTCH in this PETSc build
+  (petsc-3.23.3, arch-linux-c-opt) cannot order this matrix. That is a
+  property of the build, not of the campaign's physics or of lag_jacobian:
+  the same cell carries the controller gains that work everywhere else.
+- cost: each trial dies within a second, so the whole cell costs about the
+  25 s of window-making and extraction per trial and nothing in solver time.
+  It was left to run out rather than interrupted mid-night.
+- rule: the search space should refuse icntl_7 = 3 on this machine until the
+  PETSc build is rebuilt with a SCOTCH that works, so no later study spends
+  trials on it. The other MUMPS orderings in the study are untouched by this.
