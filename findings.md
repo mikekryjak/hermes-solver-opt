@@ -254,8 +254,12 @@ findings exist; the cap is on how many are loaded at once.
 - the run is not deterministic: the same seed and options take different
   paths through the transient, and lag 1 amplifies the divergence. The
   cheapest repeat crossed 2-4 ms in 4.8k RHS evaluations, which is the
-  "coasted" signature the run skill warns about, so whether all three paths
-  resolved the transient is a correctness question the campaign never checked.
+  "coasted" signature the run skill warns about. Checked the same morning
+  against the parent on ne_target_max and te_target_max at every output: all
+  three lag-1 runs deviate under 3 per cent over 0-10 ms and under 0.05 per
+  cent at 100 ms, inside the campaign's 0.20 and 0.05 tolerances, and the
+  cheapest is no worse than the others. On the 2 ms output grid the cheap path
+  resolved the transient; the check cannot see between outputs.
 - rule: judge a cell by its nl_its spread before its wall spread. A cell whose
   wall per iteration is tight but whose nl_its is not has path noise, and
   three repeats give a range, not a mean. Windows that avoid 2-6 ms (3.0-3.2ms,
