@@ -240,7 +240,12 @@ def effective_settings(space, base, overrides):
         if key in base:
             return base[key]
         entry = space.get(key) or {}
-        return entry.get("current")
+        current = entry.get("current")
+        # The space writes an unset knob as "unset, so <value>": prose for the
+        # code's default, whose value is the entry's own default field.
+        if isinstance(current, str) and current.startswith("unset"):
+            return entry.get("default")
+        return current
 
     return value_of
 

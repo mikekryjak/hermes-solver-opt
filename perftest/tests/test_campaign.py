@@ -732,6 +732,14 @@ def test_a_knob_whose_dependency_fails_is_refused(tmp_path, runner):
     text = STUDY.replace('{ "solver:lag_jacobian" = 4 }', '{ "solver:matrix_free_operator" = true }')
     assert rn.load_study(write_study(tmp_path, text), runner.campaign, space)
 
+    # An unset knob is recorded as "unset, so <default>" in the space, which
+    # is prose for its default, not a value in its own right.
+    space["solver:matrix_free"] = {
+        "type": "switch", "default": False, "current": "unset, so false",
+    }
+    text = STUDY.replace('{ "solver:lag_jacobian" = 4 }', '{ "solver:matrix_free_operator" = false }')
+    assert rn.load_study(write_study(tmp_path, text), runner.campaign, space)
+
     # The "a or b" and boolean forms.
     assert rn.depends_met("lu or ilu", "ILU") is True
     assert rn.depends_met("lu or ilu", "asm") is False
