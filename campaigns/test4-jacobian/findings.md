@@ -267,21 +267,25 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   "at their floor" is the solver's scaling floor, not a density floor.
 - scope: all six overnight test4 100 ms runs (three baseline, three lag 1),
   the dumps at their 50 outputs 2 ms apart, every `resid_*` field with guards
-  cleared, per output. Tables cached in the store's campaign directory as
-  `resid_neutral_cells_vs_time.csv` and `resid_allsys_cells_vs_time.csv`;
-  the script is not in any repo. Tracker: Investigation 01.
+  cleared, per output. Tables cached in the store under
+  `investigations/I01-2026-09-22-core-edge-residual/data/` as
+  `neutral_cells_vs_time.csv` and `allsys_cells_vs_time.csv`, made by its
+  `make_tables.py`; report `reports/investigations/I01-2026-09-22-core-edge-residual.pdf`.
+  Tracker: Investigation 01.
 - evidence, location: the residual summed over all seven equations sits in
   the first five interior radial cells at the core boundary (x 2-6) at every
   output of every run, median share 0.98-1.00 in each third of the run; the
   ten largest cells hold 0.7-0.95 of it.
 - evidence, equation and cells: the neutral equations (Pd, NVd) and NVd+
-  hold the norm only to about 10 ms. From 12 ms to 100 ms `Pe` holds
-  0.98-1.00 of it (bundle `series.tsv` share_Pe, median by third, all six
-  runs); only one output per run, at 4 ms, has Pd as the largest equation.
-  At 2-6 ms the peak is at the outboard midplane core edge (theta 72-80);
-  afterwards it sits in the core-edge cells beside the upper and lower
-  X-points on both sides (theta 12-15, 28-31, 66-68, 82-84 at x 2-4), where
-  Pe is the domain maximum, 1.9e4 Pa at Te 3.7 keV, at no floor.
+  hold the norm only to about 10 ms; after that the neutral share is zero in
+  every run (bundle `series.tsv`). Under lag 1 `Pe` holds 0.98-1.00 of it
+  from 12 ms to the end; under the baseline `Pe` and `NVd+` trade it output
+  by output until about 40 ms and `Pe` holds it alone after. Only one output
+  per run, at 4 ms, has Pd as the largest equation (one lag-1 repeat: 10 ms
+  too). At 2-6 ms the peak is at the outboard midplane core edge (theta
+  72-80); afterwards it sits in the core-edge cells beside the upper and
+  lower X-points on both sides (theta 12-15, 28-31, 66-68, 82-84 at x 2-4),
+  where Pe is the domain maximum, 1.9e4 Pa at Te 3.7 keV, at no floor.
 - evidence, floor: the dump's `resid_*` fields are `output_f = snes_f`, and
   `snes_f` is the SCALED residual (`scaled_rhs_function` divides by
   `var_scaling_factors`), so the shares are what the convergence test ranks.
@@ -291,10 +295,10 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   share vanishes as it climbs. No physics floor sets 1e12 m^-3: `[d]
   density_floor` is 1e-8 normalised (1e9 m^-3) and `neutral_mixed` floors at
   zero. This is the scale_vars floor bug in the tracker, seen from the dumps.
-- evidence, cost: the share of Newton iterations in 2-6 ms is 0.91 for the
-  baseline's first repeat, 0.78 for lag 1's first, 0.54 for the coasted lag-1
-  repeat (`snes_steps.tsv`, time / 95788). Every screening window sits in
-  that phase.
+- evidence, cost: the share of Newton iterations spent by 12 ms, the end of
+  the neutral phase, is 0.92-0.93 for the baseline repeats and 0.79, 0.71,
+  0.56 for the lag-1 repeats (0.85-0.87 and 0.37-0.69 inside 2-6 ms;
+  `snes_steps.tsv`, time / 95788). Every screening window sits in that phase.
 - caveats: a time-mean of squared residual is weighted by each output's
   total, which varies by fifteen orders of magnitude between outputs, so the
   report's section 7 map shows the output with the largest total; two
@@ -305,8 +309,8 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   where under ten neutral cells at the outboard midplane core edge decide
   convergence and most of the cost is spent. Before tuning further, decide
   the scaling-floor bug; a fix changes what every setting was measured
-  against. After the transient the residual is a Pe boundary matter at the
-  X-point corners of the core edge, which no setting here touched.
+  against. After the transient the residual is a plasma matter, Pe above all,
+  at the X-point corners of the core edge, which no setting here touched.
 
 ### The 2-3 ms transient has a cliff at 2.65 ms that the baseline falls off and lag 1 does not
 - date: 2026-09-22
