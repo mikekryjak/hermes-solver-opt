@@ -591,10 +591,5 @@ at concurrency 2.35 against 1.81, with the more loaded run slower.
 
 ## Immediate next steps
 
-1. Finish the requirements sweep: gaps not yet written down at all, and the
-   open questions R15/R16 leave behind (what counts as "physics results stay
-   reasonable"; which tests the project evaluates on).
-2. Diagnostics deep-dive (R9, R10) — scoped as its own beads issue; runs
-   before any optimisation wave.
-3. Results store design against R6/R7/R8.
-4. Beads conventions note for this project (R13).
+The tracker holds the queue (`bd ready --exclude-type=epic`), and each
+campaign's conclusion and next steps open its `campaigns/<campaign>/findings.md`.

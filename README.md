@@ -39,6 +39,16 @@ The evidence bundle for each run sits in the data directory instead, at
 `<data>/bundles/<test_id>/`, beside the cases and seeds it came from. That
 directory has never been in git.
 
+## Campaigns
+
+Each campaign is one test on one machine. Its findings, with the conclusion
+and next steps first, live in `campaigns/<campaign>/findings.md` here, named
+after the campaign in the store. Read the root `findings.md` and the file of
+the campaign you work on, never another campaign's.
+
+- `test4-jacobian`: test4 on this workstation, September 2026. Concluded: the
+  Jacobian is rebuilt every iteration.
+
 ## Layout
 
 ```
@@ -49,7 +59,8 @@ cli/               the command-line tools, installed by name
 design.md          how the system is built and why
 requirements.md    R1-R25, the rules
 search-space.toml  every solver knob the optimiser may set
-findings.md        learned conclusions, agent-facing
+findings.md        cross-campaign conclusions, agent-facing
+campaigns/         one findings file per campaign, conclusion first
 capture-set.md     what each run records
 .beads/            the issue tracker
 hermes-perftest/   submodule

@@ -87,8 +87,10 @@ repository, `$store` the results store, `$data` the case and seed directory.
 - Rules and constraints: `requirements.md`. IDs R1.. are stable and never
   reused, so numbering is not reading order. New proposals go in the candidates
   section for the user to accept or reject; never promote your own.
-- Learned conclusions: `findings.md`. Terse, agent-facing, with no cap on the
-  number of entries: the cap is on how many are loaded at once.
+- Findings shown on more than one test, or about the run system or PETSc:
+  `findings.md`. Terse, agent-facing, no cap on entries, a cap on what loads.
+- One test's findings: `campaigns/<campaign>/findings.md`, conclusion first.
+  Load `findings.md` and the current campaign's file, never another campaign's.
   Graduate a finding into requirements / the run skill / a test / a ledger
   column, then mark it graduated with a pointer to where it landed. Delete
   nothing while the project is exploratory; the user will revisit this.
