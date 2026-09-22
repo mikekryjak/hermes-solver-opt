@@ -97,8 +97,8 @@ repository, `$store` the results store, `$data` the case and seed directory.
 - Tasks: beads. Never TodoWrite or markdown lists.
 - Run results — the index, its schema, the per-run bundles — and the analysis
   that reads them: the private `solver-opt-store` repo at `$store`.
-- When committing in `$store`, leave `campaigns/<name>/` out: a campaign's
-  config, index and log stay local, and only the top-level `index.tsv` goes in.
+- When committing in `$store`, add `campaigns/<name>/` whole and the report
+  PDFs: its ignore file already keeps bundles and the runner log out.
 - Add no rows to `$store/run_records-preproject.csv` and compare nothing against
   it: it is the frozen record of 18 runs dropped from the index on 2026-07-31.
 - Tools that capture or extract results: here, in `perftest/` and `cli/`. Put

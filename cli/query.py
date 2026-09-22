@@ -235,6 +235,29 @@ def median_of(rows, column):
     return statistics.median(values) if values else None
 
 
+# Columns that measure this machine's clock. A median of them over rows from
+# two machines mixes two clock speeds into one number, so group_rows refuses.
+# Counts of work -- RHS evaluations, nonlinear iterations -- compare across
+# machines and are not listed.
+MACHINE_BOUND = ("wall_s", "ms_per_24h")
+
+
+def check_one_machine(members, numeric, group):
+    """Raise when a group spanning machines would be summarised on a clock."""
+
+    clocked = [c for c in numeric if c in MACHINE_BOUND]
+    if not clocked:
+        return
+    machines = sorted({(r.get("machine") or "").strip() for r in members})
+    if len(machines) > 1:
+        raise QueryProblem(
+            f"group {group!r} holds rows from {len(machines)} machines"
+            f" ({', '.join(m or 'unknown' for m in machines)}), and"
+            f" {', '.join(clocked)} cannot be compared across machines. Add"
+            " --where machine=<name>, or --group machine."
+        )
+
+
 def group_rows(rows, column, projection):
     """One summary row per distinct value: the count, then a median each.
 
@@ -247,6 +270,9 @@ def group_rows(rows, column, projection):
     groups = {}
     for row in rows:
         groups.setdefault((row.get(column) or "").strip(), []).append(row)
+    if column != "machine":
+        for value, members in groups.items():
+            check_one_machine(members, numeric, value)
 
     columns = [column, "n"] + [f"{c}_med" for c in numeric]
     summary = []

@@ -16,6 +16,7 @@ campaign that is still being written can still be inspected, and
 import dataclasses
 import datetime
 import os
+import socket
 import re
 
 try:
@@ -295,6 +296,23 @@ def _approval(data, where):
         return None, f"[approval] is incomplete, {detail}"
 
 
+def check_machine(campaign, hostname=None):
+    """Raise unless this is the machine the campaign belongs to.
+
+    Compared against the same hostname the extractor writes into the index's
+    machine column, so a row can always be traced to the campaign's machine.
+    """
+
+    here = hostname if hostname is not None else socket.gethostname()
+    wanted = campaign.machine["name"]
+    if here != wanted:
+        raise CampaignProblem(
+            f"campaign {campaign.name} belongs to machine {wanted!r}, and this"
+            f" is {here!r}. Each campaign runs on one machine only: start it"
+            " there, or make a new campaign for this one."
+        )
+
+
 def load_campaign(path):
     """Read and validate one `campaign.toml`. Raises CampaignProblem."""
 
@@ -331,6 +349,28 @@ def load_campaign(path):
     ):
         raise CampaignProblem(
             f"{where}: [machine] slots must be a non-empty list of whole numbers."
+        )
+    # One core list per slot, in slot order, filled into {cores} in the launch
+    # line. A launch line that names {cores} without them has nothing to pin
+    # the run to, and one that has them without naming {cores} ignores them.
+    cores = machine.get("cores")
+    if cores is not None:
+        cores = _list_of_text(machine, "cores", f"{where}: [machine]")
+        if len(cores) != len(slots):
+            raise CampaignProblem(
+                f"{where}: [machine] cores lists {len(cores)} core sets for"
+                f" {len(slots)} slots; give one per slot, in slot order."
+            )
+    uses_cores = any("{cores}" in word for word in launch)
+    if uses_cores and cores is None:
+        raise CampaignProblem(
+            f"{where}: [machine] launch names {{cores}} but the table gives no"
+            " cores list; add one core set per slot, e.g. [\"0-9\", \"10-19\"]."
+        )
+    if cores is not None and not uses_cores:
+        raise CampaignProblem(
+            f"{where}: [machine] gives cores but launch never names {{cores}},"
+            " so the runs would not be pinned to them."
         )
 
     campaign = Campaign(
@@ -384,10 +424,15 @@ def load_campaign(path):
             ),
         },
         machine={
+            # The hostname this campaign runs on, as the extractor records it.
+            # Two machines running one campaign would each repeat the other's
+            # trials, because each settles them from its own local index.
+            "name": _text(machine, "name", f"{where}: [machine]"),
             "cores_per_run": _whole(
                 machine, "cores_per_run", f"{where}: [machine]"
             ),
             "slots": list(slots),
+            "cores": dict(zip(slots, cores)) if cores is not None else {},
             "launch": launch,
         },
     )

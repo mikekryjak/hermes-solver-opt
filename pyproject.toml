@@ -33,6 +33,7 @@ test = ["pytest", "xarray", "xhermes"]
 Repository = "https://github.com/mikekryjak/hermes-solver-opt"
 
 [project.scripts]
+run-campaign = "solveropt_cli.run_campaign:main"
 extract-test = "solveropt_cli.extract_test:main"
 query-store = "solveropt_cli.query:main"
 verify-store = "solveropt_cli.verify_store:main"

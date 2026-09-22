@@ -18,6 +18,7 @@ call them in the right order under the right conditions.
 import datetime
 import glob
 import os
+import socket
 import sys
 
 import pytest
@@ -86,6 +87,7 @@ endpoint_tolerance = 0.05
 quantities = ["ne_target_max", "te_target_max"]
 
 [machine]
+name = "HOSTNAME"
 cores_per_run = 10
 slots = [1, 2, 3]
 launch = ["sdrun.py", "-s={slot}", "-p={exe}", "-d={case}", "-y", "-restart"]
@@ -99,12 +101,16 @@ scope = "this ladder"
 
 
 def write_campaign(tmp_path, text=GOOD, name="atest"):
-    """A campaign file where the runner expects one: <store>/campaigns/<name>."""
+    """A campaign file where the runner expects one: <store>/campaigns/<name>.
+
+    The machine name is this host's, so the campaign may run here; a test
+    about a foreign host writes another name itself.
+    """
 
     folder = tmp_path / "store" / "campaigns" / name
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / "campaign.toml"
-    path.write_text(text)
+    path.write_text(text.replace("HOSTNAME", socket.gethostname()))
     return str(path)
 
 
@@ -195,6 +201,60 @@ def test_launch_command_must_name_the_case(tmp_path):
     path = write_campaign(tmp_path, GOOD.replace('"-d={case}", ', ""))
     with pytest.raises(cp.CampaignProblem, match="case"):
         cp.load_campaign(path)
+
+
+def test_machine_name_is_required(tmp_path):
+    path = write_campaign(tmp_path, GOOD.replace('name = "HOSTNAME"\n', ""))
+    with pytest.raises(cp.CampaignProblem, match=r"\[machine\].*name"):
+        cp.load_campaign(path)
+
+
+def test_a_campaign_refuses_a_foreign_host(tmp_path):
+    """Two machines on one campaign would each repeat the other's trials."""
+
+    path = write_campaign(tmp_path, GOOD.replace("HOSTNAME", "elsewhere"))
+    campaign = cp.load_campaign(path)
+    with pytest.raises(cp.CampaignProblem, match="elsewhere"):
+        cp.check_machine(campaign)
+    cp.check_machine(campaign, hostname="elsewhere")
+
+
+def test_cores_come_one_per_slot(tmp_path):
+    pinned = GOOD.replace(
+        'launch = ["sdrun.py", "-s={slot}", "-p={exe}", "-d={case}", "-y", "-restart"]',
+        'cores = ["0-9", "10-19", "20-29"]\n'
+        'launch = ["taskset", "-c", "{cores}", "mpirun", "{exe}", "-d", "{case}"]',
+    )
+    loaded = cp.load_campaign(write_campaign(tmp_path, pinned))
+    assert loaded.machine["cores"] == {1: "0-9", 2: "10-19", 3: "20-29"}
+
+    short = pinned.replace('cores = ["0-9", "10-19", "20-29"]', 'cores = ["0-9"]')
+    with pytest.raises(cp.CampaignProblem, match="1 core sets for 3 slots"):
+        cp.load_campaign(write_campaign(tmp_path, short))
+
+    unpinned = pinned.replace('cores = ["0-9", "10-19", "20-29"]\n', "")
+    with pytest.raises(cp.CampaignProblem, match="no\n? ?cores list|gives no"):
+        cp.load_campaign(write_campaign(tmp_path, unpinned))
+
+    unused = GOOD.replace('slots = [1, 2, 3]\n', 'slots = [1, 2, 3]\ncores = ["0-9", "10-19", "20-29"]\n')
+    with pytest.raises(cp.CampaignProblem, match="never names"):
+        cp.load_campaign(write_campaign(tmp_path, unused))
+
+
+def test_a_tool_is_found_under_sdtools_when_not_on_path(tmp_path, monkeypatch):
+    """A fresh machine has no sdtools on PATH; the variable names its clone."""
+
+    monkeypatch.setenv("PATH", str(tmp_path / "empty"))
+    monkeypatch.delenv("sdtools", raising=False)
+    with pytest.raises(rn.RunnerProblem, match="sdtools"):
+        rn.resolve_tool("apply_recipe.py")
+
+    clone = tmp_path / "sdtools" / "cli"
+    clone.mkdir(parents=True)
+    (clone / "apply_recipe.py").write_text("")
+    monkeypatch.setenv("sdtools", str(tmp_path / "sdtools"))
+    assert rn.resolve_tool("apply_recipe.py") == str(clone / "apply_recipe.py")
+    assert rn.resolve_tool("/abs/tool.py") == "/abs/tool.py"
 
 
 # =============================================================================
@@ -451,7 +511,8 @@ def test_an_interrupted_case_is_started_again(runner, monkeypatch):
     # The half-run case was cleared and made again, so no log of the earlier
     # attempt survives into the directory the new run will write into.
     assert not os.path.exists(os.path.join(runner.cases_dir, name, "BOUT.log.0"))
-    assert prepared[:2] == [rn.MAKE_WINDOW, rn.APPLY_RECIPE]
+    assert prepared[0] == rn.MAKE_WINDOW
+    assert os.path.basename(prepared[1]) == rn.APPLY_RECIPE
 
 
 def test_the_row_is_opened_once(runner):

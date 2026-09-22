@@ -14,7 +14,7 @@ goal = "Find a faster SNES recipe than SNES-MUMPS-3 on the test2 ladder."
 # The test family, the parent run the windows are cut from, and the epoch the
 # results belong to. The parent is a case directory name under <data>/cases.
 test = "test2"
-parent = "test2_0.0-100.0ms-20260919-201426"
+parent = "test2_0.0-100.0ms-2026-09-19-neutlag-va"
 epoch = "2026-09-neutlim"
 
 [build]
@@ -103,11 +103,22 @@ endpoint_tolerance = 0.05
 quantities = ["ne_target_max", "te_target_max"]
 
 [machine]
+# The hostname this campaign runs on, as `hostname` prints it and as the
+# extractor writes it into every row. The runner refuses to start elsewhere:
+# each campaign belongs to one machine, because wall times are only compared
+# within a machine and each machine settles trials from its own index.
+name = "workstation"
 cores_per_run = 10
 slots = [1, 2, 3]
-# The launch command, as words. {slot}, {exe} and {case} are filled in. The
-# command is looked up on PATH, so this carries no path to any machine.
+# The launch command, as words. {slot}, {exe}, {case} and {cores} are filled
+# in. Its first word is looked up on PATH, then under $sdtools/cli, so this
+# carries no path to any machine. This line uses the sdtools launcher, which
+# knows this workstation's slots:
 launch = ["sdrun.py", "-s={slot}", "-p={exe}", "-d={case}", "-y", "-restart"]
+# On a machine without that launcher, give one core set per slot and pin the
+# run yourself; {cores} takes the set for the slot the runner was given:
+# cores = ["0-9", "10-19", "20-29"]
+# launch = ["taskset", "-c", "{cores}", "mpirun", "-np", "10", "{exe}", "-d", "{case}", "restart"]
 
 [approval]
 # Without this table the runner refuses to start (R33). Approving a campaign

@@ -37,6 +37,7 @@ import time
 
 from . import index as idx
 from . import recipe as rcp
+from . import campaign as cp
 from . import store as st
 from .campaign import (  # noqa: F401  (re-exported for the console tool)
     ApprovalMissing,
@@ -79,8 +80,35 @@ MAKE_WINDOW = os.path.join(TOOL_ROOT, "hermes-perftest", "make_window.py")
 EXTRACT = os.path.join(TOOL_ROOT, "cli", "extract_test.py")
 CAN_DELETE = os.path.join(TOOL_ROOT, "cli", "can_delete.py")
 
-# apply_recipe.py belongs to sdtools, not here, so it stays a PATH lookup.
+# apply_recipe.py belongs to sdtools, not here. It is found on PATH, or under
+# the `sdtools` variable's cli/ directory, by resolve_tool below.
 APPLY_RECIPE = "apply_recipe.py"
+
+
+def resolve_tool(name):
+    """The path of a tool that belongs to sdtools, or a setup error.
+
+    A name with a directory in it is taken as given. A bare name is looked up
+    on PATH first, then under `$sdtools/cli`, the same way the store, data and
+    hermes variables name the other roots. Failing that, the message names the
+    variable, because a machine without sdtools on PATH fails the same way for
+    every trial and should say so before the first one.
+    """
+
+    if os.sep in name:
+        return name
+    found = shutil.which(name)
+    if found:
+        return found
+    root = os.environ.get("sdtools")
+    if root:
+        candidate = os.path.join(root, "cli", name)
+        if os.path.isfile(candidate):
+            return candidate
+    raise RunnerProblem(
+        f"cannot find {name}: it belongs to sdtools, which is neither on PATH"
+        " nor named by the `sdtools` variable (export sdtools=<its clone>)."
+    )
 
 # The tools above start with `#!/usr/bin/env python3`, which picks up whatever
 # python the calling shell has first. A screen made before the spack view was
@@ -611,7 +639,9 @@ class Runner:
                 self.seeds_dir,
             )
         )
-        self.run_tool([APPLY_RECIPE, case_path, self.write_recipe(trial, case_path)])
+        self.run_tool(
+            [resolve_tool(APPLY_RECIPE), case_path, self.write_recipe(trial, case_path)]
+        )
         return case_name
 
     def open_row(self, trial, case_name):
@@ -704,9 +734,15 @@ class Runner:
             "hermes-3",
         )
         command = [
-            word.format(slot=self.slot, exe=exe, case=case_path)
+            word.format(
+                slot=self.slot,
+                exe=exe,
+                case=case_path,
+                cores=self.campaign.machine["cores"].get(self.slot, ""),
+            )
             for word in self.campaign.machine["launch"]
         ]
+        command[0] = resolve_tool(command[0])
         console = os.path.join(case_path, "BOUT.log.console")
         self.say(
             "$ " + " ".join(shlex.quote(w) for w in command) + f" > {console}"
@@ -903,6 +939,7 @@ class Runner:
         # with no approval must say so once and stop, rather than report the
         # same refusal against every trial in turn.
         self.campaign.require_approval()
+        cp.check_machine(self.campaign)
         self.require_reachable_disk_budget()
 
         self.say(

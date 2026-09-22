@@ -12,7 +12,8 @@ again: the index is the only state, so it picks up where it left off.
 The campaign is named, not pathed: it is read from
 `<store>/campaigns/<name>/campaign.toml`, and a path may be given instead. The
 store, the data directory and the Hermes-3 checkout come from the environment
-unless an option names them.
+unless an option names them; the recipe tool comes from PATH or `$sdtools`.
+The campaign names its machine, and the runner refuses to start on another.
 
 Exit status:
 
