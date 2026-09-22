@@ -267,13 +267,16 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   regions and both PFRs together. The dumps say why: 0.97-1.01 of each neutral
   equation's sum of squares is in the first three interior radial cells at the
   core boundary (x = 2, 3, 4 with MXG 2, ixseps 20), and 0.9 or more of that
-  in four to eight poloidal cells on the inboard side below the midplane
-  (theta 72-80, R 0.61-0.69 m, Z -0.09 to -0.31 m). At the worst cell the
+  in a handful of poloidal cells on the inboard side near the midplane
+  (theta 72-80, R 0.61-0.69 m, |Z| 0.09 to 0.31 m): below the midplane on the
+  baseline runs, above it on the lag-1 runs, where one cell (x 3, theta 73)
+  holds 0.93. The grid is up-down symmetric. At the worst cell the
   neutral density is 2e12 m^-3 against a domain median of 2.6e19 and the
   neutral pressure 3e-4 Pa against 7 Pa. Those cells sit on the neutral
   equations' `bndry_core = free_o3` boundary. The location is the same for
   baseline and lag 1 and on both screening windows; only `resid_Nd` on the
-  3.0-4.0 ms baseline sits elsewhere.
+  3.0-4.0 ms baseline sits elsewhere. Report section 7 (fig7_cells, cached in
+  the store's campaigns/test4-jacobian/resid_cells.csv).
 - reading: the solver's convergence test is decided by under ten cells where
   the neutrals are seven orders below their bulk value, next to a free
   boundary. Everything in sections 6 and 8 of the report (neutral pressure
@@ -286,3 +289,37 @@ the report script `analysis/report_test4_jacobian.py` in the store.
 - rule: before tuning the solver on test4, look at these cells. A boundary or
   floor fix that removes the residual there would change what every setting
   in this campaign is measured against.
+
+### The 2-3 ms transient has a cliff at 2.65 ms that the baseline falls off and lag 1 does not
+- date: 2026-09-22
+- status: active
+- scope: test4_2.0-3.0ms, baseline and lag 1, all three repeats of each; the
+  bundles' snes_steps.tsv. Report section 11, second figure.
+- evidence: all six runs climb together to steps of tens of microseconds.
+  At 2.65 ms the three baseline repeats collapse, within a few steps of each
+  other, to steps under 1 µs with failed solves on most of them, and never
+  recover: two thirds of their 1100-1700 Newton iterations are spent after
+  2.65 ms. The three lag-1 repeats hold 30-100 µs steps through the same
+  stretch (80-130 iterations for the window) and diverge from each other
+  earlier and more gently: one dips at 2.5 ms, two fall off in the last 0.1 ms.
+- reading: the repeat spread on this window is the sensitivity of a cliff,
+  not a noise floor. Something at 2.65 ms puts the lagged solver into a
+  failed-solve regime; a fresh Jacobian gets through it. Whether this is the
+  same event that produced 4455/3104/2442 iterations on the full runs is
+  untested; the full runs' step histories would say.
+- rule: do not size repeats on this window from a spread measured elsewhere,
+  and when the non-determinism is investigated, start at 2.65 ms.
+
+### On rung 1 the gains change the iteration count and nothing else
+- date: 2026-09-22
+- status: active
+- scope: the controller study's rung-1 windows, every cell; controller report
+  section 5.
+- evidence: one Jacobian build costs 0.28-0.29 s on every rung-1 cell and is
+  three quarters of every run; the gains build 1.68 Jacobians per Newton
+  iteration against lag 1's 1.29 (more retried solves) and win anyway. Neutral
+  pressure holds 0.50-0.75 of the residual norm under every setting; the one
+  shift is the gains on 4.0-5.0 ms, where their long steps move 0.31 of the
+  norm onto NVd+, as lag 1 did on 2.0-3.0 ms.
+- rule: the controller cannot touch the residual that sits at the inboard
+  core edge; that is a physics or boundary change, not a solver setting.
