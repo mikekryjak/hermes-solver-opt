@@ -531,6 +531,22 @@ notice.
   Until that closes, a loosened tolerance is indistinguishable from a faster
   solver, and the record will call it completed either way.
 
+Round 8, proposed 2026-09-22, after the user chose to run the project on two
+machines, this workstation and a Google VM, each committing to the same repos.
+
+- C1. A campaign belongs to exactly one machine, named in its config. The
+  runner refuses to start it anywhere else. The runner settles trials from
+  the local campaign index, so two machines sharing a campaign would each
+  repeat the other's work.
+
+- C2. No run output moves between machines. Each machine makes its own parent
+  runs from the deck and cuts its own seeds, and records them in its own
+  campaigns. Only the repositories travel.
+
+- C3. A wall time is compared only against a baseline measured on the same
+  machine. RHS evaluations and nonlinear iterations, being machine-independent,
+  may be compared across machines. Tooling refuses the rest.
+
 Round 3's C1, on holding loading constant, is still unruled and now has its
 evidence: two runs of bit-identical work differed by 1.7 per cent in wall clock
 at concurrency 2.35 against 1.81, with the more loaded run slower.
