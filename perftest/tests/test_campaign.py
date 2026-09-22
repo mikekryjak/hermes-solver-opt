@@ -337,6 +337,50 @@ def test_failed_runs_count_against_the_budget(runner):
     assert runner.slot_hours_spent() == pytest.approx(1.0)
 
 
+def test_a_window_writes_at_least_one_output_per_millisecond():
+    assert rn.outputs_for("test4_3.0-3.2ms") == 50
+    assert rn.outputs_for("test4_2.0-3.0ms") == 50
+    assert rn.outputs_for("test4_0.0-100.0ms") == 100
+    assert rn.outputs_for("test2_4.0-64.5ms") == 61
+    with pytest.raises(rn.RunnerProblem, match="not a window name"):
+        rn.outputs_for("test4_full")
+
+
+def test_a_killed_run_charges_the_time_it_held_the_slot(runner):
+    """A killed run writes no finish stamp, so wall_s is blank; elapsed_s,
+    from the dump's clock, is what it cost and what the budget must count."""
+
+    add_row(runner, case_dir="k", state=idx.STATE_RECORDED,
+            outcome="timeout", wall_s="", elapsed_s="7200")
+    add_row(runner, case_dir="c", state=idx.STATE_RECORDED,
+            outcome="completed", wall_s="3600", elapsed_s="3600")
+    assert runner.slot_hours_spent() == pytest.approx(3.0)
+
+
+def test_index_writes_are_serialised(tmp_path):
+    """Two writers on one index: the lock makes the second wait for the first,
+    so no rewrite can replace a version it never read."""
+
+    import multiprocessing
+
+    path = str(tmp_path / "index.tsv")
+
+    def append(name):
+        lock = idx.lock_index(path)
+        rows, columns = idx.read_index(path)
+        rows.append({"case_dir": name})
+        idx.write_index(path, rows, columns)
+        idx.unlock_index(lock)
+
+    workers = [multiprocessing.Process(target=append, args=(f"r{i}",)) for i in range(12)]
+    for w in workers:
+        w.start()
+    for w in workers:
+        w.join()
+    rows, _ = idx.read_index(path)
+    assert sorted(r["case_dir"] for r in rows) == sorted(f"r{i}" for i in range(12))
+
+
 def test_disk_floor_stops_the_loop(runner, monkeypatch):
     monkeypatch.setattr(rn.Runner, "free_gb", lambda self: 10.0)
     with pytest.raises(rn.Stop, match="disk floor"):
@@ -650,6 +694,49 @@ def test_a_value_out_of_range_is_refused(tmp_path, runner):
     text = STUDY.replace("= 4 }", "= 400 }")
     with pytest.raises(rn.RunnerProblem, match="outside its range"):
         rn.load_study(write_study(tmp_path, text), runner.campaign, space)
+
+
+def test_a_knob_whose_dependency_fails_is_refused(tmp_path, runner):
+    """search-space.toml says under which settings a knob applies. A study
+    that sets it anyway would spend machine time on a run PETSc ignores."""
+
+    space = {
+        "solver:pc_type": {"type": "choice", "values": ["lu", "asm"], "current": "lu"},
+        "petsc:pc_factor_mat_solver_type": {
+            "type": "choice", "values": ["mumps", "superlu_dist"],
+            "depends": {"solver:pc_type": "lu"},
+        },
+        "solver:pc_asm_overlap": {
+            "type": "integer", "range": [0, 4], "depends": {"solver:pc_type": "not lu"},
+        },
+        "solver:matrix_free_operator": {
+            "type": "switch", "depends": {"solver:matrix_free": False},
+        },
+    }
+    # Set alongside asm: the factorisation package is never consumed.
+    text = STUDY.replace(
+        '{ "solver:lag_jacobian" = 4 }',
+        '{ "solver:pc_type" = "asm", "petsc:pc_factor_mat_solver_type" = "superlu_dist" }',
+    )
+    with pytest.raises(rn.RunnerProblem, match="applies only when solver:pc_type = lu"):
+        rn.load_study(write_study(tmp_path, text), runner.campaign, space)
+
+    # The recipe's own value decides when the study leaves the knob alone:
+    # pc_type is lu in the recipe, so an asm-only knob cannot apply.
+    text = STUDY.replace('{ "solver:lag_jacobian" = 4 }', '{ "solver:pc_asm_overlap" = 2 }')
+    with pytest.raises(rn.RunnerProblem, match="not lu"):
+        rn.load_study(write_study(tmp_path, text), runner.campaign, space,
+                      recipes_dir=os.path.join(rn.TOOL_ROOT, "hermes-perftest", "recipes"))
+
+    # A dependency on a knob nothing sets is unknown, not a refusal.
+    text = STUDY.replace('{ "solver:lag_jacobian" = 4 }', '{ "solver:matrix_free_operator" = true }')
+    assert rn.load_study(write_study(tmp_path, text), runner.campaign, space)
+
+    # The "a or b" and boolean forms.
+    assert rn.depends_met("lu or ilu", "ILU") is True
+    assert rn.depends_met("lu or ilu", "asm") is False
+    assert rn.depends_met(False, "false") is True
+    assert rn.depends_met("not lu", None) is None
 
 
 def test_overrides_reach_the_recipe(tmp_path, runner):

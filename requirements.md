@@ -302,18 +302,23 @@ can be revised by proposing it. Untagged entries are constraints.
   data: they are classified, because failure fingerprints carry exactly the
   solver-vs-numerics signal R4 asks for. (Example from this week: scale_vars
   on test4 fails instantly with loose tolerances but hits a wall at t≈3.4e5
-  with tight ones — that shape is diagnostic.) The classes are:
-  - diverged at start — never gets going;
-  - SNES failure — the nonlinear solve stops converging mid-run;
-  - linear-solve failure — the Krylov solve (KSP) diverges, reported by PETSc
-    as a distinct reason and worth separating from a SNES failure where the
-    logs allow it;
-  - crawl — still running but so slow it has to be aborted; needs a written
-    abort criterion so the call is mechanical, not a judgement each time
-    (so-0zl);
-  - completed but wrong — finished, and possibly fast, but failed R15's
-    correctness check. The most dangerous class, because nothing about the run
-    announces it.
+  with tight ones — that shape is diagnostic.) The classes, as the extractor
+  decides them (`perftest/extract.py`, `classify_outcome`) since 2026-09-20:
+  - completed — reached the window's end, solver reported success, every
+    output written, no correctness check failed;
+  - invalid — ran to its own exit but cannot be compared: fewer outputs than
+    the window, or a correctness check made and failed. The most dangerous
+    class, because nothing about the run announces it;
+  - diverged — the solver gave up: non-finite values, or the consecutive
+    failure cap;
+  - timeout — still progressing, stopped past the cutoff; "at least this
+    slow" is evidence, so it is not a crash;
+  - crashed — died for reasons outside the solver: MPI, memory, the machine,
+    or vanished with no message. Says nothing about the recipe;
+  - cancelled — stopped deliberately under the cutoff.
+  Older rows carry the five names this rule replaced (diverged_at_start,
+  snes_failure, linear_failure, crawl_aborted, completed_wrong) and one
+  `stalled`; the store's schema keeps them as historical values.
 
 - R21. Compute budget and concurrency. The machine is a 32-core workstation.
   A test takes 10 cores, so three run at once with two cores left over for

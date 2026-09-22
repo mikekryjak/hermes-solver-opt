@@ -30,8 +30,9 @@ import os
 import pathlib
 import sys
 
-# This repository ships no packaging; cli/ is on $PATH and its tools are run
-# by name, so each puts the repository root on the path itself.
+# pyproject.toml packages these tools for an installed copy on another machine.
+# Here nothing is installed: cli/ is on $PATH and the tools run by name, so
+# each puts the repository root on the path itself. This line is load-bearing.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from perftest import runner as rn  # noqa: E402
@@ -115,7 +116,7 @@ def main():
         space = rn.load_space(
             os.path.join(rn.TOOL_ROOT, campaign.search_space)
         )
-        trials = rn.load_study(args.study, campaign, space)
+        trials = rn.load_study(args.study, campaign, space, recipes_dir=runner.recipes_dir)
         runner.run(trials)
         return 0
 

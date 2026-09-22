@@ -290,14 +290,18 @@ usable evidence, not a missing result.
 
 Every outcome must be decidable by a script from the log and the dump.
 
-| State | Definition |
-| --- | --- |
-| completed | Reached the window's end time, solver reported success, outputs written |
-| invalid | Completed, but failed the correctness check |
-| diverged | Solver gave up: non-finite values, or the consecutive-failure cap reached |
-| timeout | Still progressing, but past the cutoff |
-| crashed | Died for reasons outside the solver: MPI, memory, machine |
-| cancelled | Stopped deliberately |
+| State | Definition | Decided by |
+| --- | --- | --- |
+| diverged | Solver gave up: non-finite values, or the consecutive-failure cap reached | the solver's own abort or a divergence message in the log; checked first, because it is the one ending that is a property of the recipe |
+| crashed | Died for reasons outside the solver: MPI, memory, machine | an error in the log that is neither the solver's nor an interrupt, or no message at all |
+| completed | Reached the window's end time, solver reported success, outputs written | BoutFinalise ran, `nout + 1` outputs exist, no correctness check failed |
+| invalid | Ran to its own exit, but cannot be compared | BoutFinalise ran with fewer outputs than the window, or a correctness check was made and failed |
+| timeout | Still progressing, but past the cutoff | BOUT++'s wall limit fired, or the elapsed time from the dump's clock passed the cutoff |
+| cancelled | Stopped deliberately, under the cutoff | the stop file, an interrupt or the clean-exit signal |
+
+One function decides, `classify_outcome` in `perftest/extract.py`, in that
+order, so the runner and the extractor never disagree. A run whose `nout`
+cannot be read stays blank rather than guessed.
 
 Every row also records the plasma time reached. Failed runs stay as rows with
 their timings blank; an unrecorded failure is a lie about the search space.
@@ -311,7 +315,8 @@ One program, one cycle:
 2. Check the approval record and the remaining budget. Stop if either fails.
 3. Check free disk against the floor. Stop if below it.
 4. Generate the case: copy the template, apply the recipe and the overrides,
-   seed it from the seed library, set the outputs to 50.
+   seed it from the seed library, set the outputs to at least one per
+   millisecond.
 5. Open the index row with the declared intent.
 6. Launch into a free slot, pinned to its cores.
 7. Watch for a stall or a cutoff breach; kill and classify if either fires.

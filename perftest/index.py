@@ -40,6 +40,7 @@ INDEX_COLUMNS = [
     # what happened
     "outcome",
     "wall_s",
+    "elapsed_s",
     "sim_time_ms",
     "verdict",
     # what it cost
@@ -120,6 +121,34 @@ def _merge_columns(present):
         at = merged.index(before[-1]) + 1 if before else 0
         merged.insert(at, column)
     return merged
+
+
+def lock_index(path):
+    """Hold the index against other writers until `unlock_index`.
+
+    Three slot processes rewrite one file for a night, each reading, changing
+    and replacing it. Without a lock two of them can read the same version and
+    the second replace loses the first's row. The lock is a sidecar file, so
+    the index itself stays a plain TSV a spreadsheet can open. Returns the
+    handle to pass back; a process that dies releases it on exit.
+    """
+
+    import fcntl
+
+    parent = os.path.dirname(os.path.abspath(path))
+    os.makedirs(parent, exist_ok=True)
+    handle = open(path + ".lock", "w")
+    fcntl.flock(handle, fcntl.LOCK_EX)
+    return handle
+
+
+def unlock_index(handle):
+    """Release a lock taken by `lock_index`."""
+
+    import fcntl
+
+    fcntl.flock(handle, fcntl.LOCK_UN)
+    handle.close()
 
 
 def read_index(path):

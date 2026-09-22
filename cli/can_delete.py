@@ -28,8 +28,9 @@ import os
 import pathlib
 import sys
 
-# This repository ships no packaging; cli/ is on $PATH and its tools are run
-# by name, so each puts the repository root on the path itself.
+# pyproject.toml packages these tools for an installed copy on another machine.
+# Here nothing is installed: cli/ is on $PATH and the tools run by name, so
+# each puts the repository root on the path itself. This line is load-bearing.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from perftest.index import STATE_PLANNED, STATE_RECORDED, case_key  # noqa: E402

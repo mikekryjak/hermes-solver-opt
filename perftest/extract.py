@@ -1218,14 +1218,21 @@ def extract_case(
         report.problems.append("no run start time in BOUT.log.0 - cannot form test_id")
 
     index_path = os.path.join(store_dir, index_name)
+    lock = idx.lock_index(index_path)
     rows, columns = idx.read_index(index_path)
 
     # --- what it is called ------------------------------------------------
+    # How long the attempt held its slot: the log's finish stamp when there
+    # is one, else the dump's last clock. Written so a killed run still
+    # charges the campaign's budget (the runner sums it).
+    elapsed = _elapsed_seconds(measured.get("wall_s"), series)
+    if elapsed is not None:
+        measured["elapsed_s"] = round(elapsed, 1)
     outcome, warning = classify_outcome(
         finished,
         len(steps),
         expected,
-        elapsed_s=_elapsed_seconds(measured.get("wall_s"), series),
+        elapsed_s=elapsed,
         cutoff_s=_cutoff_seconds(rows, test, _declared_project(rows, case_dir)),
         correctness_ok=_correctness_ok(rows, case_dir),
         **markers,
@@ -1284,6 +1291,7 @@ def extract_case(
         measured["test_id"] = report.test_id
 
     if dry_run:
+        idx.unlock_index(lock)
         return report
 
     # --- write -----------------------------------------------------------
@@ -1375,6 +1383,7 @@ def extract_case(
         )
 
     idx.write_index(index_path, rows, columns)
+    idx.unlock_index(lock)
     return report
 
 

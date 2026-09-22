@@ -26,6 +26,7 @@ import dataclasses
 import datetime
 import glob
 import hashlib
+import math
 import os
 import re
 import shlex
@@ -118,6 +119,27 @@ def resolve_tool(name):
 PYTHON = sys.executable
 
 
+# A window writes at least this many outputs, whatever its length.
+MIN_OUTPUTS = 50
+WINDOW_RE = re.compile(r"_(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)ms$")
+
+
+def outputs_for(window):
+    """How many outputs a window writes: at least one per millisecond.
+
+    The parent writes one per millisecond, and the stall limit is set against
+    that cadence. A 100 ms window on 50 outputs would write every 2 ms, and a
+    run a little slower than the baseline through an expensive stretch is then
+    killed as stalled mid-run (findings: the fixed output cadence trap).
+    """
+
+    m = WINDOW_RE.search(window)
+    if not m:
+        raise RunnerProblem(f"{window}: not a window name (<test>_<a>-<b>ms).")
+    length_ms = float(m[2]) - float(m[1])
+    return max(MIN_OUTPUTS, int(math.ceil(length_ms)))
+
+
 def python_tool(tool, *arguments):
     """A command for a python tool that ships here, run under this python."""
 
@@ -182,13 +204,58 @@ def load_space(path):
         return tomllib.load(handle).get("knobs", {})
 
 
-def check_overrides(space, overrides, where):
-    """Refuse a knob the search space does not describe, or a value out of range.
+def _canon(value):
+    """One spelling for a setting's value, so `LU`, `lu` and ` lu ` agree."""
+
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value).strip().lower()
+
+
+def depends_met(wanted, actual):
+    """Whether one `depends` condition holds for the value actually in force.
+
+    `wanted` is the search space's condition: a bool, a name, `not <name>` or
+    `<a> or <b>`. `actual` is the value the run would use, or None when nothing
+    sets it, which leaves the condition unknown rather than failed.
+    Returns True, False or None.
+    """
+
+    if actual is None:
+        return None
+    have, want = _canon(actual), _canon(wanted)
+    if want.startswith("not "):
+        return have != want[4:].strip()
+    return have in [w.strip() for w in want.split(" or ")]
+
+
+def effective_settings(space, base, overrides):
+    """What each knob would be set to: the override, else the recipe, else the
+    search space's record of the current recipe. Missing everywhere is None."""
+
+    def value_of(key):
+        for name, value in overrides:
+            if name == key:
+                return value
+        if key in base:
+            return base[key]
+        entry = space.get(key) or {}
+        return entry.get("current")
+
+    return value_of
+
+
+def check_overrides(space, overrides, where, base=None):
+    """Refuse a knob the search space does not describe, or a value out of range,
+    or one whose `depends` conditions the run would not satisfy.
 
     Checked before anything is generated. A proposal is allowed to be wrong;
     it is not allowed to spend machine time being wrong (design.md section 9).
+    `base` is the recipe's settings, `{knob: value}`, against which a knob's
+    `depends` is resolved once the overrides are applied on top.
     """
 
+    value_of = effective_settings(space, base or {}, overrides)
     for key, value in overrides:
         entry = space.get(key)
         if entry is None:
@@ -215,14 +282,24 @@ def check_overrides(space, overrides, where):
                 raise RunnerProblem(
                     f"{where}: {key} = {value} is outside its range [{low}, {high}]."
                 )
+        for needed, wanted in (entry.get("depends") or {}).items():
+            actual = value_of(needed)
+            if depends_met(wanted, actual) is False:
+                raise RunnerProblem(
+                    f"{where}: {key} applies only when {needed} = {wanted},"
+                    f" and this run would have {needed} = {actual}. The search"
+                    " space says the setting cannot take effect, so no run may"
+                    " spend time on it."
+                )
 
 
-def load_study(path, campaign, space=None):
+def load_study(path, campaign, space=None, recipes_dir=None):
     """Read a study file into trials, one per window per repeat.
 
     A study names a rung and the variants to try on it. The windows and the
     number of repeats come from the campaign's ladder, so a study never
-    restates them and cannot contradict them.
+    restates them and cannot contradict them. With `recipes_dir`, each
+    variant's overrides are checked against its recipe's settings too.
     """
 
     with open(path, "rb") as handle:
@@ -244,7 +321,11 @@ def load_study(path, campaign, space=None):
 
         overrides = _pairs(entry.get("overrides", {}), at)
         if space is not None:
-            check_overrides(space, overrides, at)
+            recipe_file = rcp.find_recipe(
+                entry.get("recipe", campaign.recipe), recipes_dir or DEFAULT_RECIPES
+            )
+            base = rcp.parse_settings(recipe_file) if recipe_file else {}
+            check_overrides(space, overrides, at, base=base)
 
         windows = entry.get("windows", list(rung.windows))
         unknown = [w for w in windows if w not in rung.windows]
@@ -368,8 +449,11 @@ class Runner:
         print(line, flush=True)
         if self.dry_run:
             return
-        os.makedirs(self.campaign_dir, exist_ok=True)
-        with open(os.path.join(self.campaign_dir, "runner.log"), "a") as handle:
+        # Output, not record: it goes with the bundles in the data directory,
+        # not into the store, whose campaign directories are committed.
+        logs = os.path.join(self.data_dir, "logs")
+        os.makedirs(logs, exist_ok=True)
+        with open(os.path.join(logs, f"{self.campaign.name}-runner.log"), "a") as handle:
             handle.write(line + "\n")
 
     def say(self, message):
@@ -422,7 +506,10 @@ class Runner:
         seconds = 0.0
         for row in self.rows():
             try:
-                seconds += float(row.get("wall_s") or 0.0)
+                # elapsed_s is how long the attempt held its slot, and is
+                # written for a killed run too; wall_s needs the log's finish
+                # stamp, which a killed run never writes.
+                seconds += float(row.get("elapsed_s") or row.get("wall_s") or 0.0)
             except ValueError:
                 continue
         return seconds / 3600.0
@@ -637,6 +724,8 @@ class Runner:
                 case_path,
                 "--seeds",
                 self.seeds_dir,
+                "--nout",
+                str(outputs_for(trial.window)),
             )
         )
         self.run_tool(
@@ -654,6 +743,7 @@ class Runner:
 
         if self.state_of(case_name) == idx.STATE_PLANNED:
             return
+        lock = idx.lock_index(self.index_path)
         rows, columns = idx.read_index(self.index_path)
         row = {c: "" for c in columns}
         row.update(
@@ -673,6 +763,7 @@ class Runner:
         self.say(f"{case_name}: row opened as {idx.STATE_PLANNED}")
         if not self.dry_run:
             idx.write_index(self.index_path, rows, columns)
+        idx.unlock_index(lock)
 
     def note_for(self, trial):
         text = (
@@ -701,6 +792,7 @@ class Runner:
         only where the runner is the authority on it.
         """
 
+        lock = idx.lock_index(self.index_path)
         rows, columns = idx.read_index(self.index_path)
         key = idx.case_key(case_name)
         positions = [
@@ -708,6 +800,7 @@ class Runner:
             if idx.case_key(r.get("case_dir", "")) == key
         ]
         if not positions:
+            idx.unlock_index(lock)
             return False
         row = rows[positions[-1]]
         for name, value in changes.items():
@@ -718,6 +811,7 @@ class Runner:
                 row[name] = str(value).replace("\t", " ")
         if not self.dry_run:
             idx.write_index(self.index_path, rows, columns)
+        idx.unlock_index(lock)
         return True
 
     def launch(self, case_name, cutoff):
