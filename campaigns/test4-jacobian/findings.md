@@ -255,40 +255,58 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   setting by its failed-solve fraction as well as its wall time, and take the
   failure fraction into the rung-1 decision on the gains.
 
-### The whole residual norm sits in a few cells at the inboard core edge, where the neutrals are at their floor
+### The residual norm sits at the core edge all run long; the neutral floor cells hold it only through the 2-10 ms transient
 - date: 2026-09-22
 - status: active
-- scope: test4, four dumps read directly (baseline and lag 1 on 4.0-4.1 ms,
-  baseline and lag 1 on 3.0-3.2 ms, baseline on 3.0-4.0 ms), `resid_Pd`,
-  `resid_NVd`, `resid_Nd` with guards cleared, time-mean of the square over
-  outputs after the first. Scratch script only; not yet in the report.
-- evidence: the bundles' per-region table puts 0.99-1.00 of the norm in the
-  core region on every run of the campaign and under 0.01 in all eight SOL
-  regions and both PFRs together. The dumps say why: 0.97-1.01 of each neutral
-  equation's sum of squares is in the first three interior radial cells at the
-  core boundary (x = 2, 3, 4 with MXG 2, ixseps 20), and 0.9 or more of that
-  in a handful of poloidal cells on the inboard side near the midplane
-  (theta 72-80, R 0.61-0.69 m, |Z| 0.09 to 0.31 m): below the midplane on the
-  baseline runs, above it on the lag-1 runs, where one cell (x 3, theta 73)
-  holds 0.93. The grid is up-down symmetric. At the worst cell the
-  neutral density is 2e12 m^-3 against a domain median of 2.6e19 and the
-  neutral pressure 3e-4 Pa against 7 Pa. Those cells sit on the neutral
-  equations' `bndry_core = free_o3` boundary. The location is the same for
-  baseline and lag 1 and on both screening windows; only `resid_Nd` on the
-  3.0-4.0 ms baseline sits elsewhere. Report section 7 (fig7_cells, cached in
-  the store's campaigns/test4-jacobian/resid_cells.csv).
-- reading: the solver's convergence test is decided by under ten cells where
-  the neutrals are seven orders below their bulk value, next to a free
-  boundary. Everything in sections 6 and 8 of the report (neutral pressure
-  dominates, the level is tolerance-set) is a statement about those cells.
-  Candidate causes, none tested: the free_o3 core boundary on a field at its
-  floor, the density floor or the diffusion limiter
-  (`limiter_gradient_floor = 10`) making the residual non-smooth there so the
-  finite-difference Jacobian is wrong, or a diffusion coefficient that
-  diverges as the density vanishes. Each is a code read or a one-setting run.
-- rule: before tuning the solver on test4, look at these cells. A boundary or
-  floor fix that removes the residual there would change what every setting
-  in this campaign is measured against.
+- supersedes: the same-day entry "The whole residual norm sits in a few cells
+  at the inboard core edge, where the neutrals are at their floor", which
+  read two 4.0-4.1 ms dumps. Three of its claims were wrong: the cells are at
+  the OUTBOARD midplane (the core ring spans R 0.325 m at the inboard
+  midplane, theta 22, to 0.685 m at the outboard, theta 76; the finding's
+  cells at 0.61-0.69 m are outboard); the cells are not fixed in time; and
+  "at their floor" is the solver's scaling floor, not a density floor.
+- scope: all six overnight test4 100 ms runs (three baseline, three lag 1),
+  the dumps at their 50 outputs 2 ms apart, every `resid_*` field with guards
+  cleared, per output. Tables cached in the store's campaign directory as
+  `resid_neutral_cells_vs_time.csv` and `resid_allsys_cells_vs_time.csv`;
+  the script is not in any repo. Tracker: Investigation 01.
+- evidence, location: the residual summed over all seven equations sits in
+  the first five interior radial cells at the core boundary (x 2-6) at every
+  output of every run, median share 0.98-1.00 in each third of the run; the
+  ten largest cells hold 0.7-0.95 of it.
+- evidence, equation and cells: the neutral equations (Pd, NVd) and NVd+
+  hold the norm only to about 10 ms. From 12 ms to 100 ms `Pe` holds
+  0.98-1.00 of it (bundle `series.tsv` share_Pe, median by third, all six
+  runs); only one output per run, at 4 ms, has Pd as the largest equation.
+  At 2-6 ms the peak is at the outboard midplane core edge (theta 72-80);
+  afterwards it sits in the core-edge cells beside the upper and lower
+  X-points on both sides (theta 12-15, 28-31, 66-68, 82-84 at x 2-4), where
+  Pe is the domain maximum, 1.9e4 Pa at Te 3.7 keV, at no floor.
+- evidence, floor: the dump's `resid_*` fields are `output_f = snes_f`, and
+  `snes_f` is the SCALED residual (`scaled_rhs_function` divides by
+  `var_scaling_factors`), so the shares are what the convergence test ranks.
+  At the early peak cells Nd/Nnorm is 1.6e-5 to 6e-5 (Nnorm 1e17), within a
+  factor of a few of the rtol = 1e-5 scaling floor; the domain minimum is
+  0.7e-5 to 1.4e-5 up to 10 ms, 2e-5 at 16 ms, 1e-3 by 40 ms, and the neutral
+  share vanishes as it climbs. No physics floor sets 1e12 m^-3: `[d]
+  density_floor` is 1e-8 normalised (1e9 m^-3) and `neutral_mixed` floors at
+  zero. This is the scale_vars floor bug in the tracker, seen from the dumps.
+- evidence, cost: the share of Newton iterations in 2-6 ms is 0.91 for the
+  baseline's first repeat, 0.78 for lag 1's first, 0.54 for the coasted lag-1
+  repeat (`snes_steps.tsv`, time / 95788). Every screening window sits in
+  that phase.
+- caveats: a time-mean of squared residual is weighted by each output's
+  total, which varies by fifteen orders of magnitude between outputs, so the
+  report's section 7 map shows the output with the largest total; two
+  outputs of the coasted lag-1 repeat (4 and 12 ms) hold residual values of
+  1e15 and 0.5 over 100-160 cells in the inner divertor legs, unlike every
+  other output (`output_f` can be a blend, snes.cxx 1203-1204).
+- rule: the campaign measured every setting in the scaling-floor regime,
+  where under ten neutral cells at the outboard midplane core edge decide
+  convergence and most of the cost is spent. Before tuning further, decide
+  the scaling-floor bug; a fix changes what every setting was measured
+  against. After the transient the residual is a Pe boundary matter at the
+  X-point corners of the core edge, which no setting here touched.
 
 ### The 2-3 ms transient has a cliff at 2.65 ms that the baseline falls off and lag 1 does not
 - date: 2026-09-22
