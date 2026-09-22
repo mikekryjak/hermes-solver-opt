@@ -254,3 +254,35 @@ the report script `analysis/report_test4_jacobian.py` in the store.
   the Newton solve is rewarded again by the controller; judge a controller
   setting by its failed-solve fraction as well as its wall time, and take the
   failure fraction into the rung-1 decision on the gains.
+
+### The whole residual norm sits in a few cells at the inboard core edge, where the neutrals are at their floor
+- date: 2026-09-22
+- status: active
+- scope: test4, four dumps read directly (baseline and lag 1 on 4.0-4.1 ms,
+  baseline and lag 1 on 3.0-3.2 ms, baseline on 3.0-4.0 ms), `resid_Pd`,
+  `resid_NVd`, `resid_Nd` with guards cleared, time-mean of the square over
+  outputs after the first. Scratch script only; not yet in the report.
+- evidence: the bundles' per-region table puts 0.99-1.00 of the norm in the
+  core region on every run of the campaign and under 0.01 in all eight SOL
+  regions and both PFRs together. The dumps say why: 0.97-1.01 of each neutral
+  equation's sum of squares is in the first three interior radial cells at the
+  core boundary (x = 2, 3, 4 with MXG 2, ixseps 20), and 0.9 or more of that
+  in four to eight poloidal cells on the inboard side below the midplane
+  (theta 72-80, R 0.61-0.69 m, Z -0.09 to -0.31 m). At the worst cell the
+  neutral density is 2e12 m^-3 against a domain median of 2.6e19 and the
+  neutral pressure 3e-4 Pa against 7 Pa. Those cells sit on the neutral
+  equations' `bndry_core = free_o3` boundary. The location is the same for
+  baseline and lag 1 and on both screening windows; only `resid_Nd` on the
+  3.0-4.0 ms baseline sits elsewhere.
+- reading: the solver's convergence test is decided by under ten cells where
+  the neutrals are seven orders below their bulk value, next to a free
+  boundary. Everything in sections 6 and 8 of the report (neutral pressure
+  dominates, the level is tolerance-set) is a statement about those cells.
+  Candidate causes, none tested: the free_o3 core boundary on a field at its
+  floor, the density floor or the diffusion limiter
+  (`limiter_gradient_floor = 10`) making the residual non-smooth there so the
+  finite-difference Jacobian is wrong, or a diffusion coefficient that
+  diverges as the density vanishes. Each is a code read or a one-setting run.
+- rule: before tuning the solver on test4, look at these cells. A boundary or
+  floor fix that removes the residual there would change what every setting
+  in this campaign is measured against.
