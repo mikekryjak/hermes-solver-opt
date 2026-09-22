@@ -281,30 +281,37 @@ def recompute_concurrency(rows):
 
     import datetime
 
+    # Only runs on the same machine share it. Two campaigns on two machines
+    # can overlap in wall-clock time all night without loading each other.
     intervals = []
     for row in rows:
         start, wall = row.get("run_started", ""), row.get("wall_s", "")
+        machine = (row.get("machine") or "").strip()
         try:
             t0 = datetime.datetime.strptime(start.strip(), "%a %b %d %H:%M:%S %Y")
             span = float(wall)
         except (ValueError, AttributeError):
             intervals.append(None)
             continue
-        intervals.append((t0, t0 + datetime.timedelta(seconds=span), span))
+        intervals.append((t0, t0 + datetime.timedelta(seconds=span), span, machine))
 
     changed = 0
     for i, own in enumerate(intervals):
         if own is None:
             continue
-        start, end, span = own
+        start, end, span, machine = own
         if span <= 0:
             continue
+        peers = [
+            other for other in intervals
+            if other is not None and other[3] == machine
+        ]
 
         # Integrate the number of simultaneous runs over this run's lifetime, by
         # splitting it at every point where some other run starts or stops.
         edges = {0.0, span}
-        for j, other in enumerate(intervals):
-            if other is None or i == j:
+        for other in peers:
+            if other is own:
                 continue
             for edge in (other[0] - start, other[1] - start):
                 seconds = edge.total_seconds()
@@ -315,11 +322,7 @@ def recompute_concurrency(rows):
         weighted = 0.0
         for lo, hi in zip(ordered, ordered[1:]):
             middle = start + datetime.timedelta(seconds=(lo + hi) / 2)
-            running = sum(
-                1
-                for other in intervals
-                if other is not None and other[0] <= middle < other[1]
-            )
+            running = sum(1 for other in peers if other[0] <= middle < other[1])
             weighted += running * (hi - lo)
 
         value = f"{weighted / span:.2f}"

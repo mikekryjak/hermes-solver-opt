@@ -81,6 +81,16 @@ campaign or host. `design.md` section 4 explains parents, windows and rungs.
    override against the search space without launching. Then run it for real
    on one slot per process, inside a session that survives a logout.
 
+Two machines commit to the same repositories, so every session on either one
+syncs the same way: at the start, `bd dolt pull` for the tracker and
+`git pull --rebase` in this repository and the store; at the end, `bd dolt
+push`, then `git pull --rebase` and `git push` in both. The tracker's
+`.beads/issues.jsonl` is a passive export, so if it conflicts on a rebase,
+take either side and let the next `bd` command rewrite it. The store's
+top-level `index.tsv` merges by union, because each machine only appends its
+own parent runs to it, and campaign directories never collide, because each
+belongs to one machine.
+
 
 ```
 pyproject.toml     the packaging: the perftest package and the cli tools

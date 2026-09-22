@@ -381,6 +381,20 @@ def test_concurrency_is_time_weighted_not_a_count_of_overlaps():
     assert rows[0]["concurrency"] == "1.50"
 
 
+def test_runs_on_another_machine_do_not_count_as_load():
+    """Two machines can run all night at the same hours without sharing a
+    core, so concurrency is counted within a machine only."""
+
+    rows = [
+        {"case_dir": "a", "machine": "here", "run_started": "Mon Sep 21 22:00:00 2026", "wall_s": "3600"},
+        {"case_dir": "b", "machine": "here", "run_started": "Mon Sep 21 22:00:00 2026", "wall_s": "3600"},
+        {"case_dir": "c", "machine": "there", "run_started": "Mon Sep 21 22:00:00 2026", "wall_s": "3600"},
+    ]
+    idx.recompute_concurrency(rows)
+    assert [r["concurrency"] for r in rows] == ["2.00", "2.00", "1.00"]
+
+
+
 def test_concurrency_skips_a_row_it_cannot_time():
     """Declaring it would record the intended loading, which is wrong the moment
     one of three runs dies early and the other two finish alone."""
