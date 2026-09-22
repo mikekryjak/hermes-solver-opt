@@ -49,7 +49,38 @@ the campaign you work on, never another campaign's.
 - `test4-jacobian`: test4 on this workstation, September 2026. Concluded: the
   Jacobian is rebuilt every iteration.
 
-## Layout
+## Setting up on a new machine
+
+Every step is a command any agent can run; nothing assumes a particular test,
+campaign or host. `design.md` section 4 explains parents, windows and rungs.
+
+1. Clone the three repositories side by side: this one with `--recursive`,
+   the user's private results store, and the user's `sdtools`. Install this
+   one with `pip install -e .`; the tools need only numpy and pandas, and the
+   dump reader is the optional `dumps` extra.
+2. Export the four variables the tools read, each an absolute path on this
+   machine: `store` (the results store clone), `data` (a directory for cases,
+   seeds and bundles, outside git), `hermes` (the Hermes-3 checkout) and
+   `sdtools` (that clone, so the recipe tool is found without editing PATH).
+3. Build Hermes-3 at the commit and with the settings the campaign's `[build]`
+   table will pin, in a build directory named there relative to `hermes`.
+4. Make a parent run: copy a test template from `hermes-perftest/`, apply the
+   baseline recipe from `hermes-perftest/recipes/`, run it from initial
+   conditions to 100 ms as `<test>_0.0-100.0ms-<date>-<tag>` under
+   `$data/cases/`, and record it with `extract-test` so it has a row in the
+   store's top-level `index.tsv`. Parents never move between machines: each
+   machine makes its own.
+5. Cut a window with `hermes-perftest/make_window.py` once, by hand, to check
+   the seed library fills under `$data/seeds/`. The runner cuts the rest.
+6. Copy `campaign.example.toml` to `$store/campaigns/<name>/campaign.toml`.
+   Set `[machine] name` to this host's `hostname`, and either keep the
+   sdtools launcher line or give one core set per slot and a `taskset` and
+   `mpirun` launch line, as the example shows. Name the parent, the build and
+   the ladder. The user fills `[approval]`.
+7. `run-campaign --campaign <name> --study <file> --dry-run` checks every
+   override against the search space without launching. Then run it for real
+   on one slot per process, inside a session that survives a logout.
+
 
 ```
 pyproject.toml     the packaging: the perftest package and the cli tools

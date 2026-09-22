@@ -547,6 +547,12 @@ machines, this workstation and a Google VM, each committing to the same repos.
   machine. RHS evaluations and nonlinear iterations, being machine-independent,
   may be compared across machines. Tooling refuses the rest.
 
+- C4. R35's "pinned dependencies" is relaxed to "declared, with lower bounds":
+  the package installs beside whatever scientific stack a machine has, and a
+  campaign's rows carry the versions that made them. Ruled by the user
+  2026-09-22 ("maybe you can relax this"); written here so R35's text can be
+  amended to match.
+
 Round 3's C1, on holding loading constant, is still unruled and now has its
 evidence: two runs of bit-identical work differed by 1.7 per cent in wall clock
 at concurrency 2.35 against 1.81, with the more loaded run slower.
