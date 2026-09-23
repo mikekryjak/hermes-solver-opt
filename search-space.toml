@@ -162,6 +162,27 @@ cost = "basic takes the full Newton step with no damping: cheapest per iteration
 status = "candidate"
 note = "The recipes set this, and the captured view confirms PETSc built a basic line search. Prior work on this project attributed a burst of solver failures partly to the undamped basic search, so bt is a specific candidate. BOUT++ spells the same setting solver:line_search_type; that spelling is not a knob here and must not be used, because whichever section is read last wins."
 
+[knobs."petsc:snes_divergence_tolerance"]
+type = "choice"
+values = ["-1", "1e4", "1e6", "1e7", "1e8"]
+default = "1e4"
+current = "unset, so 1e4"
+applies = "snes"
+cost = "PETSc declares a solve diverged (reason -9, DTOL) once the residual norm exceeds this multiple of its starting value; -1 switches the test off. A looser value lets Newton continue past a transient spike instead of failing the step, at the risk of spending iterations until the iteration cap (-5) instead."
+status = "candidate"
+note = "Added 2026-09-23 for investigation 4: on test4, 892 of 900 divergence failures came with a neutral cell clamped at zero and a very large neutral pressure rate there, which is what trips this test."
+
+[knobs."petsc:snes_linesearch_damping"]
+type = "continuous"
+range = [0.1, 1.0]
+scale = "linear"
+default = 1.0
+current = "unset, so 1.0"
+applies = "snes"
+cost = "Fraction of the Newton step the basic line search takes. Below 1 every step is shortened, so an iterate overshoots less, at the cost of more Newton iterations."
+status = "candidate"
+note = "Added 2026-09-23 for investigation 4, against Newton iterates overshooting below zero in the neutral fields."
+
 [knobs."solver:max_snes_failures"]
 type = "integer"
 range = [3, 50]
@@ -331,7 +352,7 @@ type = "switch"
 default = false
 current = "unset, so false"
 applies = "snes"
-cost = "Solves for asinh of each variable, compressing many decades into a manageable range and making positivity automatic. A large change to the problem being solved, not a tuning adjustment."
+cost = "Solves for asinh(x / 1e-5) of each variable (asinh_scale is a constant in snes.hxx): log-like above about 1e-5, linear below it and through zero, so it compresses many decades but does not enforce positivity. A large change to the problem being solved, not a tuning adjustment."
 status = "untested"
 note = "Plausibly powerful for edge plasma, where densities span many decades and must stay positive. Also plausibly changes the answer. Needs its own study with the correctness check taken seriously, not a slot in a sweep."
 

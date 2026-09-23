@@ -15,6 +15,7 @@ subprocesses of tools that carry their own tests, and the runner's job is to
 call them in the right order under the right conditions.
 """
 
+import dataclasses
 import datetime
 import glob
 import os
@@ -788,6 +789,24 @@ def test_an_override_for_an_absent_option_is_added(tmp_path, runner):
     lines = [l.strip() for l in text.splitlines()]
     assert "lag_jacobian = 4" in lines
     assert lines.index("lag_jacobian = 4") < lines.index("[petsc]")
+
+
+def test_every_applied_recipe_carries_the_diagnostics(tmp_path, runner):
+    """Even a trial with no overrides gets diagnose_failures, and it stays out
+    of `varied`, so a run with it matches earlier runs of the same setting."""
+
+    recipes = tmp_path / "recipes"
+    recipes.mkdir()
+    (recipes / "SNES-MUMPS-3.txt").write_text("[solver]\ntype = snes\n[petsc]\n-pc_type lu\n")
+    runner.recipes_dir = str(recipes)
+    case = tmp_path / "case"
+    case.mkdir()
+
+    bare = dataclasses.replace(a_trial(), overrides=())
+    lines = [l.strip() for l in open(runner.write_recipe(bare, str(case))).read().splitlines()]
+    assert "diagnose_failures = true" in lines
+    assert lines.index("diagnose_failures = true") < lines.index("[petsc]")
+    assert bare.varied == ""
 
 
 def test_an_unapproved_campaign_launches_nothing(tmp_path, monkeypatch):

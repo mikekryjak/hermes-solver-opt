@@ -20,6 +20,12 @@ MANAGED_SECTIONS = ("solver", "petsc")
 # deviated from its recipe and must not be reported as though it had.
 TOOLING_FLAGS = ("petsc:snes_view", "petsc:ksp_view")
 
+# Written into every applied recipe by the runner, outside a trial's overrides,
+# so they never enter `varied` or the configuration tag. They change what a run
+# prints, not what it computes: diagnose_failures prints every field's minimum
+# and maximum at each failed solve, where BOUT++ otherwise prints only the last.
+DIAGNOSTICS = (("solver:diagnose_failures", "true"),)
+
 # The same setting under its two spellings. BOUT++ applies the [solver] values
 # with explicit calls and reads [petsc] last (snes.cxx line 770), so a setting
 # written on both sides is decided by the petsc one whatever the other says.

@@ -670,7 +670,7 @@ class Runner:
             return "Run finished at" in handle.read()
 
     def write_recipe(self, trial, case_path):
-        """The recipe to apply: the named one, or a copy carrying the overrides.
+        """A copy of the named recipe carrying the overrides and the diagnostics.
 
         Written into the case rather than edited in place afterwards, so the
         whole `[solver]` and `[petsc]` block is applied once and any later
@@ -680,9 +680,6 @@ class Runner:
         named = os.path.join(self.recipes_dir, f"{trial.recipe}.txt")
         if not os.path.exists(named):
             raise RunnerProblem(f"no recipe file for {trial.recipe} at {named}")
-        if not trial.overrides:
-            return named
-
         settings = rcp.parse_settings(named)
         for key, _ in trial.overrides:
             twin = rcp.shadowed(settings, key)
@@ -700,7 +697,7 @@ class Runner:
         with open(named) as handle:
             lines = handle.read().splitlines()
 
-        for key, value in trial.overrides:
+        for key, value in trial.overrides + rcp.DIAGNOSTICS:
             section, option = key.split(":", 1)
             lines = _set_option(lines, section, option, value, key)
 

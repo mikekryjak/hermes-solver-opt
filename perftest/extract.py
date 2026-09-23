@@ -1484,8 +1484,10 @@ def _check_varied(varied, diffs, report):
     declared = {
         part.split("=")[0].strip() for part in varied.split(";") if part.strip()
     }
+    diagnostic = {key for key, _ in recipe.DIAGNOSTICS}
     undeclared = [
-        d for d in diffs if d.split(":")[0] + ":" + d.split(":")[1] not in declared
+        d for d in diffs
+        if d.split(":")[0] + ":" + d.split(":")[1] not in declared | diagnostic
     ]
     if varied and undeclared:
         report.warnings.append(
