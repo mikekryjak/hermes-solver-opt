@@ -249,8 +249,8 @@ current = "unset, so false"
 applies = "snes"
 depends = { "solver:matrix_free" = false }
 cost = "Drops small entries from the Jacobian, giving a sparser matrix that factorises faster and preconditions worse."
-status = "candidate"
-note = "The MUMPS statistics in the captured view give the lever arm: 469812 nonzeros in the matrix become 2425990 in the factors, a fill ratio above five. Sparsifying the matrix attacks that number directly. Nobody has tried it here."
+status = "avoid"
+note = "Quarantined 2026-09-22: causes heap corruption in BOUT++ during execution."
 
 [knobs."solver:prune_abstol"]
 type = "continuous"
