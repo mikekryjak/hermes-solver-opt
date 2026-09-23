@@ -17,7 +17,9 @@ STATE_UNPLANNED = "unplanned"
 STATE_CANCELLED = "cancelled"
 
 # Declared by hand before the run. Everything else is measured.
-INTENT_COLUMNS = ["project", "case_dir", "test", "recipe", "varied", "epoch", "note"]
+INTENT_COLUMNS = [
+    "project", "case_dir", "test", "recipe", "varied", "study", "epoch", "note"
+]
 
 # Which study a row belongs to. Rows from different projects share the store
 # and the tooling but must never be compared to each other, so the marker is a
@@ -37,6 +39,9 @@ INDEX_COLUMNS = [
     "test",
     "recipe",
     "varied",
+    # the study file that launched the run, so a report selects its runs by
+    # name rather than by launch time, which breaks once two studies overlap
+    "study",
     # what happened
     "outcome",
     "wall_s",

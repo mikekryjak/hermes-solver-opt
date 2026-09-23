@@ -175,6 +175,9 @@ class Trial:
     repeat: int = 1
     rung: int = 0
     note: str = ""
+    # The study file's stem. Left out of trial_tag: which file asked for a
+    # configuration does not change the configuration.
+    study: str = ""
 
     @property
     def varied(self):
@@ -311,6 +314,7 @@ def load_study(path, campaign, space=None, recipes_dir=None):
         data = tomllib.load(handle)
 
     where = os.path.basename(path)
+    stem = os.path.splitext(where)[0]
     variants = data.get("variant")
     if not isinstance(variants, list) or not variants:
         raise RunnerProblem(f"{where}: no [[variant]] entries, so there is nothing to run.")
@@ -349,6 +353,7 @@ def load_study(path, campaign, space=None, recipes_dir=None):
                         repeat=repeat,
                         rung=number,
                         note=entry.get("note", ""),
+                        study=stem,
                     )
                 )
     return trials
@@ -759,6 +764,7 @@ class Runner:
                 "test": trial.window,
                 "recipe": trial.recipe,
                 "varied": trial.varied,
+                "study": trial.study,
                 "epoch": self.campaign.epoch,
                 "slot": str(self.slot),
                 "note": self.note_for(trial),

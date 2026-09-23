@@ -682,6 +682,16 @@ def test_a_study_expands_over_the_rung(tmp_path, runner):
     assert all(t.recipe == "SNES-MUMPS-3" for t in trials)
 
 
+def test_a_row_names_the_study_file_that_launched_it(tmp_path, runner):
+    """Reports select a study's runs by this column, not by launch time."""
+
+    trial = rn.load_study(write_study(tmp_path), runner.campaign)[0]
+    assert trial.study == "study"
+    name = make_case(runner, trial, finished=False)
+    runner.open_row(trial, name)
+    assert runner.rows_for_case(name)[0]["study"] == "study"
+
+
 def test_an_unknown_knob_is_refused_before_anything_runs(tmp_path, runner):
     space = {"solver:lag_jacobian": {"type": "integer", "range": [1, 20]}}
     text = STUDY.replace("solver:lag_jacobian", "solver:lag_jacobean")
