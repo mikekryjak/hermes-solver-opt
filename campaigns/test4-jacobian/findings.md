@@ -460,9 +460,9 @@ campaign directory; report scripts under `analysis/studies/test4-jacobian/`.
   later. On the full run the gains spend 64 to 1387 Newton iterations in
   2.5-6 ms against totals of 1262 to 2617; outside 2.5-6 ms repeats agree
   within 1.5 times per bin. No OpenMP, single-threaded OpenBLAS.
-- reading: each repeat either crosses 2.5-6 ms in a few long steps or spends
-  over a thousand iterations there, and round-off picks which. A cell's cost
-  is a mixture of the two outcomes.
-- rule: on windows holding 2.5-6 ms, quote a cell's range and how many
-  repeats crossed cheaply, not a mean. Untested by a run: one MPI process, or
+- reading: every repeat enters a costly phase of short steps in 2.5-6 ms,
+  and round-off sets when it enters and how long it stays. For the gains that
+  is close to two outcomes (64-328 against about 1370 iterations there); lag 1
+  (903-3064) and the baseline (7923-12512) spread without a gap.
+- rule: on windows holding 2.5-6 ms, quote a cell's range, not a mean. Untested by a run: one MPI process, or
   STRUMPACK, should make repeats identical.
