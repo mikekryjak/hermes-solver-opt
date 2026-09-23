@@ -367,3 +367,24 @@ the report script `analysis/report_test4_jacobian.py` in the store.
 - rule: the search space should refuse icntl_7 = 3 on this machine until the
   PETSc build is rebuilt with a SCOTCH that works, so no later study spends
   trials on it. The other MUMPS orderings in the study are untouched by this.
+
+### Reusing the last solution as the KSP initial guess kills every run
+- date: 2026-09-23
+- status: active
+- scope: study 3, slot 2, every trial carrying
+  solver:kspsetinitialguessnonzero=true on the controller gains and lag 1.
+- evidence: ten of ten diverged, five repeats each on test4_3.0-3.2ms and
+  test4_4.0-4.1ms, in 14-17 s. Each died the same way: SNES reason -3, the
+  linear solve, twenty failures in a row, then "Too many SNES failures (20)".
+  The 4.0-4.1 ms runs reached 0.002 ms of the window and the 3.0-3.2 ms runs
+  recorded no simulated time at all. Every field was finite at the failure,
+  with Nd+ at 1979 and Pd+ at 7510 in normalised units, so nothing had blown
+  up: the linear solve simply never converged.
+- reading: a nonzero initial guess and a lagged Jacobian do not mix here. The
+  guess is the previous step's solution, and with lag_jacobian=1 the operator
+  it is fed to is one step stale, so fgmres starts outside the basin the
+  stale operator can correct. Untested whether it also fails with a fresh
+  Jacobian; nothing in this study runs that pair.
+- cost: about 2.5 minutes of slot time for the whole cell.
+- rule: do not combine kspsetinitialguessnonzero with a lagged Jacobian. If
+  the option is worth another look, test it at lag_jacobian=0 first.
