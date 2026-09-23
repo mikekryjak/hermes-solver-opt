@@ -6,27 +6,22 @@ this workstation, September 2026. Rules and format as in the root
 
 ## Conclusion and next steps
 
-Rebuild the Jacobian every Newton iteration: `solver:lag_jacobian = 1` beats the
-baseline on every rung, and the whole win is two and a half to three times
-fewer iterations at about twice the cost each. On the full 100 ms run it is
-0.39 to 0.74 of the baseline wall time across three repeats, mean 0.55; quote
-the range, never the mean alone. All six full runs pass the correctness check
-against the parent.
+The recipe to beat is lag 1 with the controller gains kI 0.3, kP 0.7: 0.39
+of the baseline wall time over the whole 100 ms run (five repeats, 0.24 to
+0.56), end state within 0.04 per cent. Quote the range, never the mean alone.
+Every win so far is fewer Newton iterations; a Jacobian build costs 0.29 s on
+every setting.
 
-Lag 1 is the recipe to beat. Nothing layered on it wins on both screening
-windows; every preconditioner and Krylov change loses. The one lead is the
-timestep-controller gains kI 0.3, kP 0.7, which win on one rung-0 window and
-lose on the other.
+Leads: kI 0.6, kP 0.7 beats the gains on both rung-1 windows. The predictor
+off and target 10 iterations are faster still on short windows but miss the
+end state by more than any other setting.
 
-Decisions for the user:
+Next study (report S03): kI 0.6 over the full run at five repeats beside the
+gains; the predictor-off and target-10 cells over the full run with end
+states checked; screen at rung 1 only; ratios against the gains.
 
-1. Whether the controller gains go up to rung 1 (tracker: next-rung decision).
-2. Whether the non-determinism through the 2-6 ms transient must be understood
-   before more repeats are bought (tracker: the non-determinism bug).
-3. Whether the next campaign on this test starts from lag 1 as its baseline.
-
-Records: the runlog, tables and figures in the store's campaign directory;
-the report script `analysis/report_test4_jacobian.py` in the store.
+Records: the index, runlog, tables and reports S01-S03 in the store's
+campaign directory; report scripts under `analysis/studies/test4-jacobian/`.
 
 ## Findings
 
@@ -388,3 +383,64 @@ the report script `analysis/report_test4_jacobian.py` in the store.
 - cost: about 2.5 minutes of slot time for the whole cell.
 - rule: do not combine kspsetinitialguessnonzero with a lagged Jacobian. If
   the option is worth another look, test it at lag_jacobian=0 first.
+
+### The gains on lag 1 hold over the whole 100 ms run
+- date: 2026-09-23
+- status: active
+- scope: study 3 (store report S03), rung 2, five repeats each.
+- evidence: gains kI 0.3, kP 0.7 on lag 1: 607 to 1442 s, 0.39 of the
+  baseline (range 0.24 to 0.56); with max_nonlinear_iterations=20, 0.34
+  (0.25 to 0.46); lag 1 alone 0.65; baseline 1892 to 2862 s. End states
+  within 0.04 per cent of the baseline's.
+- reading: the cap is inside the gains' own 2.4x spread, so it is neither a
+  win nor a loss.
+- rule: the gains on lag 1 are the recipe to beat on test4.
+
+### kI 0.6, kP 0.7 is the only gain point that beats the gains at rung 1
+- date: 2026-09-23
+- status: active
+- scope: study 3 slot 3, four grid points at rung 1, three repeats.
+- evidence: 0.89 of the gains on 3.0-4.0ms and 0.14 on 4.0-5.0ms (34 to 35 s,
+  65 iterations, 4 failed solves, mean step 47 us); 0.84 on the 2-3 ms cliff
+  window over ten repeats. End states within 0.1 per cent.
+- rule: take it to the full run at five repeats before calling it.
+
+### The predictor off and target 10 are fast but land somewhere else
+- date: 2026-09-23
+- status: active
+- scope: study 3 slot 2, layered on the gains.
+- evidence: predictor=false is 0.04 of the baseline on 4.0-5.0ms (64
+  iterations, no failed solves) but its end state is 1.4 to 1.5 per cent off
+  the baseline's where every other setting is within 0.1; 0.2 to 0.3 per cent
+  on the 0.1 ms windows. Its residual ends ten times higher and moves onto
+  NVd+. target_its=10 with the cap at 20 is 3.6 per cent off at the end of the
+  cliff window, against 2.3 for the gains alone.
+- reading: both pass the 5 per cent tolerance, but the gap may grow over a
+  longer run; a smaller residual is not being reached.
+- rule: no win until a full run shows the end-state gap does not grow.
+
+### A step ceiling doubles the cost of the full run
+- date: 2026-09-23
+- status: active
+- evidence: gains with max_timestep=1000 (10.4 us): 2.08 of the baseline on
+  0-100 ms, 12,000 iterations against 1300 to 2600 for the gains. It won on
+  4.0-4.1ms (0.80 of the gains) and lost on everything longer.
+- rule: never cap the step on this test; the quiet 6-100 ms stretch is where
+  long steps pay.
+
+### The gains are the tightest reference; the baseline and lag 1 are wide on the cliff
+- date: 2026-09-23
+- status: active
+- evidence: ten repeats on 2.0-3.0ms: baseline 213 to 382 s (1.8x), lag 1 36
+  to 140 s (3.9x), gains 27 to 28 s. On 4.0-4.1ms lag 1 is 79 to 81 s over
+  five repeats.
+- rule: quote future ratios against the gains.
+
+### The rung-0 gain grid is too rugged to screen on
+- date: 2026-09-23
+- status: active
+- evidence: neighbouring grid points differ by 2 to 8x on 0.1 ms windows, and
+  the two screening windows disagree (kI 0.45, kP 0.85: 0.27 of the gains on
+  3.0-3.2ms, 0.85 on 4.0-4.1ms). Rung 0 to rung 1 verdict agreement over all
+  settings was 0.83 and 0.74.
+- rule: screen controller settings on whole-millisecond windows only.
