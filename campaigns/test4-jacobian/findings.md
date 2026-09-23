@@ -93,7 +93,8 @@ campaign directory; report scripts under `analysis/studies/test4-jacobian/`.
   quote the range and never the mean alone.
 ### Repeat spread is the solver's path, not the machine, and it lives in the 2-6 ms transient
 - date: 2026-09-22
-- status: active
+- status: active; refined 2026-09-23 by "Repeat noise is round-off from the
+  parallel direct solver": the seeds are byte-identical, not eleven digits
 - scope: test4 with lag_jacobian = 1; weaker with lag 3; every window that
   contains the 2-6 ms transient.
 - evidence: the three rung-2 lag-1 repeats did 4455, 3104 and 2442 nonlinear
@@ -444,3 +445,24 @@ campaign directory; report scripts under `analysis/studies/test4-jacobian/`.
   3.0-3.2ms, 0.85 on 4.0-4.1ms). Rung 0 to rung 1 verdict agreement over all
   settings was 0.83 and 0.74.
 - rule: screen controller settings on whole-millisecond windows only.
+
+### Repeat noise is round-off from the parallel direct solver, turned into cost at 2.5-6 ms
+- date: 2026-09-23
+- status: active
+- scope: every completed repeat pair in the campaign (2028 pairs, 185 cells,
+  870 runs), from the bundles' BOUT.log.0 and snes_steps.tsv. Store
+  investigation I02 (investigations/I02-2026-09-23-repeat-divergence/).
+- evidence: full-run repeats start from byte-identical restart files. The
+  first residual matches in every pair. MUMPS and SuperLU_DIST pairs part at
+  round-off (relative 5e-16 to 2e-9) at a median step 11; 73 of 2004 MUMPS
+  pairs stay identical. All ASM, block Jacobi and STRUMPACK pairs (18) stay
+  bit-identical to the end. 1369 parted MUMPS pairs fork, a median 17 steps
+  later. On the full run the gains spend 64 to 1387 Newton iterations in
+  2.5-6 ms against totals of 1262 to 2617; outside 2.5-6 ms repeats agree
+  within 1.5 times per bin. No OpenMP, single-threaded OpenBLAS.
+- reading: each repeat either crosses 2.5-6 ms in a few long steps or spends
+  over a thousand iterations there, and round-off picks which. A cell's cost
+  is a mixture of the two outcomes.
+- rule: on windows holding 2.5-6 ms, quote a cell's range and how many
+  repeats crossed cheaply, not a mean. Untested by a run: one MPI process, or
+  STRUMPACK, should make repeats identical.
