@@ -232,3 +232,19 @@ findings exist; the cap is on how many are loaded at once.
 - rule: a printed or dumped density or pressure minimum of exactly 0 means
   some cell was at or below zero, not that none went negative. Never read "min 0" as "never
   negative". Investigation 04 in the store follows this up.
+
+### `petsc:snes_divergence_tolerance = -1` does not switch the test off in PETSc 3.23
+- date: 2026-09-24
+- status: active
+- scope: PETSc 3.23 (the hermes3 Spack build, 3.23.7), any run setting
+  `-snes_divergence_tolerance -1`.
+- evidence: petscsys.h:306-309 defines `PETSC_DECIDE = PETSC_DETERMINE = -1`
+  and `PETSC_UNLIMITED = -3`. test4-jacobian study 4 ran the baseline with -1
+  on 2.0-3.0, 3.0-4.0 and 4.0-5.0 ms: wall 0.95, 0.98 and 1.04 of the plain
+  baseline, and 80 to 330 reason -9 (DTOL) failures per run. The option was
+  read (absent from PETSc's options_left). search-space.toml's knob note says
+  -1 switches the test off, which held before PETSc 3.22.
+- rule: read every "-1 = off" PETSc option as "the default" on this build.
+  Treat study 4's divergence-off cells as the default tolerance, not a test.
+  To switch the test off, use -3 (PETSC_UNLIMITED), after checking that the
+  option parser takes it.
