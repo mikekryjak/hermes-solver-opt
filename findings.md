@@ -215,16 +215,20 @@ findings exist; the cap is on how many are loaded at once.
   Jacobians across time steps causes line search step truncation failures in
   every plasma regime tested.
 
-### The SNES failure printout and the dumps cannot show a negative neutral density or pressure
-- date: 2026-09-23
+### The SNES failure printout and the dumps cannot show a negative density or pressure, neutral or plasma
+- date: 2026-09-23; corrected 2026-09-24
 - status: active
-- scope: builds whose neutral_mixed clamps in place; read in
+- scope: builds whose neutral_mixed clamps in place and whose evolve_density
+  and evolve_pressure write the clamped state back in finally(); read in
   hermes-3-neutlim-lagging ef2ef9dd.
 - evidence: code read. neutral_mixed.cxx:459-460 sets `Nn = floor(Nn, 0.0)`
   and `Pn = floor(Pn, 0.0)` on the evolved fields (registered at :49-50) at
   the start of every RHS call. The "SNES failed" block (BOUT-dev snes.cxx
   817-829) and the dump both read those fields afterwards. The plasma density
-  and pressure are clamped into copies, so their printed minimum is true.
-- rule: a printed or dumped Nd or Pd minimum of exactly 0 means some cell was
-  at or below zero, not that none went negative. Never read "min 0" as "never
+  and pressure are clamped too: evolve_density.cxx:256 and
+  evolve_pressure.cxx:255 copy the floored state back into the evolved field
+  in finally(). The 2026-09-23 version said the plasma printout was true;
+  test5's 15,400 blocks with Nd+, Pd+ and Pe at exactly 0 disproved it.
+- rule: a printed or dumped density or pressure minimum of exactly 0 means
+  some cell was at or below zero, not that none went negative. Never read "min 0" as "never
   negative". Investigation 04 in the store follows this up.
