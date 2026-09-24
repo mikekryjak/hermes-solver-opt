@@ -809,6 +809,22 @@ def test_every_applied_recipe_carries_the_diagnostics(tmp_path, runner):
     assert bare.varied == ""
 
 
+def test_a_cvode_recipe_gets_no_snes_diagnostics(tmp_path, runner):
+    """CVODE never reads diagnose_failures, and the tests' inputs make an
+    unused option fatal, so a recipe without `type = snes` must not get it."""
+
+    recipes = tmp_path / "recipes"
+    recipes.mkdir()
+    (recipes / "CVODE-1.txt").write_text("[solver]\nmxstep = 1e9\nuse_precon = True\n")
+    runner.recipes_dir = str(recipes)
+    case = tmp_path / "case"
+    case.mkdir()
+
+    cvode = dataclasses.replace(a_trial(), recipe="CVODE-1", overrides=())
+    text = open(runner.write_recipe(cvode, str(case))).read()
+    assert "diagnose_failures" not in text
+
+
 def test_an_unapproved_campaign_launches_nothing(tmp_path, monkeypatch):
     """The refusal comes once, before any case is generated, and not as one
     error per trial."""

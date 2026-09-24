@@ -697,7 +697,10 @@ class Runner:
         with open(named) as handle:
             lines = handle.read().splitlines()
 
-        for key, value in trial.overrides + rcp.DIAGNOSTICS:
+        # Only the SNES solver reads the diagnostics; under CVODE they are
+        # unused options, which the tests' inputs make fatal.
+        diagnostics = rcp.DIAGNOSTICS if settings.get("solver:type", "").lower() == "snes" else ()
+        for key, value in trial.overrides + diagnostics:
             section, option = key.split(":", 1)
             lines = _set_option(lines, section, option, value, key)
 
