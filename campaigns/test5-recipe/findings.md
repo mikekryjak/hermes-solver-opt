@@ -6,21 +6,52 @@ this workstation, from 2026-09-24. Rules and format as in the root
 
 ## Conclusion and next steps
 
-CVODE-1 as written runs test5's 1 ms windows in 0.50 of SNES-MUMPS-3's time
-(0.37-0.60 per window), with the end state within 0.1 per cent. The best SNES
-setting, SNES-MUMPS-3 with lag 10 and target_its 5, takes 0.72. The registered
-baseline SNES-MUMPS-4 is slower than SNES-MUMPS-3 on every window it finished
-(1.40x, 1.59x), so test4's promotion does not carry to test5.
+SNES-MUMPS-3 with line search bt is the fastest setting on test5's 1 ms
+windows: 0.38 of SNES-MUMPS-3's time and 0.77 of CVODE-1's over the four
+windows, end state within 0.07 per cent (study 2). bt cuts failed solve
+attempts from 761 to 237 a run and removes every divergence-limit failure;
+the rest are line-search failures (83 per cent). CVODE-1 takes 0.50 of
+SNES-MUMPS-3 (study 1). The registered baseline SNES-MUMPS-4 is slower than
+SNES-MUMPS-3 on every window it finished (1.40x, 1.59x), so test4's promotion
+does not carry to test5.
 
-Next steps (the user decides): a full 0-100 ms run of CVODE-1 beside
-SNES-MUMPS-3 with lag 10 and target_its 5 (estimates from the window sums:
-about 8 h and 12 h, against 16.6 h for the parent); a CVODE screen on
-rung 0 (CVODE-2, CVODE-STRUMPACK-1, tolerances, max order).
+Next steps (the user decides): register SNES-MUMPS-3 + bt as a recipe;
+study 2 part 2 (line search l2, predictor off, slow growth, controller counts
+failures, bt + lag 10); a full 0-100 ms run of bt beside CVODE-1; a
+development campaign that instruments failed solves (per Newton iterate: the
+worst cell and equation, field minima, line-search step).
 
 Records: `s01-results.md` and `runlog.md` in the store's
-`campaigns/test5-recipe/`.
+`campaigns/test5-recipe/`; study 2 report
+`reports/test5-recipe/S02-2026-09-25-failure-fixes.pdf`.
 
 ## Findings
+
+### Line search bt runs test5 2.4-3.0x faster than SNES-MUMPS-3 by cutting failed solves
+- date: 2026-09-25
+- status: active
+- scope: test5, build ef2ef9dd, rung 0 (four 1 ms windows), 2 runs a cell, slot 2 alone.
+- evidence: S02 report. Sum of four windows: bt 1159 s, CVODE-1 1507 s (study 1,
+  two slots busy), SNES-MUMPS-3 3063 s. Failed attempts a run 237 against 761;
+  Jacobian builds a Newton iteration 0.74 against 1.8, at the same 0.165 s a build.
+- inferred: fewer failures let the Jacobian lag run, since each failure resets it.
+- open: what a line-search failure (reason -6) is; bt against CVODE-1 on the
+  11-12 ms window (264 s against 271 s) is inside the load margin.
+
+### The divergence test protects SNES-MUMPS-3 runs on test5
+- date: 2026-09-25
+- status: active
+- scope: test5, SNES-MUMPS-3, petsc:snes_divergence_tolerance -3 (off on PETSc 3.23).
+- evidence: all 8 runs stopped within 0.02 ms. Monitor lines show the residual
+  growing to 4e37, fields reaching zero, then linear-solve failures (reason -3)
+  until the 20-failure limit.
+
+### Iteration cap 20 trades cap failures for divergence, with no speed-up
+- date: 2026-09-25
+- status: active
+- scope: test5, SNES-MUMPS-3, 2 runs a cell.
+- evidence: cap failures 49 -> 16 per cent of failures, divergence 46 -> 77,
+  failures a run 761 -> 630; wall 0.91-1.12x SNES-MUMPS-3.
 
 ### CVODE-1 halves test5's wall time against SNES-MUMPS-3 on 1 ms windows
 - date: 2026-09-25
