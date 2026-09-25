@@ -164,11 +164,11 @@ note = "The recipes set this, and the captured view confirms PETSc built a basic
 
 [knobs."petsc:snes_divergence_tolerance"]
 type = "choice"
-values = ["-1", "1e4", "1e6", "1e7", "1e8"]
+values = ["-3", "-1", "1e4", "1e6", "1e7", "1e8"]
 default = "1e4"
 current = "unset, so 1e4"
 applies = "snes"
-cost = "PETSc declares a solve diverged (reason -9, DTOL) once the residual norm exceeds this multiple of its starting value; -1 switches the test off. A looser value lets Newton continue past a transient spike instead of failing the step, at the risk of spending iterations until the iteration cap (-5) instead."
+cost = "PETSc declares a solve diverged (reason -9, DTOL) once the residual norm exceeds this multiple of its starting value. On PETSc 3.23, -3 (PETSC_UNLIMITED) switches the test off and -1 (PETSC_DETERMINE) keeps the default. A looser value lets Newton continue past a transient spike instead of failing the step, at the risk of spending iterations until the iteration cap (-5) instead."
 status = "candidate"
 note = "Added 2026-09-23 for investigation 4: on test4, 892 of 900 divergence failures came with a neutral cell clamped at zero and a very large neutral pressure rate there, which is what trips this test."
 
