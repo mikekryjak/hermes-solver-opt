@@ -102,5 +102,9 @@ Name it `<window>-<YYYY-MM-DD>[-<desc>]`, e.g.
   the generator writes 50 outputs whatever the length, so a slow run is killed.
 - When a rung's results land, judge each window by `nl_its` and `t_jac_frac`,
   not by wall time: a step with one RHS evaluation coasted past every knob.
+- When proposing a study, propose its report script with it, so the PDF can
+  build the moment the runs land.
+- When a study's runs finish, build its PDF before reporting any result, or
+  open the report message with why it was not built.
 - After a rung finishes, choose which configurations go up and write the next
   study: the runner runs the study it is given and then stops.
