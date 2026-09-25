@@ -15,11 +15,10 @@ SNES-MUMPS-3 (study 1). The registered baseline SNES-MUMPS-4 is slower than
 SNES-MUMPS-3 on every window it finished (1.40x, 1.59x), so test4's promotion
 does not carry to test5.
 
-Next steps (the user decides): register SNES-MUMPS-3 + bt as a recipe;
-study 2 part 2 (line search l2, predictor off, slow growth, controller counts
-failures, bt + lag 10); a full 0-100 ms run of bt beside CVODE-1; a
-development campaign that instruments failed solves (per Newton iterate: the
-worst cell and equation, field minima, line-search step).
+Paused 2026-09-25 by the user: the failed solves look like a code problem,
+to be fixed before further optimisation, in a development campaign that
+instruments them (the priority). bt is not registered as a recipe: it is a
+test5 result, and a recipe should help every test. Study 2 part 2 is shelved.
 
 Records: `s01-results.md` and `runlog.md` in the store's
 `campaigns/test5-recipe/`; study 2 report
