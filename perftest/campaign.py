@@ -102,6 +102,8 @@ class Campaign:
     correctness: dict
     machine: dict
     approval: object = None
+    # PETSc print-only options added to every SNES run (recipe.PRINT_ONLY).
+    diagnostics: tuple = ()
     # Why the approval record cannot be used, when there is one but it is
     # incomplete. Kept rather than raised, so a campaign still being written
     # can be read.
@@ -313,6 +315,24 @@ def check_machine(campaign, hostname=None):
         )
 
 
+def _diagnostics(data, where):
+    """The optional [diagnostics] options, each one of recipe.PRINT_ONLY, sorted."""
+
+    block = data.get("diagnostics")
+    if block is None:
+        return ()
+    options = _list_of_text(block, "options", f"{where}: [diagnostics]", allow_empty=True)
+    from perftest.recipe import PRINT_ONLY
+
+    wrong = [o for o in options if o not in PRINT_ONLY]
+    if wrong:
+        raise CampaignProblem(
+            f"{where}: [diagnostics] may only list print-only options"
+            f" {', '.join(PRINT_ONLY)}; {', '.join(wrong)} could change the run."
+        )
+    return tuple(sorted(set(options)))
+
+
 def load_campaign(path):
     """Read and validate one `campaign.toml`. Raises CampaignProblem."""
 
@@ -423,6 +443,7 @@ def load_campaign(path):
                 correctness, "quantities", f"{where}: [correctness]"
             ),
         },
+        diagnostics=_diagnostics(data, where),
         machine={
             # The hostname this campaign runs on, as the extractor records it.
             # Two machines running one campaign would each repeat the other's

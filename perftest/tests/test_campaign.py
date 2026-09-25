@@ -825,6 +825,49 @@ def test_a_cvode_recipe_gets_no_snes_diagnostics(tmp_path, runner):
     assert "diagnose_failures" not in text
 
 
+DIAGNOSED = GOOD + '\n[diagnostics]\noptions = ["petsc:snes_monitor", "petsc:snes_converged_reason"]\n'
+
+
+def test_a_campaign_may_add_print_only_diagnostics(tmp_path):
+    loaded = cp.load_campaign(write_campaign(tmp_path, DIAGNOSED))
+    assert loaded.diagnostics == ("petsc:snes_converged_reason", "petsc:snes_monitor")
+
+
+def test_a_diagnostic_that_could_change_the_run_is_refused(tmp_path):
+    text = GOOD + '\n[diagnostics]\noptions = ["petsc:snes_linesearch_type"]\n'
+    with pytest.raises(cp.CampaignProblem, match="print-only"):
+        cp.load_campaign(write_campaign(tmp_path, text))
+
+
+def test_diagnostics_reach_snes_recipes_only(tmp_path, runner):
+    """Monitors print for SNES and would be unused options under CVODE."""
+
+    runner.campaign = cp.load_campaign(write_campaign(tmp_path, DIAGNOSED))
+    recipes = tmp_path / "recipes"
+    recipes.mkdir()
+    (recipes / "SNES-MUMPS-3.txt").write_text("[solver]\ntype = snes\n[petsc]\nlog_view\n")
+    (recipes / "CVODE-1.txt").write_text("[solver]\nmxstep = 1e9\n")
+    runner.recipes_dir = str(recipes)
+    case = tmp_path / "case"
+    case.mkdir()
+
+    snes = [l.strip() for l in open(runner.write_recipe(a_trial(), str(case))).read().splitlines()]
+    assert snes.index("snes_monitor = true") > snes.index("[petsc]")
+    assert "snes_converged_reason = true" in snes
+    cvode = dataclasses.replace(a_trial(), recipe="CVODE-1", overrides=())
+    assert "monitor" not in open(runner.write_recipe(cvode, str(case))).read()
+
+
+def test_diagnostics_change_the_tag_and_their_absence_does_not(tmp_path, runner):
+    """A diagnosed run is not a repeat of an undiagnosed one, and every tag made
+    before diagnostics existed stays the same."""
+
+    plain = rn.trial_tag(runner.campaign, a_trial())
+    diagnosed = cp.load_campaign(write_campaign(tmp_path, DIAGNOSED, name="diag"))
+    assert rn.trial_tag(diagnosed, a_trial()) != plain
+    assert not runner.campaign.diagnostics
+
+
 def test_an_unapproved_campaign_launches_nothing(tmp_path, monkeypatch):
     """The refusal comes once, before any case is generated, and not as one
     error per trial."""

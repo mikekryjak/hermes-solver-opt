@@ -381,6 +381,9 @@ def trial_tag(campaign, trial):
         str(campaign.build["check_level"]),
         str(campaign.machine["cores_per_run"]),
     ]
+    # Only when set, so every tag made before [diagnostics] existed is unchanged.
+    if getattr(campaign, "diagnostics", ()):
+        parts.append("diagnostics=" + ",".join(campaign.diagnostics))
     digest = hashlib.sha1("|".join(parts).encode()).hexdigest()[:8]
     return digest if trial.repeat == 1 else f"{digest}-{trial.repeat}"
 
@@ -698,8 +701,11 @@ class Runner:
             lines = handle.read().splitlines()
 
         # Only the SNES solver reads the diagnostics; under CVODE they are
-        # unused options, which the tests' inputs make fatal.
-        diagnostics = rcp.DIAGNOSTICS if settings.get("solver:type", "").lower() == "snes" else ()
+        # unused options, which the tests' inputs make fatal. BOUT++ passes a
+        # [petsc] value of true to PETSc as a bare flag.
+        diagnostics = ()
+        if settings.get("solver:type", "").lower() == "snes":
+            diagnostics = rcp.DIAGNOSTICS + tuple((key, "true") for key in self.campaign.diagnostics)
         for key, value in trial.overrides + diagnostics:
             section, option = key.split(":", 1)
             lines = _set_option(lines, section, option, value, key)

@@ -26,6 +26,14 @@ TOOLING_FLAGS = ("petsc:snes_view", "petsc:ksp_view")
 # and maximum at each failed solve, where BOUT++ otherwise prints only the last.
 DIAGNOSTICS = (("solver:diagnose_failures", "true"),)
 
+# PETSc options a campaign may add to every SNES run through its [diagnostics]
+# block. Each only prints: per-iteration residual norms, line-search steps and
+# the reason each solve stopped. Like DIAGNOSTICS they stay out of `varied`,
+# but they do enter the configuration tag, so a diagnosed run never counts as
+# a repeat of an undiagnosed one.
+PRINT_ONLY = ("petsc:snes_monitor", "petsc:snes_linesearch_monitor",
+              "petsc:snes_converged_reason", "petsc:ksp_converged_reason")
+
 # The same setting under its two spellings. BOUT++ applies the [solver] values
 # with explicit calls and reads [petsc] last (snes.cxx line 770), so a setting
 # written on both sides is decided by the petsc one whatever the other says.
